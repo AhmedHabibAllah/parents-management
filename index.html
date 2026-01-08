@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>برنامج إدارة أولياء الأمور</title>
+
+  <style>
+    :root {
+      --primary-color: #1976d2;
+      --bg-color: #f4f6f8;
+      --text-color: #333;
+      --sidebar-width: 350px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-color);
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      direction: rtl;
+    }
+
+    /* شاشات الدخول والاعدادات (Centered Boxes) */
+    .center-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      background: var(--bg-color);
+      transition: all 0.3s;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .box-large {
+      width: 90%;
+      height: 90%;
+      max-width: 1200px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--primary-color);
+      color: white;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .btn-outline:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #777;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    /* شاشة البيانات الرئيسية (Dashboard Layout) */
+    #dashboardScreen {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+    }
+
+    .main-content {
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      transition: margin-left 0.3s;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* الجدول */
+    .table-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      overflow-x: auto; /* تفعيل التمرير الأفقي */
+      max-height: calc(100vh - 150px); /* تحديد ارتفاع للجدول */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    thead {
+      background: var(--primary-color);
+      color: white;
+      position: sticky; /* تثبيت الرأس */
+      top: 0;
+      z-index: 5;
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: right;
+      border-bottom: 1px solid #eee;
+      white-space: nowrap;
+    }
+
+    /* تنسيق خاص للأرقام لتظهر بشكل صحيح */
+    .num-cell {
+      direction: ltr;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    tr:hover {
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+
+    tr.selected {
+      background-color: #e3f2fd;
+      border-right: 4px solid var(--primary-color);
+    }
+
+    /* القائمة الجانبية (Sidebar) */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: var(--sidebar-width);
+      background: white;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+      transform: translateX(-100%); /* مخفية افتراضياً */
+      transition: transform 0.3s ease;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-content {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .info-group {
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .close-sidebar {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* إعدادات */
+    .settings-group {
+      margin-bottom: 20px;
+      text-align: right;
+    }
+    .settings-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    textarea.excel-input {
+      height: 150px;
+      resize: none;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    /* تنسيق جدول المعاينة في الإعدادات */
+    .excel-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .excel-preview-table th, .excel-preview-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      border-collapse: collapse;
+    }
+    .excel-preview-table th {
+      background: #e0e0e0;
+      position: sticky;
+      top: 0;
+    }
+    .excel-preview-table td[contenteditable="true"]:focus {
+      background: #e3f2fd;
+      outline: 2px solid var(--primary-color);
+      z-index: 1;
+    }
+
+    .qr-container {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- شاشة اختيار الموظف -->
+<div class="center-screen" id="employeeScreen">
+  <div class="box">
+    <h2>👋 مرحباً بك</h2>
+    <p style="color:#666; margin-bottom:20px;">يرجى اختيار حساب الموظف للمتابعة</p>
+    <div id="employeeButtons">
+      <!-- سيتم توليد الأزرار هنا -->
+    </div>
+    <button class="btn btn-secondary" onclick="openAdminPanel()" style="margin-top:10px;">🔧 تعديل البيانات (Admin)</button>
+    <button class="btn btn-outline" onclick="openSettings()" style="margin-top:20px;">⚙️ إعدادات النظام</button>
+  </div>
+</div>
+
+<!-- شاشة البيانات الرئيسية (Dashboard) -->
+<div id="dashboardScreen">
+  
+  <!-- المحتوى الرئيسي -->
+  <div class="main-content" id="mainContent">
+    <div class="header-bar">
+      <h3 id="employeeName" style="margin:0;"></h3>
+      <div>
+        <button class="btn btn-secondary" onclick="goBack()" style="width:auto; display:inline-block;">خروج</button>
+        <button class="btn btn-outline" onclick="openSettings()" style="width:auto; display:inline-block;">⚙️</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="parentsTable">
+        <thead>
+          <tr>
+            <th>م</th>
+            <th>رقم الولي</th>
+            <th>الاسم</th>
+            <th>رقم الهوية</th>
+            <th>الجوال</th>
+            <th>الرصيد المدور</th>
+            <th>رصيد ف1</th>
+            <th>رصيد ف2</th>
+            <th>الرصيد النهائي</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- الصفوف -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- القائمة الجانبية (Sidebar) -->
+  <div class="sidebar" id="detailsSidebar">
+    <div class="sidebar-header">
+      <span id="sidebarTitle">تفاصيل ولي الأمر</span>
+      <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+    </div>
+    
+    <div class="sidebar-content">
+      <div id="sidebarInfo"></div>
+      
+      <!-- QR Code -->
+      <div id="qrCodeContainer" class="qr-container"></div>
+
+      <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+
+      <label class="info-label">عدد مرات الاتصال</label>
+      <input type="number" id="callCountInput" placeholder="0">
+
+      <label class="info-label">ملاحظات</label>
+      <textarea id="notesInput" rows="4" placeholder="اكتب ملاحظات هنا..."></textarea>
+
+      <label class="info-label">حالة الاتصال</label>
+      <select id="callStatusSelect"></select>
+
+      <label class="info-label">تاريخ الاتصال القادم</label>
+      <input type="date" id="nextCallDateInput">
+
+      <button class="btn" onclick="saveParentInteraction()">💾 حفظ التعديلات</button>
+
+      <div class="action-buttons">
+        <button class="btn" style="background:#25D366;" onclick="openWhatsApp()">
+          📱 واتساب
+        </button>
+        <button class="btn" style="background:#ff9800;" onclick="openPayment()">
+          💳 دفع إلكتروني
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- شاشة الإعدادات -->
+<div class="center-screen" id="settingsScreen" style="display:none; z-index:20;">
+  <div class="box" style="width: 900px; max-width:95%; height:90%; display:flex; flex-direction:column; text-align: right;">
+    <h2 style="text-align:center;">⚙️ إعدادات النظام</h2>
+    
+    <div style="flex:1; overflow-y: auto; padding: 5px;">
+      
+      <!-- قسم المظهر وكلمات المرور (قابل للطي أو ثابت في الأعلى) -->
+      <div style="display:flex; gap:20px; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px;">
+        <div style="flex:1;">
+          <label>🎨 لون الموقع</label>
+          <input type="color" id="themeColor" style="height:40px; padding:2px;">
+        </div>
+        <div style="flex:2;">
+          <label>🔗 رابط الدفع</label>
+          <input type="text" id="paymentUrlSetting" style="margin-bottom:0;">
+        </div>
+      </div>
+
+      <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
+        <label>🔐 كلمات مرور الموظفين</label>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
+          <input type="text" id="pass_emp1" placeholder="رمز موظف 1" style="margin:0;">
+          <input type="text" id="pass_emp2" placeholder="رمز موظف 2" style="margin:0;">
+          <input type="text" id="pass_emp3" placeholder="رمز موظف 3" style="margin:0;">
+          <input type="text" id="pass_emp4" placeholder="رمز موظف 4" style="margin:0;">
+        </div>
+      </div>
+
+      <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
+        <label>📝 خيارات حالة الاتصال (افصل بينها بفاصلة)</label>
+        <input type="text" id="statusOptionsInput" placeholder="مشغول, لم يرد, تم الاتفاق, ...">
+      </div>
+
+      <div class="settings-group">
+        <label> إدارة بيانات الموظفين (Excel)</label>
+        <label style="font-size:1.1em; color:var(--primary-color); border-bottom:2px solid #eee; padding-bottom:5px;">📂 إدارة بيانات الموظفين (نسخ/لصق Excel)</label>
+        <p style="font-size:12px; color:#666; margin-bottom:10px;">اختر الموظف من القائمة أدناه، ثم اضغط "لصق بيانات جديدة" لإضافة بياناته.</p>
+        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+          <select id="importEmpSelect" style="width:200px; margin:0; font-weight:bold; border:2px solid var(--primary-color);">
+            <option value="emp1">موظف 1</option>
+            <option value="emp2">موظف 2</option>
+            <option value="emp3">موظف 3</option>
+            <option value="emp4">موظف 4</option>
+          </select>
+          <button class="btn btn-outline" onclick="loadDataToGrid()" style="width:auto; margin:0;">📂 تحميل البيانات الحالية</button>
+          <button class="btn btn-outline" onclick="togglePasteArea()" style="width:auto; margin:0;">📋 لصق بيانات جديدة</button>
+        </div>
+
+        <textarea id="excelPasteArea" class="excel-input" style="display:none; margin-bottom:10px;"
+          placeholder="انسخ البيانات من الإكسل والصقها هنا... (تأكد من ترتيب الأعمدة: م - رقم الولي - الاسم - الهوية - الجوال - المدور - ف1 - ف2 - النهائي)" oninput="convertPasteToGrid()">
+        </textarea>
+        
+        <div id="gridContainer" style="max-height:300px; overflow:auto; border:1px solid #ddd; border-radius:8px;">
+          <p style="text-align:center; padding:20px; color:#999;">اختر "تحميل البيانات" أو "لصق بيانات جديدة" للبدء</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:15px;">
+      <button class="btn" onclick="saveAllSettings()">💾 حفظ الكل (الإعدادات والبيانات)</button>
+      <button class="btn btn-secondary" onclick="closeSettings()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- شاشة الأدمن (تعديل البيانات الشامل) -->
+<div class="center-screen" id="adminScreen" style="display:none; z-index:30;">
+  <div class="box box-large" style="display:flex; flex-direction:column;">
+    <h2>🔧 تعديل البيانات الشامل (وضع الإكسل)</h2>
+    <p style="color:#666; font-size:14px;">يمكنك نسخ البيانات من هنا ولصقها في الإكسل للتعديل، ثم إعادتها ولصقها هنا للحفظ. <br> <strong>تنبيه:</strong> الضغط على حفظ سيقوم باستبدال جميع البيانات الحالية بالبيانات الموجودة في المربع أدناه.</p>
+    
+    <textarea id="adminDataInput" style="flex:1; white-space:pre; overflow:auto; font-family:monospace; font-size:12px; border:2px solid var(--primary-color);" 
+      placeholder="جاري تحميل البيانات..."></textarea>
+    
+    <div style="display:flex; gap:10px; justify-content:center;">
+      <button class="btn" onclick="saveAdminDataFull()" style="background:#d32f2f;">💾 حفظ واستبدال الكل</button>
+      <button class="btn btn-outline" onclick="loadAdminData()">🔄 تحديث البيانات</button>
+      <button class="btn btn-secondary" onclick="closeAdminPanel()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabase = createClient(
+    'https://emrsfzmaqmfavehrdppw.supabase.co',
+    'sb_publishable_dmZ-1l-BmDzIteU1IaSjnw_3TMkHMhw'
+  );
+
+  let currentEmployee = "";
+  let currentParentId = null; // ID of selected parent in DB
+  let currentParentPhone = "";
+
+  // الإعدادات الافتراضية
+  let appConfig = {
+    theme: '#1976d2',
+    paymentUrl: 'https://google.com',
+    passwords: { emp1: '', emp2: '', emp3: '', emp4: '' },
+    statusOptions: "مشغول,لم يرد,مع الراتب الجديد,مع الفصل الدراسي القادم,تم السداد"
+  };
+
+  // تحميل الإعدادات عند البدء
+  function loadSettings() {
+    const saved = localStorage.getItem('appConfig');
+    if (saved) {
+      appConfig = JSON.parse(saved);
+    }
+    applyTheme();
+    renderEmployeeButtons();
+  }
+
+  function applyTheme() {
+    document.documentElement.style.setProperty('--primary-color', appConfig.theme);
+  }
+
+  function renderEmployeeButtons() {
+    const container = document.getElementById('employeeButtons');
+    container.innerHTML = '';
+    ['emp1', 'emp2', 'emp3', 'emp4'].forEach((emp, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.innerText = `👤 موظف ${index + 1}`;
+      btn.onclick = () => checkPasswordAndLogin(emp);
+      container.appendChild(btn);
+    });
+  }
+
+  window.checkPasswordAndLogin = (emp) => {
+    const pass = appConfig.passwords[emp];
+    if (pass && pass.trim() !== "") {
+      const input = prompt("🔒 الرجاء إدخال كلمة المرور:");
+      if (input !== pass) {
+        alert("كلمة المرور غير صحيحة!");
+        return;
+      }
+    }
+    showDataForEmployee(emp);
+  };
+
+  // عرض بيانات الموظف
+  window.showDataForEmployee = async (employee) => {
+    currentEmployee = employee;
+    document.getElementById("employeeName").innerText =
+      "لوحة تحكم - " + (employee === 'emp1' ? 'موظف 1' : employee);
+
+    const { data, error } = await supabase
+      .from("parents")
+      .select("*")
+      .eq("employee", employee)
+      .order("serial_no");
+
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    if (error) {
+      alert("خطأ في جلب البيانات");
+      console.error(error);
+      return;
+    }
+
+    if (data.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='9' style='text-align:center'>لا توجد بيانات</td></tr>";
+    }
+
+    data.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.onclick = () => selectParent(tr, p);
+      tr.innerHTML = `
+        <td>${p.serial_no || '-'}</td>
+        <td>${p.parent_code || '-'}</td>
+        <td><strong>${p.parent_name || '-'}</strong></td>
+        <td>${p.identity_no || '-'}</td>
+        <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
+        <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
+        <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
+        <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
+        <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("employeeScreen").style.display = "none";
+    document.getElementById("dashboardScreen").style.display = "block";
+  };
+
+  // اختيار ولي أمر وعرض القائمة الجانبية
+  window.selectParent = (tr, data) => {
+    // Highlight row
+    document.querySelectorAll('tr').forEach(row => row.classList.remove('selected'));
+    tr.classList.add('selected');
+
+    // Set Data
+    currentParentId = data.id; // Assuming Supabase has an 'id' column automatically or we use another unique key
+    currentParentPhone = data.phone;
+
+    // Generate QR Code (Using a public API for simplicity)
+    const qrContainer = document.getElementById('qrCodeContainer');
+    if (currentParentPhone) {
+      const cleanPhone = currentParentPhone.replace(/\D/g, '');
+      qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=tel:${cleanPhone}" alt="QR Call" style="display:block; margin:0 auto;"><span style="font-size:11px; color:#666;">امسح للاتصال</span>`;
+    } else {
+      qrContainer.innerHTML = '';
+    }
+    
+    // Populate Sidebar
+    const infoDiv = document.getElementById('sidebarInfo');
+    infoDiv.innerHTML = `
+      <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name}</div></div>
+      <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${data.phone}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red">${data.final_balance}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${data.carried_balance || 0}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red">${(data.final_balance || 0).toLocaleString()}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${(data.carried_balance || 0).toLocaleString()}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; direction:ltr;">${(data.final_balance || 0).toLocaleString('en-US')}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value" style="direction:ltr;">${(data.carried_balance || 0).toLocaleString('en-US')}</div></div>
+    `;
+
+    // Set Inputs (Assuming columns exist, if not they will be null/undefined)
+    // Note: You need to ensure 'call_count' and 'notes' columns exist in your Supabase table.
+    document.getElementById('callCountInput').value = data.call_count || 0;
+    document.getElementById('notesInput').value = data.notes || "";
+    
+    // Populate Status Dropdown
+    const statusSelect = document.getElementById('callStatusSelect');
+    statusSelect.innerHTML = '<option value="">-- اختر الحالة --</option>';
+    const options = appConfig.statusOptions.split(',');
+    options.forEach(opt => {
+      const cleanOpt = opt.trim();
+      if(cleanOpt) statusSelect.innerHTML += `<option value="${cleanOpt}">${cleanOpt}</option>`;
+    });
+    statusSelect.value = data.last_call_status || "";
+
+    // Date
+    document.getElementById('nextCallDateInput').value = data.next_call_date || "";
+
+    // Show Sidebar
+    document.getElementById('detailsSidebar').classList.add('active');
+  };
+
+  window.closeSidebar = () => {
+    document.getElementById('detailsSidebar').classList.remove('active');
+    document.querySelectorAll('tr').forEach(row => row.classList.remove('selected'));
+  };
+
+  window.saveParentInteraction = async () => {
+    if (!currentParentId) return;
+
+    const calls = document.getElementById('callCountInput').value;
+    const notes = document.getElementById('notesInput').value;
+    const status = document.getElementById('callStatusSelect').value;
+    const nextDate = document.getElementById('nextCallDateInput').value;
+
+    const { error } = await supabase
+      .from('parents')
+      .update({ 
+        call_count: calls, 
+        notes: notes,
+        last_call_status: status,
+        next_call_date: nextDate || null
+      })
+      .eq('id', currentParentId); // Using internal ID is safer
+
+    if (error) {
+      alert('حدث خطأ أثناء الحفظ');
+      console.error(error);
+    } else {
+      alert('تم حفظ الملاحظات بنجاح ✅');
+      // Refresh data to keep UI in sync? Or just update local object if needed.
+      // For simplicity, we keep as is.
+    }
+  };
+
+  window.goBack = () => {
+    closeSidebar();
+    document.getElementById("dashboardScreen").style.display = "none";
+    document.getElementById("employeeScreen").style.display = "flex";
+  };
+
+  window.openSettings = () => {
+    // Populate fields
+    document.getElementById('themeColor').value = appConfig.theme;
+    document.getElementById('paymentUrlSetting').value = appConfig.paymentUrl;
+    document.getElementById('pass_emp1').value = appConfig.passwords.emp1;
+    document.getElementById('pass_emp2').value = appConfig.passwords.emp2;
+    document.getElementById('pass_emp3').value = appConfig.passwords.emp3;
+    document.getElementById('pass_emp4').value = appConfig.passwords.emp4;
+    document.getElementById('statusOptionsInput').value = appConfig.statusOptions;
+
+    document.getElementById("settingsScreen").style.display = "flex";
+  };
+
+  window.closeSettings = () => {
+    document.getElementById("settingsScreen").style.display = "none";
+  };
+
+  window.saveAppSettings = () => {
+    appConfig.theme = document.getElementById('themeColor').value;
+    appConfig.paymentUrl = document.getElementById('paymentUrlSetting').value;
+    appConfig.passwords.emp1 = document.getElementById('pass_emp1').value;
+    appConfig.passwords.emp2 = document.getElementById('pass_emp2').value;
+    appConfig.passwords.emp3 = document.getElementById('pass_emp3').value;
+    appConfig.passwords.emp4 = document.getElementById('pass_emp4').value;
+    appConfig.statusOptions = document.getElementById('statusOptionsInput').value;
+
+    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+    applyTheme();
+    alert("تم حفظ الإعدادات بنجاح ✅");
+    closeSettings();
+  };
+
+  window.openWhatsApp = () => {
+    if (!currentParentPhone) return alert("لا يوجد رقم جوال");
+    // Clean phone number
+    let phone = currentParentPhone.replace(/\D/g, ''); 
+    // Add country code if missing (Assuming SA for example, or just open as is)
+    window.open(`https://wa.me/${phone}`, '_blank');
+  };
+
+  window.openPayment = () => {
+    window.open(appConfig.paymentUrl, '_blank');
+  };
+
+  // --- منطق الجدول التفاعلي في الإعدادات ---
+
+  window.togglePasteArea = () => {
+    const area = document.getElementById('excelPasteArea');
+    area.style.display = area.style.display === 'none' ? 'block' : 'none';
+    if(area.style.display === 'block') area.focus();
+  };
+
+  // دالة تحويل نص رقم عربي/فارسي/لغوي إلى رقم JS صالح
+  const cleanNumber = (input) => {
+    if (input === null || input === undefined) return 0;
+    let s = input.toString().trim();
+
+    // استبدال الأرقام العربية/الفارسية بالإنجليزية
+    const map = {
+      '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
+      '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
+    };
+    s = s.replace(/[٠-٩۰-۹]/g, d => map[d] || d);
+
+    // إزالة علامات غير مرئية ومسافات خاصة
+    s = s.replace(/[\u200B\u200C\u200E\u200F\u202F\s\u00A0]/g, '');
+
+    // إزالة محارف الفاصل/ألفية العربية الشائعة
+    s = s.replace(/[\u066C\u060C]/g, ''); // ألفية عربية و0C (،)
+    // التعامل مع الفاصل العشري العربي (U+066B) وتحويله لنقطة
+    s = s.replace(/\u066B/g, '.');
+
+    // لو النص يحتوي كلاً من '.' و','، نقرر أيهما فاصل عشري بالاعتماد على آخر ظهور
+    if (s.indexOf('.') !== -1 && s.indexOf(',') !== -1) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+        // نمط: 1.234,56 -> احذف نقاط الألف واستبدل الفاصلة بعشرية
+        s = s.replace(/\./g, '');
+        s = s.replace(/,/g, '.');
+      } else {
+        // نمط: 1,234.56 -> احذف الفواصل
+        s = s.replace(/,/g, '');
+      }
+    } else if (s.indexOf(',') !== -1 && s.indexOf('.') === -1) {
+      // لا توجد نقطة لكن توجد فاصلة => اعتبرها فاصل عشري
+      s = s.replace(/,/g, '.');
+    } else {
+      // لا توجد فاصلة عشرية واضحة، أحذف أي فواصل آلاف محتملة
+      s = s.replace(/,/g, '');
+    }
+
+    // إزالة أي محارف غير رقمية أو نقطة أو سالب
+    s = s.replace(/[^0-9.\-]/g, '');
+
+    const num = parseFloat(s);
+    return isNaN(num) ? 0 : num;
+  };
+
+  window.loadDataToGrid = async () => {
+    const emp = document.getElementById('importEmpSelect').value;
+    document.getElementById('gridContainer').innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
+    
+    const { data, error } = await supabase.from("parents").select("*").eq("employee", emp).order("serial_no");
+    
+    if(error) { alert("خطأ في التحميل"); return; }
+    renderGrid(data);
+    document.getElementById('excelPasteArea').style.display = 'none';
+  };
+
+  window.convertPasteToGrid = () => {
+    const text = document.getElementById('excelPasteArea').value;
+    const rows = text.split("\n");
+    const data = [];
+
+    rows.forEach(row => {
+      if (!row.trim()) return;
+      const c = row.split("\t");
+      if (isNaN(parseInt(c[0]))) return; // تخطي العناوين
+
+      data.push({
+        serial_no: c[0],
+        parent_code: c[1],
+        parent_name: c[2],
+        identity_no: c[3],
+        phone: c[4],
+        carried_balance: cleanNumber(c[5]),
+        term1_balance: cleanNumber(c[6]),
+        term2_balance: cleanNumber(c[7]),
+        final_balance: cleanNumber(c[8])
+      });
+    });
+    renderGrid(data);
+  };
+
+  function renderGrid(data) {
+    let html = `<table class="excel-preview-table">
+      <thead>
+        <tr>
+          <th>حذف</th><th>م</th><th>رقم الولي</th><th>الاسم</th><th>الهوية</th><th>الجوال</th>
+          <th>المدور</th><th>ف1</th><th>ف2</th><th>النهائي</th>
+        </tr>
+      </thead><tbody>`;
+    
+    data.forEach((row, index) => {
+      html += `<tr>
+        <td><button onclick="this.closest('tr').remove()" style="color:red;border:none;background:none;cursor:pointer;">✖</button></td>
+        <td contenteditable="true">${row.serial_no || ''}</td>
+        <td contenteditable="true">${row.parent_code || ''}</td>
+        <td contenteditable="true">${row.parent_name || ''}</td>
+        <td contenteditable="true">${row.identity_no || ''}</td>
+        <td contenteditable="true">${row.phone || ''}</td>
+        <td contenteditable="true">${row.carried_balance || 0}</td>
+        <td contenteditable="true">${row.term1_balance || 0}</td>
+        <td contenteditable="true">${row.term2_balance || 0}</td>
+        <td contenteditable="true" style="font-weight:bold;">${row.final_balance || 0}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    document.getElementById('gridContainer').innerHTML = html;
+  }
+
+  window.saveAllSettings = async () => {
+    // 1. حفظ الإعدادات العامة
+    saveAppSettings();
+
+    // 2. حفظ بيانات الجدول (الموظف المحدد)
+    const emp = document.getElementById('importEmpSelect').value;
+    const table = document.querySelector('.excel-preview-table tbody');
+    
+    // جمع البيانات الجديدة من الجدول (إن وجد)
+    const newRecords = [];
+    if (table && table.querySelectorAll('tr').length > 0) {
+      const rows = table.querySelectorAll('tr');
+      rows.forEach(tr => {
+        const cells = tr.querySelectorAll('td');
+        // التأكد من أن الصف يحتوي على بيانات
+        if (cells.length > 1) {
+            newRecords.push({
+            employee: emp,
+            serial_no: parseInt(cells[1].innerText) || 0,
+            parent_code: cells[2].innerText,
+            parent_name: cells[3].innerText,
+            identity_no: cells[4].innerText,
+            phone: cells[5].innerText,
+            carried_balance: cleanNumber(cells[6].innerText),
+            term1_balance: cleanNumber(cells[7].innerText),
+            term2_balance: cleanNumber(cells[8].innerText),
+            final_balance: cleanNumber(cells[9].innerText)
+            });
+        }
+      });
+    }
+
+    if(!confirm(`أنت على وشك تحديث بيانات (${emp}).\nعدد السجلات الجديدة: ${newRecords.length}\nسيتم حذف البيانات القديمة لهذا الموظف واستبدالها. هل أنت متأكد؟`)) return;
+    if(!confirm(`⚠️ تحذير هام:\nأنت على وشك استبدال بيانات (${emp}).\n- سيتم حذف جميع البيانات القديمة لهذا الموظف.\n- سيتم إضافة ${newRecords.length} سجل جديد.\n\nهل أنت متأكد من الاستمرار؟`)) return;
+
+    // التحقق من عدد السجلات الحالية لهذا الموظف أولاً (لإعطاء رسالة واضحة عند عدم وجود بيانات)
+    const { data: existingRows, error: fetchError } = await supabase
+      .from('parents')
+      .select('id')
+      .eq('employee', emp);
+
+    if (fetchError) {
+      alert('خطأ أثناء التحقق من وجود بيانات للموظف: ' + fetchError.message);
+      console.error(fetchError);
+      return;
+    }
+
+    const existingCount = (existingRows && existingRows.length) || 0;
+
+    // إذا لم تكن هناك سجلات موجودة، فقط نقوم بالإدخال الجديد أو إظهار رسالة
+    if (existingCount === 0) {
+      if (newRecords.length === 0) {
+        alert(`لم تكن هناك بيانات سابقة لـ ${emp}، ولا توجد سجلات جديدة للحفظ.`);
+        await loadDataToGrid();
+        return;
+      }
+      // لا حاجة للحذف، ننتقل مباشرة للإدخال
+    } else {
+      // قم بالحذف واطلب القيم المحذوفة للتأكد
+      // أولاً: جلب مزيد من معلومات الصفوف الحالية للتشخيص
+      const { data: sampleRows, error: sampleError } = await supabase
+        .from('parents')
+        .select('id, employee, parent_name, serial_no')
+        .eq('employee', emp)
+        .limit(10);
+
+      if (sampleError) console.error('خطأ في جلب عينة لصفوف الموظف:', sampleError);
+      else console.log('عينة من صفوف الموظف قبل الحذف:', sampleRows);
+
+      const { data: deletedRows, error: delError } = await supabase
+        .from('parents')
+        .delete()
+        .eq('employee', emp)
+        .select('*');
+
+      if (delError) {
+        alert('❌ فشل في حذف البيانات القديمة! لم يتم المتابعة.\nالخطأ: ' + delError.message);
+        console.error(delError);
+        return;
+      }
+
+      // إذا لم يتم حذف أي صفوف رغم أن هناك سجلات، نجرب حذفها بالمعرّفات كخطة احتياطية
+      if (!deletedRows || deletedRows.length === 0) {
+        console.warn('محاولة حذف بواسطة employee لم تزل سجلات، نجرب حذفها بواسطة المعرفات (ids).', { existingCount, sampleRows, deletedRows });
+
+        // جمع المعرفات (ids) من العينة أو الاستعلام الكامل
+        const { data: allRows, error: allError } = await supabase
+          .from('parents')
+          .select('id')
+          .eq('employee', emp);
+
+        if (allError) {
+          alert('خطأ أثناء جلب المعرفات للحذف الاحتياطي: ' + allError.message);
+          console.error(allError);
+          await loadDataToGrid();
+          return;
+        }
+
+        const ids = (allRows || []).map(r => r.id).filter(Boolean);
+        if (ids.length === 0) {
+          alert('لم يتم العثور على سجلات للحذف (محتمل أن يكون هناك مشكلة في قيمة "employee" أو صلاحيات الوصول).');
+          await loadDataToGrid();
+          return;
+        }
+
+        // محاولة الحذف بواسطة ids
+        const { data: deletedByIds, error: delByIdsError } = await supabase
+          .from('parents')
+          .delete()
+          .in('id', ids)
+          .select('*');
+
+        if (delByIdsError) {
+          alert('فشل الحذف بالمعرفات: ' + delByIdsError.message + '\nقد تكون هناك قيود وصول (RLS) أو مفاتيح غير صالحة.');
+          console.error(delByIdsError);
+          await loadDataToGrid();
+          return;
+        }
+
+        if (!deletedByIds || deletedByIds.length === 0) {
+          alert('تحذير: حاولنا الحذف بطرق متعددة لكن لم تتم إزالة أي سجلات. راجع سياسات الأمان في Supabase (RLS) أو استخدم مفتاح خدمة آمن للخادم للحذف.');
+          console.warn('فشل حذف السجلات بعد المحاولة بالمعرفات.', { ids, deletedByIds });
+          await loadDataToGrid();
+          return;
+        }
+
+        // إذا نجحت الحذف الاحتياطي
+        console.log('تم الحذف بنجاح بواسطة ids:', deletedByIds.length);
+      }
+    }
+
+    // الآن إدخال البيانات الجديدة (إن وجدت)
+    if (newRecords.length > 0) {
+      const { error } = await supabase.from('parents').insert(newRecords);
+      if (error) {
+        alert('حدث خطأ أثناء حفظ البيانات: ' + error.message);
+        console.error(error);
+      } else {
+        alert(`تم تحديث بيانات ${emp} بنجاح (${newRecords.length} سجل) ✅`);
+        document.getElementById('gridContainer').innerHTML = '';
+      }
+    } else if (existingCount > 0) {
+      // تم حذف السجلات ولم يتم إدخال جديد
+      alert(`تم مسح جميع بيانات ${emp} بنجاح (الجدول فارغ) ✅`);
+    }
+
+    // إعادة تحميل البيانات للتأكد من أن الواجهة تعكس حالة قاعدة البيانات الآن
+    await loadDataToGrid();
+  };
+
+  // --- وظائف الأدمن (تعديل البيانات) ---
+
+  window.openAdminPanel = () => {
+    const pass = prompt("🔒 أدخل كلمة مرور المسؤول:");
+    if (pass === "admin123") {
+      document.getElementById("adminScreen").style.display = "flex";
+      loadAdminData();
+    } else if (pass !== null) {
+      alert("كلمة المرور غير صحيحة ❌");
+    }
+  };
+
+  window.closeAdminPanel = () => {
+    document.getElementById("adminScreen").style.display = "none";
+  };
+
+  window.loadAdminData = async () => {
+    const textarea = document.getElementById("adminDataInput");
+    textarea.value = "جاري تحميل جميع البيانات...";
+
+    const { data, error } = await supabase
+      .from("parents")
+      .select("*")
+      .order("employee")
+      .order("serial_no");
+
+    if (error) {
+      textarea.value = "خطأ في التحميل!";
+      console.error(error);
+      return;
+    }
+
+    // تحويل البيانات إلى نص (TSV)
+    // الترتيب: الموظف - م - رقم الولي - الاسم - الهوية - الجوال - المدور - ف1 - ف2 - النهائي
+    let text = "الموظف\tم\tرقم ولي الأمر\tالاسم\tرقم الهوية\tالجوال\tالرصيد المدور\tرصيد ف1\tرصيد ف2\tالرصيد النهائي\n";
+    
+    data.forEach(row => {
+      text += `${row.employee || ''}\t${row.serial_no || ''}\t${row.parent_code || ''}\t${row.parent_name || ''}\t${row.identity_no || ''}\t${row.phone || ''}\t${row.carried_balance || 0}\t${row.term1_balance || 0}\t${row.term2_balance || 0}\t${row.final_balance || 0}\n`;
+    });
+
+    textarea.value = text;
+  };
+
+  window.saveAdminDataFull = async () => {
+    if (!confirm("⚠️ هل أنت متأكد؟ سيتم حذف جميع البيانات القديمة واستبدالها بالبيانات الموجودة في المربع!")) return;
+
+    const rawText = document.getElementById("adminDataInput").value;
+    const rows = rawText.split("\n");
+    const newRecords = [];
+
+    // دالة تنظيف الأرقام لإدارة البيانات الشاملة (تعادلية مع cleanNumber)
+    const parseNum = (str) => {
+      return cleanNumber(str);
+    };
+
+    for (let i = 0; i < rows.length; i++) {
+      const line = rows[i].trim();
+      if (!line) continue;
+      
+      const cols = line.split("\t");
+      // تخطي سطر العناوين (إذا كان العمود الثاني ليس رقماً)
+      if (isNaN(parseInt(cols[1]))) continue;
+
+      newRecords.push({
+        employee: cols[0]?.trim() || 'emp1', // افتراضي
+        serial_no: parseInt(cols[1]) || 0,
+        parent_code: cols[2] || "",
+        parent_name: cols[3] || "",
+        identity_no: cols[4] || "",
+        phone: cols[5] || "",
+        carried_balance: parseNum(cols[6]),
+        term1_balance: parseNum(cols[7]),
+        term2_balance: parseNum(cols[8]),
+        final_balance: parseNum(cols[9])
+      });
+    }
+
+    // 1. حذف الكل
+    const { error: delError } = await supabase.from("parents").delete().neq('id', -1); // استخدام شرط صحيح للحذف
+    
+    if (delError) {
+      alert("❌ حدث خطأ أثناء حذف البيانات القديمة! العملية ألغيت.");
+      console.error(delError);
+      return;
+    }
+
+    // 2. إدخال الجديد
+    if (newRecords.length > 0) {
+      const { error: insError } = await supabase.from("parents").insert(newRecords);
+      if (insError) {
+        alert("حدث خطأ أثناء حفظ البيانات الجديدة!");
+        console.error(insError);
+      } else {
+        alert(`تم تحديث قاعدة البيانات بنجاح! (${newRecords.length} سجل) ✅`);
+        closeAdminPanel();
+      }
+    } else {
+      alert("تم حذف البيانات ولم يتم إدخال بيانات جديدة (المربع فارغ).");
+      closeAdminPanel();
+    }
+  };
+
+  // Init
+  loadSettings();
+</script>
+
+</body>
+</html>
