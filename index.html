@@ -7,8 +7,8 @@
   <style>
     :root {
       --primary-color: #1976d2;
-      --bg-color: #f4f6f8;
-      --text-color: #333;
+      --bg-color: #f0f8ff;
+      --text-color: #000000;
       --sidebar-width: 350px;
     }
 
@@ -16,9 +16,11 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-color);
       margin: 0;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
+      overflow: auto; /* السماح بالتمرير عمودياً وأفقياً */
+      -webkit-overflow-scrolling: touch;
       direction: rtl;
+      font-size: 20px;
     }
 
     /* شاشات الدخول والاعدادات (Centered Boxes) */
@@ -26,29 +28,37 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100%;
-      width: 100%;
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
+      right: 0;
+      bottom: 0;
       z-index: 10;
       background: var(--bg-color);
       transition: all 0.3s;
+      overflow: auto; /* يسمح بالتمرير داخل النوافذ عندما تكون كبيرة */
+      padding: 20px;
+      box-sizing: border-box;
+      max-height: 100vh;
     }
 
     .box {
       background: white;
-      padding: 30px;
+      padding: 40px;
       border-radius: 12px;
-      width: 400px;
+      width: 99.5%;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       text-align: center;
+      max-height: calc(100vh - 60px);
+      overflow: auto; /* تمرير داخلي للصناديق الكبيرة */
     }
 
     .box-large {
-      width: 90%;
-      height: 90%;
-      max-width: 1200px;
+      width: 99.5%;
+      height: auto;
+      max-width: none;
+      max-height: calc(100vh - 60px);
+      overflow: auto;
     }
 
     h2 {
@@ -58,9 +68,10 @@
 
     .btn {
       width: 100%;
-      padding: 12px;
+      padding: 0 16px;
+      height: 60px;
       margin-bottom: 10px;
-      font-size: 16px;
+      font-size: 22px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -71,6 +82,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      font-weight: 800;
     }
 
     .btn:hover {
@@ -79,9 +91,10 @@
     }
 
     .btn-outline {
-      background: transparent;
+      background: #ffffff;
       border: 2px solid var(--primary-color);
       color: var(--primary-color);
+      font-weight: 700;
     }
 
     .btn-outline:hover {
@@ -95,20 +108,23 @@
 
     input, textarea, select {
       width: 100%;
-      padding: 12px;
+      padding: 15px;
       border-radius: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       margin-bottom: 15px;
       box-sizing: border-box;
       font-family: inherit;
+      font-size: 20px;
+      font-weight: 600;
     }
 
     /* شاشة البيانات الرئيسية (Dashboard Layout) */
     #dashboardScreen {
       display: none;
-      height: 100vh;
-      width: 100vw;
+      min-height: 100vh;
+      width: 100%;
       position: relative;
+      overflow: auto;
     }
 
     .main-content {
@@ -133,7 +149,7 @@
 
     /* الجدول */
     .table-container {
-      background: white;
+      background: #fafafa;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       overflow-x: auto; /* تفعيل التمرير الأفقي */
@@ -147,18 +163,22 @@
     }
 
     thead {
-      background: var(--primary-color);
-      color: white;
+      background: #f7f7f7;
+      color: #000;
       position: sticky; /* تثبيت الرأس */
       top: 0;
       z-index: 5;
     }
 
     th, td {
-      padding: 15px;
+      padding: 20px;
       text-align: right;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #ccc;
       white-space: nowrap;
+      color: #000;
+      font-weight: 600;
+      background: #fff;
+      font-size: 20px;
     }
 
     /* تنسيق خاص للأرقام لتظهر بشكل صحيح */
@@ -271,15 +291,28 @@
       margin-top: 10px;
     }
     .excel-preview-table th, .excel-preview-table td {
-      border: 1px solid #ccc;
-      padding: 8px;
+      border: 1px solid #ddd;
+      padding: 14px 16px;
       text-align: center;
       border-collapse: collapse;
+      font-size: 16px;
     }
     .excel-preview-table th {
-      background: #e0e0e0;
+      background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+      color: white;
       position: sticky;
       top: 0;
+      font-weight: 700;
+      font-size: 17px;
+    }
+    .excel-preview-table tbody tr {
+      transition: background-color 0.2s;
+    }
+    .excel-preview-table tbody tr:hover {
+      background-color: #f5f5f5 !important;
+    }
+    .excel-preview-table tbody tr:nth-child(even) {
+      background-color: #fafafa;
     }
     .excel-preview-table td[contenteditable="true"]:focus {
       background: #e3f2fd;
@@ -295,6 +328,60 @@
       border: 1px solid #eee;
       border-radius: 8px;
     }
+
+    /* إحصائيات - تصميم أكبر وواضح ومتجاوب */
+    .stat-btn {
+      padding: 0 20px;
+      height: 60px;
+      font-size: 20px;
+      border-radius: 10px;
+      margin-left: 6px;
+      background: linear-gradient(90deg,#1976d2,#43a047);
+      color: #fff;
+      border: none;
+      box-shadow: 0 6px 18px rgba(25,118,210,0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-outline {
+      background: linear-gradient(90deg,#ffb74d,#ff8a65);
+      color: #fff;
+    }
+
+    .stats-box {
+      background: #ffffff;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .stats-box h3 { font-size: 24px; color: #000; margin: 6px 0 12px; }
+    .stats-box .excel-preview-table th, .stats-box .excel-preview-table td { font-size: 16px; padding:12px; font-weight:700; }
+    .stats-box .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+    .stats-box .controls select, .stats-box .controls button { font-size:16px; padding:8px 12px; border-radius:8px; }
+
+    /* أزرار أنواع المخططات */
+    .chart-type-btn {
+      padding: 8px 16px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.2s;
+    }
+    .chart-type-btn:hover { background: #f0f0f0; }
+    .chart-type-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+    /* متجاوب: الشاشات الصغيرة */
+    @media (max-width: 768px) {
+      .box { padding: 18px; width: 95%; }
+      .btn { padding: 10px; font-size: 14px; }
+      .stat-btn { padding: 10px; font-size: 14px; }
+      .excel-preview-table th, .excel-preview-table td { font-size: 13px; }
+      table { min-width: 600px; }
+    }
+
+    @media (max-width: 420px) {
+      .header-bar { flex-direction: column; gap:8px; }
+      .header-bar h3 { font-size: 18px; }
+      .stat-btn { width: 100%; }
+    }
   </style>
 </head>
 
@@ -302,14 +389,14 @@
 
 <!-- شاشة اختيار الموظف -->
 <div class="center-screen" id="employeeScreen">
-  <div class="box">
+  <div class="box" style="max-width: 600px; margin: 0 auto;">
     <h2>👋 مرحباً بك</h2>
     <p style="color:#666; margin-bottom:20px;">يرجى اختيار حساب الموظف للمتابعة</p>
     <div id="employeeButtons">
       <!-- سيتم توليد الأزرار هنا -->
     </div>
-    <button class="btn btn-secondary" onclick="openAdminPanel()" style="margin-top:10px;">🔧 تعديل البيانات (Admin)</button>
-    <button class="btn btn-outline" onclick="openSettings()" style="margin-top:20px;">⚙️ إعدادات النظام</button>
+    <!-- زر التعديل الأصلي أُلغي بناءً على طلب المستخدم -->
+    <button class="btn btn-outline" onclick="openSettingsAdmin()" style="margin-top:20px;">⚙️ إعدادات النظام</button>
   </div>
 </div>
 
@@ -318,11 +405,13 @@
   
   <!-- المحتوى الرئيسي -->
   <div class="main-content" id="mainContent">
+    <h1 style="text-align:center; font-size:28px; color:var(--primary-color); font-weight:800; margin:6px 0 12px;">مدارس التربيه النموذجيه الروابي</h1>
     <div class="header-bar">
       <h3 id="employeeName" style="margin:0;"></h3>
       <div>
-        <button class="btn btn-secondary" onclick="goBack()" style="width:auto; display:inline-block;">خروج</button>
-        <button class="btn btn-outline" onclick="openSettings()" style="width:auto; display:inline-block;">⚙️</button>
+        <button class="btn btn-secondary" onclick="goBack()" style="width:auto; display:inline-flex;">خروج</button>
+        <button class="stat-btn" onclick="openStats()" style="width:auto; display:inline-flex; margin-right:8px;">📊 إحصائيات</button>
+        <button class="btn btn-outline" onclick="openEmployeeSettings()" style="width:auto; display:inline-flex;">⚙️</button>
       </div>
     </div>
 
@@ -352,7 +441,10 @@
   <div class="sidebar" id="detailsSidebar">
     <div class="sidebar-header">
       <span id="sidebarTitle">تفاصيل ولي الأمر</span>
-      <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="close-sidebar" onclick="openEmployeeSettings()" title="إعدادات الموظف">⚙️</button>
+        <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+      </div>
     </div>
     
     <div class="sidebar-content">
@@ -391,8 +483,24 @@
 </div>
 
 <!-- شاشة الإعدادات -->
+
+<!-- شاشة تسجيل دخول الأدمن (Password masked) -->
+<div class="center-screen" id="adminLoginScreen" style="display:none; z-index:500;">
+  <div class="box" style="width:380px; max-width:95%; margin:0 auto; text-align:right;">
+    <h2 style="text-align:center;">🔒 دخول إعدادات النظام</h2>
+    <div style="padding:6px 0; text-align:right;">
+      <label>كلمة مرور الأدمن</label>
+      <input type="password" id="admin_login_input" placeholder="أدخل كلمة المرور" style="width:100%; padding:10px; margin-top:6px;">
+      <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn" onclick="submitAdminLogin()">دخول</button>
+        <button class="btn btn-secondary" onclick="closeAdminLogin()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="center-screen" id="settingsScreen" style="display:none; z-index:20;">
-  <div class="box" style="width: 900px; max-width:95%; height:90%; display:flex; flex-direction:column; text-align: right;">
+  <div class="box" style="width: 98%; max-width:none; height:98%; display:flex; flex-direction:column; text-align: right;">
     <h2 style="text-align:center;">⚙️ إعدادات النظام</h2>
     
     <div style="flex:1; overflow-y: auto; padding: 5px;">
@@ -417,18 +525,28 @@
           <input type="text" id="pass_emp3" placeholder="رمز موظف 3" style="margin:0;">
           <input type="text" id="pass_emp4" placeholder="رمز موظف 4" style="margin:0;">
         </div>
-      </div>
+
+        <label style="display:block; margin-top:12px;">🧑‍💼 أسماء الموظفين (لعرضها في الواجهة)</label>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-top:6px;">
+          <input type="text" id="name_emp1" placeholder="اسم الموظف 1" style="margin:0;">
+          <input type="text" id="name_emp2" placeholder="اسم الموظف 2" style="margin:0;">
+          <input type="text" id="name_emp3" placeholder="اسم الموظف 3" style="margin:0;">
+          <input type="text" id="name_emp4" placeholder="اسم الموظف 4" style="margin:0;">
+        </div>
+      </div> 
 
       <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
-        <label>📝 خيارات حالة الاتصال (افصل بينها بفاصلة)</label>
-        <input type="text" id="statusOptionsInput" placeholder="مشغول, لم يرد, تم الاتفاق, ...">
+        <label>📝 خيارات حالة الاتصال (ضع كل خيار في سطر جديد)</label>
+        <textarea id="statusOptionsInput" placeholder="مشغول
+لم يرد
+تم الاتفاق" style="height:90px; width:100%; padding:12px; box-sizing:border-box;"></textarea>
       </div>
 
       <div class="settings-group">
         <label> إدارة بيانات الموظفين (Excel)</label>
         <label style="font-size:1.1em; color:var(--primary-color); border-bottom:2px solid #eee; padding-bottom:5px;">📂 إدارة بيانات الموظفين (نسخ/لصق Excel)</label>
         <p style="font-size:12px; color:#666; margin-bottom:10px;">اختر الموظف من القائمة أدناه، ثم اضغط "لصق بيانات جديدة" لإضافة بياناته.</p>
-        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
           <select id="importEmpSelect" style="width:200px; margin:0; font-weight:bold; border:2px solid var(--primary-color);">
             <option value="emp1">موظف 1</option>
             <option value="emp2">موظف 2</option>
@@ -437,6 +555,8 @@
           </select>
           <button class="btn btn-outline" onclick="loadDataToGrid()" style="width:auto; margin:0;">📂 تحميل البيانات الحالية</button>
           <button class="btn btn-outline" onclick="togglePasteArea()" style="width:auto; margin:0;">📋 لصق بيانات جديدة</button>
+          <button class="btn btn-outline" onclick="clearGridForNewEntry()" style="width:auto; margin:0; color:#e65100; border-color:#e65100;">🧹 تفريغ الجدول (لصق)</button>
+          <button class="btn btn-outline" onclick="deleteEmployeeDataDB()" style="width:auto; margin:0; color:red; border-color:red; background:#fff5f5;">❌ حذف بيانات الموظف نهائياً</button>
         </div>
 
         <textarea id="excelPasteArea" class="excel-input" style="display:none; margin-bottom:10px;"
@@ -451,14 +571,38 @@
     </div>
 
     <div style="display:flex; gap:10px; margin-top:15px;">
-      <button class="btn" onclick="saveAllSettings()">💾 حفظ الكل (الإعدادات والبيانات)</button>
+      <button class="btn" onclick="saveSettingsAndData(false, this)">💾 حفظ (بدون إغلاق)</button>
+      <button class="btn btn-outline" onclick="saveSettingsAndData(true, this)">🚪 حفظ وإغلاق</button>
+      <button class="btn btn-outline" onclick="openAdvancedStats()">📈 إحصائيات متقدمة</button>
       <button class="btn btn-secondary" onclick="closeSettings()">إغلاق</button>
     </div>
   </div>
 </div>
 
 <!-- شاشة الأدمن (تعديل البيانات الشامل) -->
-<div class="center-screen" id="adminScreen" style="display:none; z-index:30;">
+<div class="center-screen" id="adminScreen" style="display:none; z-index:30;"> 
+
+<!-- شاشة إعدادات الموظف (تغيير كلمة المرور والواجهة) -->
+<div class="center-screen" id="employeeSettingsScreen" style="display:none; z-index:520;">
+  <div class="box" style="width:420px; max-width:95%; margin:0 auto; text-align:right;">
+    <h2 style="text-align:center;">⚙️ إعدادات الموظف</h2>
+    <div id="employeeSettingsTitle" style="text-align:center; font-weight:700; margin-bottom:8px; color:#333;"></div>
+    <div style="padding:6px 0;">
+      <label>🔐 تغيير كلمة المرور</label>
+      <input type="password" id="emp_pass_input" placeholder="أدخل كلمة مرور جديدة">
+      <label style="margin-top:10px; display:block;">🎨 واجهة خاصة</label>
+      <input type="color" id="emp_theme_input" style="height:40px; padding:2px;">
+      <div style="margin-top:8px; display:flex; gap:8px;">
+        <button class="btn btn-outline" onclick="resetEmployeeTheme()" style="width:auto;">إعادة الافتراضي</button>
+        <span style="align-self:center; color:#666; font-size:13px;">(هذه الإعدادات خاصة بحسابك فقط)</span>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button class="btn" onclick="saveEmployeeSettings()">حفظ</button>
+      <button class="btn btn-secondary" onclick="closeEmployeeSettings()">إغلاق</button>
+    </div>
+  </div>
+</div>
   <div class="box box-large" style="display:flex; flex-direction:column;">
     <h2>🔧 تعديل البيانات الشامل (وضع الإكسل)</h2>
     <p style="color:#666; font-size:14px;">يمكنك نسخ البيانات من هنا ولصقها في الإكسل للتعديل، ثم إعادتها ولصقها هنا للحفظ. <br> <strong>تنبيه:</strong> الضغط على حفظ سيقوم باستبدال جميع البيانات الحالية بالبيانات الموجودة في المربع أدناه.</p>
@@ -474,6 +618,9 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -482,39 +629,96 @@
     'sb_publishable_dmZ-1l-BmDzIteU1IaSjnw_3TMkHMhw'
   );
 
+  // ===== Usage tracking (local + optional Supabase) =====
+  const pushUsageEvent = async (evt) => {
+    try {
+      const key = 'usageEvents_v1';
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      arr.push(evt);
+      localStorage.setItem(key, JSON.stringify(arr));
+
+      // محاولة إرسال إلى Supabase إن كان جدول employee_usage موجود (لا تفشل عند الخطأ)
+      try {
+        await supabase.from('employee_usage').insert(evt);
+      } catch (e) {
+        console.debug('Supabase insert for usage event failed or table missing:', e?.message || e);
+      }
+    } catch (e) {
+      console.error('Failed to record usage event locally:', e);
+    }
+  };
+
+  // سجل بداية الجلسة عند دخول الموظف
+  const recordLogin = (employee) => {
+    const now = Date.now();
+    sessionStorage.setItem('loginStart_' + employee, now);
+    pushUsageEvent({ employee, type: 'login', ts: new Date().toISOString() });
+  };
+
+  // عند الخروج احسب مدة الجلسة
+  const recordLogout = (employee) => {
+    try {
+      const start = parseInt(sessionStorage.getItem('loginStart_' + employee));
+      if (start && !isNaN(start)) {
+        const end = Date.now();
+        const duration = Math.max(0, end - start);
+        pushUsageEvent({ employee, type: 'session', start: new Date(start).toISOString(), end: new Date(end).toISOString(), duration_ms: duration });
+        sessionStorage.removeItem('loginStart_' + employee);
+      } else {
+        // Push a simple logout record
+        pushUsageEvent({ employee, type: 'logout', ts: new Date().toISOString() });
+      }
+    } catch (e) { console.error(e); }
+  };
+
   let currentEmployee = "";
   let currentParentId = null; // ID of selected parent in DB
   let currentParentPhone = "";
+  let currentParentIdentity = "";
 
   // الإعدادات الافتراضية
   let appConfig = {
     theme: '#1976d2',
     paymentUrl: 'https://google.com',
     passwords: { emp1: '', emp2: '', emp3: '', emp4: '' },
-    statusOptions: "مشغول,لم يرد,مع الراتب الجديد,مع الفصل الدراسي القادم,تم السداد"
+    employeeNames: { emp1: 'موظف 1', emp2: 'موظف 2', emp3: 'موظف 3', emp4: 'موظف 4' },
+    employeeThemes: {},
+    statusOptions: "مشغول\nلم يرد\nمع الراتب الجديد\nمع الفصل الدراسي القادم\nتم السداد"
   };
 
   // تحميل الإعدادات عند البدء
   function loadSettings() {
     const saved = localStorage.getItem('appConfig');
     if (saved) {
-      appConfig = JSON.parse(saved);
+      try {
+        const parsed = JSON.parse(saved);
+        // Merge defaults to avoid missing keys
+        appConfig = Object.assign({}, appConfig, parsed);
+        appConfig.passwords = Object.assign({}, appConfig.passwords || {}, parsed.passwords || {});
+        appConfig.employeeNames = Object.assign({ emp1: 'موظف 1', emp2: 'موظف 2', emp3: 'موظف 3', emp4: 'موظف 4' }, appConfig.employeeNames || {}, (parsed.employeeNames || {}));
+        appConfig.employeeThemes = Object.assign({}, appConfig.employeeThemes || {}, parsed.employeeThemes || {});
+      } catch (e) { console.error('Failed to parse saved appConfig', e); }
     }
     applyTheme();
     renderEmployeeButtons();
   }
 
   function applyTheme() {
-    document.documentElement.style.setProperty('--primary-color', appConfig.theme);
+    const empTheme = (currentEmployee && appConfig.employeeThemes && appConfig.employeeThemes[currentEmployee]);
+    document.documentElement.style.setProperty('--primary-color', empTheme || appConfig.theme);
+  }
+
+  function getEmployeeLabel(emp) {
+    return (appConfig.employeeNames && appConfig.employeeNames[emp]) || emp;
   }
 
   function renderEmployeeButtons() {
     const container = document.getElementById('employeeButtons');
     container.innerHTML = '';
-    ['emp1', 'emp2', 'emp3', 'emp4'].forEach((emp, index) => {
+    ['emp1', 'emp2', 'emp3', 'emp4'].forEach((emp) => {
       const btn = document.createElement('button');
       btn.className = 'btn';
-      btn.innerText = `👤 موظف ${index + 1}`;
+      btn.innerText = `👤 ${getEmployeeLabel(emp)}`;
       btn.onclick = () => checkPasswordAndLogin(emp);
       container.appendChild(btn);
     });
@@ -530,13 +734,17 @@
       }
     }
     showDataForEmployee(emp);
+    // سجل دخول الموظف لاستخدام التقارير المتقدمة
+    try { recordLogin(emp); } catch (e) { console.error(e); }
   };
 
   // عرض بيانات الموظف
   window.showDataForEmployee = async (employee) => {
     currentEmployee = employee;
+    applyTheme();
+
     document.getElementById("employeeName").innerText =
-      "لوحة تحكم - " + (employee === 'emp1' ? 'موظف 1' : employee);
+      "لوحة تحكم - " + getEmployeeLabel(employee);
 
     const { data, error } = await supabase
       .from("parents")
@@ -587,6 +795,7 @@
     // Set Data
     currentParentId = data.id; // Assuming Supabase has an 'id' column automatically or we use another unique key
     currentParentPhone = data.phone;
+    currentParentIdentity = data.identity_no;
 
     // Generate QR Code (Using a public API for simplicity)
     const qrContainer = document.getElementById('qrCodeContainer');
@@ -618,11 +827,8 @@
     // Populate Status Dropdown
     const statusSelect = document.getElementById('callStatusSelect');
     statusSelect.innerHTML = '<option value="">-- اختر الحالة --</option>';
-    const options = appConfig.statusOptions.split(',');
-    options.forEach(opt => {
-      const cleanOpt = opt.trim();
-      if(cleanOpt) statusSelect.innerHTML += `<option value="${cleanOpt}">${cleanOpt}</option>`;
-    });
+    const options = appConfig.statusOptions.split(/\r?\n|,/).map(s=>s.trim()).filter(Boolean);
+    options.forEach(opt => { statusSelect.innerHTML += `<option value="${opt}">${opt}</option>`; });
     statusSelect.value = data.last_call_status || "";
 
     // Date
@@ -669,20 +875,40 @@
     closeSidebar();
     document.getElementById("dashboardScreen").style.display = "none";
     document.getElementById("employeeScreen").style.display = "flex";
+    try { recordLogout(currentEmployee); } catch (e) { console.error(e); }
   };
 
-  window.openSettings = () => {
-    // Populate fields
-    document.getElementById('themeColor').value = appConfig.theme;
-    document.getElementById('paymentUrlSetting').value = appConfig.paymentUrl;
-    document.getElementById('pass_emp1').value = appConfig.passwords.emp1;
-    document.getElementById('pass_emp2').value = appConfig.passwords.emp2;
-    document.getElementById('pass_emp3').value = appConfig.passwords.emp3;
-    document.getElementById('pass_emp4').value = appConfig.passwords.emp4;
-    document.getElementById('statusOptionsInput').value = appConfig.statusOptions;
-
-    document.getElementById("settingsScreen").style.display = "flex";
+  window.openSettingsAdmin = () => {
+    // show the masked admin login modal
+    document.getElementById('admin_login_input').value = '';
+    document.getElementById('adminLoginScreen').style.display = 'flex';
+    setTimeout(()=>{ try{ document.getElementById('admin_login_input').focus(); }catch(e){} }, 50);
   };
+
+  window.submitAdminLogin = () => {
+    const pass = document.getElementById('admin_login_input').value;
+    if (pass === 'admin123') {
+      document.getElementById('adminLoginScreen').style.display = 'none';
+      // Populate fields
+      document.getElementById('themeColor').value = appConfig.theme;
+      document.getElementById('paymentUrlSetting').value = appConfig.paymentUrl;
+      document.getElementById('pass_emp1').value = appConfig.passwords.emp1;
+      document.getElementById('pass_emp2').value = appConfig.passwords.emp2;
+      document.getElementById('pass_emp3').value = appConfig.passwords.emp3;
+      document.getElementById('pass_emp4').value = appConfig.passwords.emp4;
+      document.getElementById('statusOptionsInput').value = appConfig.statusOptions;
+      document.getElementById('name_emp1').value = (appConfig.employeeNames && appConfig.employeeNames.emp1) || 'موظف 1';
+      document.getElementById('name_emp2').value = (appConfig.employeeNames && appConfig.employeeNames.emp2) || 'موظف 2';
+      document.getElementById('name_emp3').value = (appConfig.employeeNames && appConfig.employeeNames.emp3) || 'موظف 3';
+      document.getElementById('name_emp4').value = (appConfig.employeeNames && appConfig.employeeNames.emp4) || 'موظف 4';
+
+      document.getElementById("settingsScreen").style.display = "flex";
+    } else {
+      alert('كلمة المرور غير صحيحة ❌');
+    }
+  };
+
+  window.closeAdminLogin = () => { document.getElementById('adminLoginScreen').style.display = 'none'; }; 
 
   window.closeSettings = () => {
     document.getElementById("settingsScreen").style.display = "none";
@@ -696,12 +922,50 @@
     appConfig.passwords.emp3 = document.getElementById('pass_emp3').value;
     appConfig.passwords.emp4 = document.getElementById('pass_emp4').value;
     appConfig.statusOptions = document.getElementById('statusOptionsInput').value;
+    appConfig.employeeNames = {
+      emp1: document.getElementById('name_emp1').value || 'موظف 1',
+      emp2: document.getElementById('name_emp2').value || 'موظف 2',
+      emp3: document.getElementById('name_emp3').value || 'موظف 3',
+      emp4: document.getElementById('name_emp4').value || 'موظف 4'
+    };
 
     localStorage.setItem('appConfig', JSON.stringify(appConfig));
     applyTheme();
-    alert("تم حفظ الإعدادات بنجاح ✅");
-    closeSettings();
+    renderEmployeeButtons();
   };
+
+  // إعدادات الموظف (تغيير كلمة المرور والواجهة الشخصية)
+  window.openEmployeeSettings = () => {
+    if (!currentEmployee) return alert("الرجاء تسجيل الدخول أولاً");
+    document.getElementById('employeeSettingsTitle').innerText = getEmployeeLabel(currentEmployee);
+    document.getElementById('emp_pass_input').value = appConfig.passwords[currentEmployee] || '';
+    document.getElementById('emp_theme_input').value = (appConfig.employeeThemes && appConfig.employeeThemes[currentEmployee]) || appConfig.theme;
+    document.getElementById('employeeSettingsScreen').style.display = 'flex';
+  };
+
+  window.saveEmployeeSettings = () => {
+    if (!currentEmployee) return alert("الرجاء تسجيل الدخول أولاً");
+    const pass = document.getElementById('emp_pass_input').value;
+    const theme = document.getElementById('emp_theme_input').value;
+    appConfig.passwords[currentEmployee] = pass;
+    appConfig.employeeThemes = appConfig.employeeThemes || {};
+    appConfig.employeeThemes[currentEmployee] = theme;
+    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+    applyTheme();
+    alert('تم حفظ إعدادات الموظف');
+    document.getElementById('employeeSettingsScreen').style.display = 'none';
+  };
+
+  window.resetEmployeeTheme = () => {
+    if (!currentEmployee) return;
+    if (appConfig.employeeThemes) delete appConfig.employeeThemes[currentEmployee];
+    document.getElementById('emp_theme_input').value = appConfig.theme;
+    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+    applyTheme();
+    alert('تمت إعادة الواجهة إلى الافتراضي');
+  };
+
+  window.closeEmployeeSettings = () => { document.getElementById('employeeSettingsScreen').style.display = 'none'; }; 
 
   window.openWhatsApp = () => {
     if (!currentParentPhone) return alert("لا يوجد رقم جوال");
@@ -712,15 +976,585 @@
   };
 
   window.openPayment = () => {
-    window.open(appConfig.paymentUrl, '_blank');
+    if (!currentParentIdentity) return alert("لا يوجد رقم هوية لولي الأمر");
+    window.open(`https://ncle-sms.com/Payment/?id=${currentParentIdentity}`, '_blank');
   };
 
   // --- منطق الجدول التفاعلي في الإعدادات ---
+
+  // ===== إحصائيات بسيطة ومتقدمة (واجهة) =====
+  function formatCurrency(v) {
+    return Number(v || 0).toLocaleString('en-US');
+  }
+
+  window.openStats = async () => {
+    // اجلب جميع أولياء الأمور واحتسب مؤشرات لكل موظف
+    const { data, error } = await supabase.from('parents').select('*');
+    if (error) { alert('خطأ في جلب البيانات للإحصائيات: ' + error.message); console.error(error); return; }
+
+    const byEmp = {};
+    // Ensure we include all known employees even if they have zero records
+    const knownEmps = Object.keys(appConfig.employeeNames || {});
+    knownEmps.forEach(e => { byEmp[e] = { count:0, sum_final:0, sum_carried:0, debtors:0 }; });
+
+    (data || []).forEach(r => {
+      const emp = r.employee || 'emp1';
+      if (!byEmp[emp]) byEmp[emp] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0 };
+      byEmp[emp].count += 1;
+      byEmp[emp].sum_final += Number(r.final_balance || 0);
+      byEmp[emp].sum_carried += Number(r.carried_balance || 0);
+      if ((r.final_balance || 0) > 0) byEmp[emp].debtors += 1;
+    });
+
+    // أنشئ شاشة عرض مبسطة
+    const html = ['<div style="padding:10px; max-height:70vh; overflow:auto;">',
+      '<h3 style="text-align:center;">إحصائيات الموظفين - ملخص</h3>',
+      '<div class="controls" style="justify-content:center;">',
+        '<select id="statsChartType"><option value="bar">أعمدة</option><option value="pie">دائري</option><option value="doughnut">دونات</option><option value="line">خطي</option></select>',
+        '<button onclick="renderStatsTable()" class="btn">تحديث</button>',
+        '<button class="btn" onclick="saveStatsPDF(\'statsScreen\')">حفظ كـ PDF</button>',
+      '</div>',
+      '<canvas id="statsChart" style="max-width:100%; height:300px;"></canvas>',
+      '<div id="statsTable" style="margin-top:10px;"></div>',
+      '<div style="text-align:center; margin-top:10px;"><button class="btn btn-secondary" onclick="closeStats()">إغلاق</button></div>',
+      '</div>'].join('');
+
+    // عرض كصندوق مركزي
+    const screen = document.createElement('div');
+    screen.className = 'center-screen';
+    screen.id = 'statsScreen';
+    screen.style.zIndex = 520;
+    // استخدم class stats-box لتحسين النمط
+    screen.innerHTML = `<div class="box box-large stats-box">${html}</div>`;
+    document.body.appendChild(screen);
+
+    // render table & chart
+    window.renderStatsTable = () => {
+      const labelsIds = Object.keys(byEmp);
+      const labels = labelsIds.map(id => getEmployeeLabel(id));
+      const totals = labelsIds.map(k => byEmp[k].sum_final);
+
+      const tableHtml = ['<table class="excel-preview-table"><thead><tr><th>الموظف</th><th>عدد السجلات</th><th>مجموع النهائي</th><th>مجموع المدور</th><th>المدينون</th></tr></thead><tbody>'];
+      labelsIds.forEach(k => {
+        tableHtml.push(`<tr><td>${getEmployeeLabel(k)}</td><td>${byEmp[k].count}</td><td>${formatCurrency(byEmp[k].sum_final)}</td><td>${formatCurrency(byEmp[k].sum_carried)}</td><td>${byEmp[k].debtors}</td></tr>`);
+      });
+      tableHtml.push('</tbody></table>');
+      document.getElementById('statsTable').innerHTML = tableHtml.join('');
+
+      // Chart
+      try {
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        if (window._statsChart) window._statsChart.destroy();
+        const selectedType = document.getElementById('statsChartType')?.value || 'bar';
+        window._statsChart = new Chart(ctx, {
+            type: selectedType,
+            data: { labels, datasets: [{ label: 'مجموع الرصيد النهائي', data: totals, backgroundColor: ['#1976d2','#43a047','#fbc02d','#e64a19'] }] },
+            options: { 
+              responsive:true, 
+              plugins:{
+                legend:{display:selectedType==='pie'||selectedType==='doughnut'},
+                title:{display:true,text:'مقارنة مجموع الرصيد النهائي بين الموظفين', font:{size:18, weight:'600'}, color:'#333'}
+              },
+              scales: selectedType === 'pie' || selectedType === 'doughnut' ? {} : {
+                y:{beginAtZero:true, ticks:{font:{size:14}, color:'#333'}},
+                x:{ticks:{font:{size:14}, color:'#333'}}
+              }
+            }
+          });
+      } catch(e){ console.error('Chart render failed', e); }
+    };
+
+    renderStatsTable();
+  };
+
+  window.closeStats = () => {
+    const s = document.getElementById('statsScreen');
+    if (s) s.remove();
+  };
+
+  window.openAdvancedStats = async () => {
+    // جلب جميع البيانات
+    const { data, error } = await supabase.from('parents').select('*');
+    if (error) { alert('خطأ في جلب البيانات: ' + error.message); console.error(error); return; }
+
+    const usage = JSON.parse(localStorage.getItem('usageEvents_v1') || '[]');
+
+    // متغيرات لتخزين الحالة
+    let selectedDateRange = 'all'; // all, today, week, month, custom
+    let customStartDate = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+    let customEndDate = new Date().toISOString().split('T')[0];
+    let currentChartType = 'bar'; // Default chart type
+
+    // دالة لتصفية البيانات حسب التاريخ
+    const filterDataByDate = (allData) => {
+      if (selectedDateRange === 'all') return allData;
+      
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch(selectedDateRange) {
+        case 'today':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'week':
+          startDate.setDate(now.getDate() - now.getDay());
+          break;
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case 'custom':
+          startDate = new Date(customStartDate);
+          break;
+        default:
+          return allData;
+      }
+      
+      return (allData || []).filter(r => {
+        const rDate = new Date(r.created_at || r.updated_at || 0);
+        return rDate >= startDate && rDate <= new Date(customEndDate + 'T23:59:59');
+      });
+    };
+
+    // دالة تحديث الإحصائيات الرئيسية
+    const updateAdvancedStats = () => {
+      const filteredData = filterDataByDate(data);
+      const byEmp = {};
+      const knownEmps = Object.keys(appConfig.employeeNames || {});
+      knownEmps.forEach(e => { 
+        byEmp[e] = { count:0, sum_final:0, sum_carried:0, debtors:0, sessions:0, duration_ms:0, avg_final:0, max_final:0, min_final:0 }; 
+      });
+
+      // معالجة بيانات الآباء
+      filteredData.forEach(r => {
+        const emp = r.employee || 'emp1';
+        if (!byEmp[emp]) byEmp[emp] = { count:0, sum_final:0, sum_carried:0, debtors:0, sessions:0, duration_ms:0, avg_final:0, max_final:0, min_final:0 };
+        byEmp[emp].count += 1;
+        const finalBal = Number(r.final_balance || 0);
+        byEmp[emp].sum_final += finalBal;
+        byEmp[emp].sum_carried += Number(r.carried_balance || 0);
+        byEmp[emp].max_final = Math.max(byEmp[emp].max_final || 0, finalBal);
+        byEmp[emp].min_final = byEmp[emp].min_final === 0 ? finalBal : Math.min(byEmp[emp].min_final, finalBal);
+        if (finalBal > 0) byEmp[emp].debtors += 1;
+      });
+
+      // معالجة بيانات الاستخدام (تطبيق نفس الفلتر الزمني)
+      const filteredUsage = filterDataByDate(usage);
+      filteredUsage.forEach(u => {
+        const emp = u.employee || 'emp1';
+        if (!byEmp[emp]) byEmp[emp] = { count:0, sum_final:0, sum_carried:0, debtors:0, sessions:0, duration_ms:0, avg_final:0, max_final:0, min_final:0 };
+        if (u.type === 'session') {
+          const dur = Math.min(Number(u.duration_ms) || 0, 1000*60*60*24);
+          if (dur > 0) {
+            byEmp[emp].sessions = (byEmp[emp].sessions||0)+1;
+            byEmp[emp].duration_ms = (byEmp[emp].duration_ms||0) + dur;
+          }
+        }
+      });
+
+      // حساب المتوسطات
+      Object.keys(byEmp).forEach(k => {
+        byEmp[k].avg_final = byEmp[k].count > 0 ? Math.round(byEmp[k].sum_final / byEmp[k].count * 100) / 100 : 0;
+      });
+
+      // الحصول على الإجماليات
+      const labelsIds = Object.keys(byEmp);
+      const labels = labelsIds.map(id => getEmployeeLabel(id));
+      const totals = labelsIds.map(k => byEmp[k].sum_final);
+      const avgs = labelsIds.map(k => byEmp[k].avg_final);
+      const counts = labelsIds.map(k => byEmp[k].count);
+      const sessions = labelsIds.map(k => byEmp[k].sessions);
+      const debtors = labelsIds.map(k => byEmp[k].debtors);
+
+      // حساب الإجمالي العام (من البيانات المفلترة فقط)
+      const totalSum = Object.values(byEmp).reduce((sum, emp) => sum + (emp.sum_final || 0), 0);
+      const totalCount = Object.values(byEmp).reduce((sum, emp) => sum + (emp.count || 0), 0);
+      const totalSessions = Object.values(byEmp).reduce((sum, emp) => sum + (emp.sessions || 0), 0);
+      const totalDebtors = Object.values(byEmp).reduce((sum, emp) => sum + (emp.debtors || 0), 0);
+      const totalDuration = Object.values(byEmp).reduce((sum, emp) => sum + (emp.duration_ms || 0), 0);
+      const totalHours = Math.round((totalDuration / (1000*60*60)) * 10) / 10;
+
+      // التحقق من وجود بيانات
+      const noData = totalCount === 0 && totalSessions === 0;
+
+      // بناء الـ HTML
+      const todayStr = new Date().toISOString().split('T')[0];
+      let content = '<div style="padding: 15px; direction: rtl;">';
+      
+      // عنوان وتاريخ
+      content += '<h2 style="text-align: center; color: #1976d2; margin: 15px 0;">📊 إحصائيات متقدمة شاملة</h2>';
+      
+      // اختيار النطاق الزمني
+      content += `<div style="background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+        <strong>اختر النطاق الزمني:</strong>
+        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+          <button class="date-range-btn" data-range="today" style="padding: 8px 15px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; background: white;">📅 اليوم</button>
+          <button class="date-range-btn" data-range="week" style="padding: 8px 15px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; background: white;">📆 هذا الأسبوع</button>
+          <button class="date-range-btn" data-range="month" style="padding: 8px 15px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; background: white;">📋 هذا الشهر</button>
+          <button class="date-range-btn" data-range="all" style="padding: 8px 15px; border: 2px solid #1976d2; border-radius: 6px; cursor: pointer; background: #1976d2; color: white;">🔄 الكل</button>
+          <button id="customDateBtn" style="padding: 8px 15px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; background: white;">📍 تاريخ محدد</button>
+        </div>
+        <div id="customDatePicker" style="display: none; margin-top: 10px; padding: 10px; background: white; border-radius: 6px;">
+          <label>من: <input type="date" id="startDate" value="${customStartDate}" max="${todayStr}" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;"></label>
+          <label style="margin-right: 10px;">إلى: <input type="date" id="endDate" value="${customEndDate}" max="${todayStr}" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;"></label>
+          <button style="padding: 5px 15px; background: #43a047; color: white; border: none; border-radius: 4px; cursor: pointer;">تطبيق</button>
+        </div>
+        <div id="advDateLabel" style="margin-top:8px; font-size:14px; color:#333;"></div>
+      </div>`;
+      
+      // ملخص إحصائيات عامة (KPIs) - محسّن واحترافي
+      content += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 25px;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(102, 126, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(102, 126, 234, 0.3)';">
+          <div style="font-size: 13px; opacity: 0.9; font-weight: 600; letter-spacing: 0.5px;">💰 المجموع النهائي الكلي</div>
+          <div style="font-size: 36px; font-weight: 900; margin-top: 12px; font-family: 'Arial', sans-serif;">${formatCurrency(totalSum)}</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 16px rgba(245, 87, 108, 0.3); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(245, 87, 108, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(245, 87, 108, 0.3)';">
+          <div style="font-size: 13px; opacity: 0.9; font-weight: 600; letter-spacing: 0.5px;">📊 إجمالي السجلات</div>
+          <div style="font-size: 36px; font-weight: 900; margin-top: 12px;">${totalCount}</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 8px;">عدد جميع السجلات المضافة</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 16px rgba(79, 172, 254, 0.3); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(79, 172, 254, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(79, 172, 254, 0.3)';">
+          <div style="font-size: 13px; opacity: 0.9; font-weight: 600; letter-spacing: 0.5px;">⚠️ عدد المدينين</div>
+          <div style="font-size: 36px; font-weight: 900; margin-top: 12px;">${totalDebtors}</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 8px;">الأشخاص الذين عليهم ديون</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 16px rgba(67, 233, 123, 0.3); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(67, 233, 123, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(67, 233, 123, 0.3)';">
+          <div style="font-size: 13px; opacity: 0.9; font-weight: 600; letter-spacing: 0.5px;">⏱️ إجمالي ساعات العمل</div>
+          <div style="font-size: 36px; font-weight: 900; margin-top: 12px;">${totalHours}</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 8px;">ساعة</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 16px rgba(250, 112, 154, 0.3); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(250, 112, 154, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(250, 112, 154, 0.3)';">
+          <div style="font-size: 13px; opacity: 0.9; font-weight: 600; letter-spacing: 0.5px;">🔔 إجمالي الجلسات</div>
+          <div style="font-size: 36px; font-weight: 900; margin-top: 12px;">${totalSessions}</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 8px;">عدد الجلسات النشطة</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 16px rgba(168, 237, 234, 0.3); transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 24px rgba(168, 237, 234, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 16px rgba(168, 237, 234, 0.3)';">
+          <div style="font-size: 13px; opacity: 0.8; font-weight: 600; letter-spacing: 0.5px;">📈 متوسط القيمة</div>
+          <div style="font-size: 36px; font-weight: 900; margin-top: 12px;">${formatCurrency(totalCount > 0 ? Math.round(totalSum / totalCount * 100) / 100 : 0)}</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 8px;">متوسط الرصيد</div>
+        </div>
+      </div>`;
+
+      // عناصر التحكم بالرسوم البيانية
+      content += `<div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+        <strong>نوع الرسم البياني:</strong>
+        <div style="display:inline-flex; gap:5px; margin-right:15px; vertical-align:middle;">
+            <button class="chart-type-btn ${currentChartType==='bar'?'active':''}" data-type="bar">📊 أعمدة</button>
+            <button class="chart-type-btn ${currentChartType==='line'?'active':''}" data-type="line">📈 خطي</button>
+            <button class="chart-type-btn ${currentChartType==='pie'?'active':''}" data-type="pie">🥧 دائري</button>
+            <button class="chart-type-btn ${currentChartType==='doughnut'?'active':''}" data-type="doughnut">🍩 دونات</button>
+            <button class="chart-type-btn ${currentChartType==='radar'?'active':''}" data-type="radar">📡 رادار</button>
+        </div>
+
+        <select id="chartDataType" style="padding: 8px 12px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+          <option value="sum">المجموع النهائي</option>
+          <option value="avg">المتوسط</option>
+          <option value="count">عدد السجلات</option>
+          <option value="debtors">المدينون</option>
+        </select>
+        <button onclick="renderAdvCharts()" class="btn" style="padding: 8px 15px; display: inline-block; width: auto;">🔄 تحديث الرسم</button>
+      </div>`;
+
+      // جداول الإحصائيات
+      content += `<h3 style="color: #1976d2; margin-top: 20px; font-size: 20px; font-weight: 700;">📋 جدول تفصيلي للإحصائيات</h3>
+        <table class="excel-preview-table" style="width: 100%; margin-bottom: 20px;">
+          <thead>
+            <tr style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white;">
+              <th style="font-size: 16px;">الموظف</th>
+              <th style="font-size: 16px;">السجلات</th>
+              <th style="font-size: 16px;">المجموع النهائي</th>
+              <th style="font-size: 16px;">المتوسط</th>
+              <th style="font-size: 16px;">الحد الأقصى</th>
+              <th style="font-size: 16px;">الحد الأدنى</th>
+              <th style="font-size: 16px;">المدينون</th>
+              <th style="font-size: 16px;">الجلسات</th>
+              <th style="font-size: 16px;">الساعات</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      labelsIds.forEach(k => {
+        const hrs = Math.round(((byEmp[k].duration_ms||0) / (1000*60*60)) * 10) / 10;
+        const minVal = byEmp[k].min_final === 0 && byEmp[k].count === 0 ? 0 : byEmp[k].min_final;
+        const isDebtorRow = byEmp[k].debtors > 0;
+        content += `<tr style="${isDebtorRow ? 'background: #fff3e0;' : ''}">
+          <td style="font-weight: bold; color: #1976d2; font-size: 15px;">${getEmployeeLabel(k)}</td>
+          <td style="font-size: 15px; font-weight: 600;">${byEmp[k].count}</td>
+          <td style="color: ${byEmp[k].sum_final > 0 ? '#d32f2f' : '#43a047'}; font-weight: bold; font-size: 15px;">${formatCurrency(byEmp[k].sum_final)}</td>
+          <td style="font-size: 15px; font-weight: 600;">${formatCurrency(byEmp[k].avg_final)}</td>
+          <td style="color: #d32f2f; font-size: 15px; font-weight: 600;">${formatCurrency(byEmp[k].max_final)}</td>
+          <td style="color: #43a047; font-size: 15px; font-weight: 600;">${formatCurrency(minVal)}</td>
+          <td style="background: ${byEmp[k].debtors > 0 ? '#ffcdd2' : '#c8e6c9'}; font-weight: bold; font-size: 15px; color: #333;">${byEmp[k].debtors}</td>
+          <td style="font-size: 15px; font-weight: 600;">${byEmp[k].sessions || 0}</td>
+          <td style="font-size: 15px; font-weight: 600;">${hrs}</td>
+        </tr>`;
+      });
+      
+      content += '</tbody></table>';
+
+      // رسالة ودية عندما لا توجد بيانات
+      if (noData) {
+        content += `<div style="background: #e8f5e9; border: 2px solid #4caf50; border-radius: 8px; padding: 20px; margin: 15px 0; text-align: center; color: #2e7d32;">
+          <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">📭 لا توجد بيانات</div>
+          <div style="font-size: 14px; opacity: 0.9;">لم نجد أي سجلات أو جلسات في النطاق الزمني المحدد.</div>
+        </div>`;
+      } else if (labelsIds.length === 0) {
+        content += `<div style="background: #fff3e0; border: 2px solid #ff9800; border-radius: 8px; padding: 20px; margin: 15px 0; text-align: center; color: #e65100;">
+          <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">⚠️ تنبيه</div>
+          <div style="font-size: 14px; opacity: 0.9;">لم يتم العثور على موظفين بيانات لعرضهم. تأكد من وجود سجلات بيانات أولاً.</div>
+        </div>`;
+      }
+
+      // الرسوم البيانية
+      content += `<h3 style="color: #1976d2; margin-top: 20px; font-size: 20px; font-weight: 700;">📈 الرسوم البيانية</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+          <div>
+            <canvas id="advChart1" style="max-width: 100%;"></canvas>
+          </div>
+          <div>
+            <canvas id="advChart2" style="max-width: 100%;"></canvas>
+          </div>
+        </div>`;
+
+      content += '</div>';
+      
+      document.getElementById('advStatsContent').innerHTML = content;
+
+      // إضافة مستمعي الأحداث
+      document.querySelectorAll('.date-range-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.date-range-btn').forEach(b => b.style.borderColor = '#ddd');
+          document.querySelectorAll('.date-range-btn').forEach(b => b.style.background = 'white');
+          document.querySelectorAll('.date-range-btn').forEach(b => b.style.color = '#333');
+          btn.style.borderColor = '#1976d2';
+          btn.style.background = '#1976d2';
+          btn.style.color = 'white';
+          selectedDateRange = btn.dataset.range;
+          if (selectedDateRange !== 'custom') {
+            document.getElementById('customDatePicker').style.display = 'none';
+          }
+          updateAdvancedStats();
+        });
+      });
+
+      // مستمعي أزرار المخططات
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentChartType = btn.dataset.type;
+            renderAdvCharts();
+        });
+      });
+
+      document.getElementById('customDateBtn').addEventListener('click', () => {
+        const picker = document.getElementById('customDatePicker');
+        picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+        if (picker.style.display === 'block') {
+          selectedDateRange = 'custom';
+          document.querySelectorAll('.date-range-btn').forEach(b => {
+            b.style.borderColor = '#ddd';
+            b.style.background = 'white';
+            b.style.color = '#333';
+          });
+          document.getElementById('customDateBtn').style.borderColor = '#1976d2';
+          document.getElementById('customDateBtn').style.background = '#1976d2';
+          document.getElementById('customDateBtn').style.color = 'white';
+        }
+      });
+
+      const applyBtn = document.querySelector('#customDatePicker button');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+          customStartDate = document.getElementById('startDate').value;
+          customEndDate = document.getElementById('endDate').value;
+          document.getElementById('customDatePicker').style.display = 'none';
+          selectedDateRange = 'custom';
+          updateAdvancedStats();
+        });
+      }
+
+      // رسم الرسوم البيانية
+      window.renderAdvCharts = () => {
+        const chartType = currentChartType;
+        const dataType = document.getElementById('chartDataType')?.value || 'sum';
+        
+        let chartData = totals, label = 'المجموع النهائي';
+        if (dataType === 'avg') { chartData = avgs; label = 'المتوسط'; }
+        else if (dataType === 'count') { chartData = counts; label = 'عدد السجلات'; }
+        else if (dataType === 'debtors') { chartData = debtors; label = 'عدد المدينين'; }
+
+        // الرسم البياني الأول
+        try {
+          const ctx1 = document.getElementById('advChart1');
+          if (!ctx1) return;
+          if (window._advChart1) window._advChart1.destroy();
+          
+          const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'];
+          window._advChart1 = new Chart(ctx1, {
+            type: chartType,
+            data: { 
+              labels,
+              datasets: [{ 
+                label, 
+                data: chartData,
+                backgroundColor: colors.slice(0, labels.length),
+                borderColor: colors.slice(0, labels.length),
+                borderWidth: 2,
+                fill: chartType === 'line' ? false : true,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { display: chartType === 'pie' || chartType === 'doughnut', labels: { font: { size: 12 } } },
+                title: { display: true, text: label + ' - مقارنة الموظفين', font: { size: 14, weight: 'bold' } }
+              },
+              scales: (chartType === 'pie' || chartType === 'doughnut') ? {} : {
+                y: { beginAtZero: true, ticks: { font: { size: 11 } } },
+                x: { ticks: { font: { size: 11 } } }
+              }
+            }
+          });
+        } catch(e) { console.error('Chart 1 error:', e); }
+
+        // الرسم البياني الثاني - عرض بيانات إضافية
+        try {
+          const ctx2 = document.getElementById('advChart2');
+          if (!ctx2) return;
+          if (window._advChart2) window._advChart2.destroy();
+          
+          const colors2 = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7dc6f', '#bb8fce', '#85c1e2'];
+          const secondDataType = dataType === 'sum' ? 'count' : 'sum';
+          const secondLabel = secondDataType === 'sum' ? 'المجموع النهائي' : 'عدد السجلات';
+          const secondData = secondDataType === 'sum' ? totals : counts;
+          
+          window._advChart2 = new Chart(ctx2, {
+            type: chartType === 'pie' || chartType === 'doughnut' ? 'bar' : chartType,
+            data: {
+              labels,
+              datasets: [{
+                label: secondLabel,
+                data: secondData,
+                backgroundColor: colors2.slice(0, labels.length),
+                borderColor: colors2.slice(0, labels.length),
+                borderWidth: 2,
+                fill: chartType === 'line' ? false : true,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { display: false },
+                title: { display: true, text: secondLabel, font: { size: 14, weight: 'bold' } }
+              },
+              scales: (chartType === 'pie' || chartType === 'doughnut') ? {} : {
+                y: { beginAtZero: true, ticks: { font: { size: 11 } } },
+                x: { ticks: { font: { size: 11 } } }
+              }
+            }
+          });
+        } catch(e) { console.error('Chart 2 error:', e); }
+      };
+
+      renderAdvCharts();
+    };
+
+    // بناء الشاشة الرئيسية
+    const html = `<div style="padding: 0; direction: rtl;">
+      <div class="controls" style="background: white; padding: 15px; border-bottom: 2px solid #1976d2; justify-content: space-between;">
+        <h2 style="margin: 0; color: #1976d2;">🎯 إحصائيات متقدمة شاملة</h2>
+        <div>
+          <button class="btn" onclick="saveStatsPDF('advStatsScreen')" style="width: auto; padding: 10px 20px; margin-left: 10px;">📥 تحميل PDF</button>
+          <button class="btn btn-secondary" onclick="closeAdvancedStats()" style="width: auto; padding: 10px 20px;">✖ إغلاق</button>
+        </div>
+      </div>
+      <div id="advStatsContent" style="max-height: 65vh; overflow-y: auto;"></div>
+    </div>`;
+
+    const screen = document.createElement('div');
+    screen.className = 'center-screen';
+    screen.id = 'advStatsScreen';
+    screen.style.zIndex = 520;
+    screen.innerHTML = `<div class="box box-large stats-box" style="width: 98%; max-width: none; height: 98%; max-height: 98vh; overflow-y: auto;">${html}</div>`;
+    document.body.appendChild(screen);
+
+    // تحديث الإحصائيات في البداية
+    updateAdvancedStats();
+  };
+
+  window.closeAdvancedStats = () => { const s = document.getElementById('advStatsScreen'); if (s) s.remove(); };
+
+  // حفظ شاشة الإحصائيات كـ PDF (باستخدام html2canvas + jsPDF)
+  window.saveStatsPDF = async (screenId) => {
+    try {
+      const screen = document.getElementById(screenId);
+      if (!screen) return alert('شاشة الإحصائيات غير موجودة');
+      const box = screen.querySelector('.box') || screen;
+      
+      // حفظ الأبعاد الأصلية
+      const originalOverflow = box.style.overflow;
+      const originalHeight = box.style.height;
+      const originalMaxHeight = box.style.maxHeight;
+
+      // توسيع الصندوق ليشمل كامل المحتوى
+      box.style.overflow = 'visible';
+      box.style.height = 'auto';
+      box.style.maxHeight = 'none';
+
+      const canvas = await html2canvas(box, { scale: 1.5, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save('statistics.pdf');
+
+      // استعادة الأبعاد
+      box.style.overflow = originalOverflow;
+      box.style.height = originalHeight;
+      box.style.maxHeight = originalMaxHeight;
+    } catch (e) {
+      console.error('saveStatsPDF failed', e);
+      alert('فشل في تصدير الـ PDF');
+    }
+  };
 
   window.togglePasteArea = () => {
     const area = document.getElementById('excelPasteArea');
     area.style.display = area.style.display === 'none' ? 'block' : 'none';
     if(area.style.display === 'block') area.focus();
+  };
+
+  // دالة تفريغ الجدول لإدخال جديد
+  window.clearGridForNewEntry = () => {
+    document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#999;">تم تفريغ الجدول. يمكنك الآن لصق بيانات جديدة.</p>';
+    const pasteArea = document.getElementById('excelPasteArea');
+    pasteArea.value = '';
+    pasteArea.style.display = 'block';
+    pasteArea.focus();
+  };
+
+  // دالة حذف جميع بيانات الموظف من قاعدة البيانات
+  window.deleteEmployeeDataDB = async () => {
+    const emp = document.getElementById('importEmpSelect').value;
+    const empName = getEmployeeLabel(emp);
+    
+    if (!confirm(`⚠️ تحذير هام جداً!\n\nهل أنت متأكد من رغبتك في حذف جميع بيانات أولياء الأمور الخاصة بـ (${empName}) من قاعدة البيانات نهائياً؟\n\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+    
+    const { error } = await supabase.from('parents').delete().eq('employee', emp);
+    
+    if (error) {
+      alert('❌ حدث خطأ أثناء الحذف: ' + error.message);
+    } else {
+      alert(`✅ تم حذف جميع بيانات ${empName} بنجاح.`);
+      document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:red;">تم حذف البيانات من قاعدة البيانات.</p>';
+      document.getElementById('excelPasteArea').value = '';
+    }
   };
 
   // دالة تحويل نص رقم عربي/فارسي/لغوي إلى رقم JS صالح
@@ -831,13 +1665,13 @@
     document.getElementById('gridContainer').innerHTML = html;
   }
 
-  window.saveAllSettings = async () => {
-    // 1. حفظ الإعدادات العامة
+  window.saveSettingsAndData = async (shouldClose, btnElement) => {
+    // 1. حفظ الإعدادات العامة (بدون رسائل)
     saveAppSettings();
 
-    // 2. حفظ بيانات الجدول (الموظف المحدد)
+    // 2. حفظ بيانات الجدول
     const emp = document.getElementById('importEmpSelect').value;
-    const table = document.querySelector('.excel-preview-table tbody');
+    const table = document.querySelector('#gridContainer table tbody');
     
     // جمع البيانات الجديدة من الجدول (إن وجد)
     const newRecords = [];
@@ -863,122 +1697,43 @@
       });
     }
 
-    if(!confirm(`أنت على وشك تحديث بيانات (${emp}).\nعدد السجلات الجديدة: ${newRecords.length}\nسيتم حذف البيانات القديمة لهذا الموظف واستبدالها. هل أنت متأكد؟`)) return;
-    if(!confirm(`⚠️ تحذير هام:\nأنت على وشك استبدال بيانات (${emp}).\n- سيتم حذف جميع البيانات القديمة لهذا الموظف.\n- سيتم إضافة ${newRecords.length} سجل جديد.\n\nهل أنت متأكد من الاستمرار؟`)) return;
-
-    // التحقق من عدد السجلات الحالية لهذا الموظف أولاً (لإعطاء رسالة واضحة عند عدم وجود بيانات)
-    const { data: existingRows, error: fetchError } = await supabase
-      .from('parents')
-      .select('id')
-      .eq('employee', emp);
-
-    if (fetchError) {
-      alert('خطأ أثناء التحقق من وجود بيانات للموظف: ' + fetchError.message);
-      console.error(fetchError);
+    // حذف البيانات القديمة مباشرة (بدون رسائل تأكيد مزعجة)
+    const { error: delError } = await supabase.from('parents').delete().eq('employee', emp);
+    
+    if (delError) {
+      console.error(delError);
+      alert('❌ خطأ في حذف البيانات القديمة: ' + delError.message);
       return;
     }
 
-    const existingCount = (existingRows && existingRows.length) || 0;
-
-    // إذا لم تكن هناك سجلات موجودة، فقط نقوم بالإدخال الجديد أو إظهار رسالة
-    if (existingCount === 0) {
-      if (newRecords.length === 0) {
-        alert(`لم تكن هناك بيانات سابقة لـ ${emp}، ولا توجد سجلات جديدة للحفظ.`);
-        await loadDataToGrid();
-        return;
-      }
-      // لا حاجة للحذف، ننتقل مباشرة للإدخال
-    } else {
-      // قم بالحذف واطلب القيم المحذوفة للتأكد
-      // أولاً: جلب مزيد من معلومات الصفوف الحالية للتشخيص
-      const { data: sampleRows, error: sampleError } = await supabase
-        .from('parents')
-        .select('id, employee, parent_name, serial_no')
-        .eq('employee', emp)
-        .limit(10);
-
-      if (sampleError) console.error('خطأ في جلب عينة لصفوف الموظف:', sampleError);
-      else console.log('عينة من صفوف الموظف قبل الحذف:', sampleRows);
-
-      const { data: deletedRows, error: delError } = await supabase
-        .from('parents')
-        .delete()
-        .eq('employee', emp)
-        .select('*');
-
-      if (delError) {
-        alert('❌ فشل في حذف البيانات القديمة! لم يتم المتابعة.\nالخطأ: ' + delError.message);
-        console.error(delError);
-        return;
-      }
-
-      // إذا لم يتم حذف أي صفوف رغم أن هناك سجلات، نجرب حذفها بالمعرّفات كخطة احتياطية
-      if (!deletedRows || deletedRows.length === 0) {
-        console.warn('محاولة حذف بواسطة employee لم تزل سجلات، نجرب حذفها بواسطة المعرفات (ids).', { existingCount, sampleRows, deletedRows });
-
-        // جمع المعرفات (ids) من العينة أو الاستعلام الكامل
-        const { data: allRows, error: allError } = await supabase
-          .from('parents')
-          .select('id')
-          .eq('employee', emp);
-
-        if (allError) {
-          alert('خطأ أثناء جلب المعرفات للحذف الاحتياطي: ' + allError.message);
-          console.error(allError);
-          await loadDataToGrid();
-          return;
-        }
-
-        const ids = (allRows || []).map(r => r.id).filter(Boolean);
-        if (ids.length === 0) {
-          alert('لم يتم العثور على سجلات للحذف (محتمل أن يكون هناك مشكلة في قيمة "employee" أو صلاحيات الوصول).');
-          await loadDataToGrid();
-          return;
-        }
-
-        // محاولة الحذف بواسطة ids
-        const { data: deletedByIds, error: delByIdsError } = await supabase
-          .from('parents')
-          .delete()
-          .in('id', ids)
-          .select('*');
-
-        if (delByIdsError) {
-          alert('فشل الحذف بالمعرفات: ' + delByIdsError.message + '\nقد تكون هناك قيود وصول (RLS) أو مفاتيح غير صالحة.');
-          console.error(delByIdsError);
-          await loadDataToGrid();
-          return;
-        }
-
-        if (!deletedByIds || deletedByIds.length === 0) {
-          alert('تحذير: حاولنا الحذف بطرق متعددة لكن لم تتم إزالة أي سجلات. راجع سياسات الأمان في Supabase (RLS) أو استخدم مفتاح خدمة آمن للخادم للحذف.');
-          console.warn('فشل حذف السجلات بعد المحاولة بالمعرفات.', { ids, deletedByIds });
-          await loadDataToGrid();
-          return;
-        }
-
-        // إذا نجحت الحذف الاحتياطي
-        console.log('تم الحذف بنجاح بواسطة ids:', deletedByIds.length);
-      }
-    }
-
-    // الآن إدخال البيانات الجديدة (إن وجدت)
+    // إدخال البيانات الجديدة
     if (newRecords.length > 0) {
-      const { error } = await supabase.from('parents').insert(newRecords);
-      if (error) {
-        alert('حدث خطأ أثناء حفظ البيانات: ' + error.message);
-        console.error(error);
-      } else {
-        alert(`تم تحديث بيانات ${emp} بنجاح (${newRecords.length} سجل) ✅`);
-        document.getElementById('gridContainer').innerHTML = '';
+      const { error: insError } = await supabase.from('parents').insert(newRecords);
+      if (insError) {
+        console.error(insError);
+        alert('❌ خطأ في حفظ البيانات الجديدة: ' + insError.message);
+        return;
       }
-    } else if (existingCount > 0) {
-      // تم حذف السجلات ولم يتم إدخال جديد
-      alert(`تم مسح جميع بيانات ${emp} بنجاح (الجدول فارغ) ✅`);
     }
 
-    // إعادة تحميل البيانات للتأكد من أن الواجهة تعكس حالة قاعدة البيانات الآن
-    await loadDataToGrid();
+    // التعامل مع الإغلاق أو التحديث
+    if (shouldClose) {
+      closeSettings();
+    } else {
+      // تحديث الزر ليعطي إشارة نجاح مؤقتة
+      if(btnElement) {
+        const originalText = btnElement.innerText;
+        const originalBg = btnElement.style.background;
+        btnElement.innerText = "تم الحفظ ✅";
+        btnElement.style.background = "#4caf50"; // لون أخضر
+        setTimeout(() => {
+          btnElement.innerText = originalText;
+          btnElement.style.background = originalBg;
+        }, 1500);
+      }
+      // إعادة تحميل الجدول لإظهار البيانات المحفوظة
+      await loadDataToGrid();
+    }
   };
 
   // --- وظائف الأدمن (تعديل البيانات) ---
@@ -1083,9 +1838,23 @@
     }
   };
 
+  // تحديث الجدول عند تغيير الموظف في القائمة المنسدلة
+  document.getElementById('importEmpSelect').addEventListener('change', () => {
+    loadDataToGrid();
+  });
+
   // Init
   loadSettings();
 </script>
 
 </body>
 </html>
+
+<!-- Developer credit (top-right small) -->
+<style>
+  #appFooter { position:fixed; top:8px; right:12px; background:transparent; color:#666; padding:6px 10px; text-align:right; font-weight:600; font-size:12px; border-radius:6px; z-index:400; }
+  #appFooter a { color:#1976d2; font-weight:600; text-decoration:none; }
+  @media (max-width:600px){ #appFooter { font-size:11px; top:6px; right:8px; } }
+</style>
+<div id="appFooter">تطوير وتصميم: <span style="font-weight:700;color:#333;">أ. أحمد حبيب الله</span> · <a href="mailto:designissue@gmail.com">designissue@gmail.com</a></div>
+iv>
