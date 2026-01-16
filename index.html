@@ -226,6 +226,26 @@
       align-items: center;
     }
 
+    /* القائمة الجانبية اليمنى (History) */
+    .sidebar-right {
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: var(--sidebar-width);
+      background: white;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+      transform: translateX(100%); /* مخفية لليمين */
+      transition: transform 0.3s ease;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-right.active {
+      transform: translateX(0);
+    }
+
     .sidebar-content {
       padding: 20px;
       overflow-y: auto;
@@ -237,6 +257,15 @@
       background: #f8f9fa;
       padding: 10px;
       border-radius: 8px;
+    }
+    
+    .sidebar-right .sidebar-header {
+      padding: 20px;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .info-label {
@@ -251,8 +280,8 @@
     }
 
     .action-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 10px;
       margin-top: 20px;
     }
@@ -453,7 +482,8 @@
       <!-- QR Code -->
       <div id="qrCodeContainer" class="qr-container"></div>
 
-      <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+      <hr style="border:0; border-top:1px solid #eee; margin:20px 0 10px;">
+      <h3 style="color: var(--primary-color); margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">الاتصال الحالي</h3>
 
       <label class="info-label">عدد مرات الاتصال</label>
       <input type="number" id="callCountInput" placeholder="0">
@@ -470,14 +500,29 @@
       <button class="btn" onclick="saveParentInteraction()">💾 حفظ التعديلات</button>
 
       <div class="action-buttons">
-        <button class="btn" style="background:#25D366;" onclick="openWhatsApp()">
-          📱 واتساب
-        </button>
-        <button class="btn" style="background:#ff9800;" onclick="openPayment()">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="btn" style="background:#25D366; flex: 1; margin-bottom:0;" onclick="openWhatsApp()">
+            📱 واتساب
+          </button>
+          <div style="display: flex; align-items: center; background: #f8f9fa; padding: 0 10px; border-radius: 8px; height: 60px; border: 1px solid #ccc;">
+            <input type="checkbox" id="whatsappSentCheckbox" style="width: 20px; height: 20px; margin: 0;">
+            <label for="whatsappSentCheckbox" style="margin-right: 8px; font-size: 14px; cursor: pointer; white-space: nowrap;">تم الإرسال</label>
+          </div>
+        </div>
+        <button class="btn" style="background:#ff9800; margin-bottom:0;" onclick="openPayment()">
           💳 دفع إلكتروني
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- القائمة الجانبية اليمنى (سجل آخر اتصال) -->
+  <div class="sidebar-right" id="historySidebar">
+    <div class="sidebar-header">
+      <span>سجل آخر اتصال</span>
+      <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+    </div>
+    <div class="sidebar-content" id="historyInfo"></div>
   </div>
 
 </div>
@@ -555,7 +600,6 @@
           </select>
           <button class="btn btn-outline" onclick="loadDataToGrid()" style="width:auto; margin:0;">📂 تحميل البيانات الحالية</button>
           <button class="btn btn-outline" onclick="togglePasteArea()" style="width:auto; margin:0;">📋 لصق بيانات جديدة</button>
-          <button class="btn btn-outline" onclick="clearGridForNewEntry()" style="width:auto; margin:0; color:#e65100; border-color:#e65100;">🧹 تفريغ الجدول (لصق)</button>
           <button class="btn btn-outline" onclick="deleteEmployeeDataDB()" style="width:auto; margin:0; color:red; border-color:red; background:#fff5f5;">❌ حذف بيانات الموظف نهائياً</button>
         </div>
 
@@ -631,39 +675,33 @@
 
   // ===== Usage tracking (local + optional Supabase) =====
   const pushUsageEvent = async (evt) => {
+    // إرسال مباشر لقاعدة البيانات دون تخزين محلي
     try {
-      const key = 'usageEvents_v1';
-      const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      arr.push(evt);
-      localStorage.setItem(key, JSON.stringify(arr));
-
-      // محاولة إرسال إلى Supabase إن كان جدول employee_usage موجود (لا تفشل عند الخطأ)
-      try {
-        await supabase.from('employee_usage').insert(evt);
-      } catch (e) {
-        console.debug('Supabase insert for usage event failed or table missing:', e?.message || e);
-      }
+      await supabase.from('employee_usage').insert(evt);
     } catch (e) {
-      console.error('Failed to record usage event locally:', e);
+      console.debug('Supabase insert for usage event failed:', e?.message || e);
     }
   };
+
+  // تتبع الجلسات في الذاكرة بدلاً من sessionStorage
+  const sessionStartTimes = {};
 
   // سجل بداية الجلسة عند دخول الموظف
   const recordLogin = (employee) => {
     const now = Date.now();
-    sessionStorage.setItem('loginStart_' + employee, now);
+    sessionStartTimes[employee] = now;
     pushUsageEvent({ employee, type: 'login', ts: new Date().toISOString() });
   };
 
   // عند الخروج احسب مدة الجلسة
   const recordLogout = (employee) => {
     try {
-      const start = parseInt(sessionStorage.getItem('loginStart_' + employee));
-      if (start && !isNaN(start)) {
+      const start = sessionStartTimes[employee];
+      if (start) {
         const end = Date.now();
         const duration = Math.max(0, end - start);
         pushUsageEvent({ employee, type: 'session', start: new Date(start).toISOString(), end: new Date(end).toISOString(), duration_ms: duration });
-        sessionStorage.removeItem('loginStart_' + employee);
+        delete sessionStartTimes[employee];
       } else {
         // Push a simple logout record
         pushUsageEvent({ employee, type: 'logout', ts: new Date().toISOString() });
@@ -686,19 +724,25 @@
     statusOptions: "مشغول\nلم يرد\nمع الراتب الجديد\nمع الفصل الدراسي القادم\nتم السداد"
   };
 
-  // تحميل الإعدادات عند البدء
-  function loadSettings() {
-    const saved = localStorage.getItem('appConfig');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Merge defaults to avoid missing keys
+  // دالة مساعدة لحفظ الإعدادات في قاعدة البيانات
+  async function saveConfigToDB() {
+    const { error } = await supabase.from('app_config').upsert({ id: 1, config: appConfig });
+    if (error) console.error('Error saving settings to DB', error);
+  }
+
+  // تحميل الإعدادات عند البدء من قاعدة البيانات
+  async function loadSettings() {
+    try {
+      const { data, error } = await supabase.from('app_config').select('config').eq('id', 1).single();
+      if (data && data.config) {
+        const parsed = data.config;
         appConfig = Object.assign({}, appConfig, parsed);
         appConfig.passwords = Object.assign({}, appConfig.passwords || {}, parsed.passwords || {});
         appConfig.employeeNames = Object.assign({ emp1: 'موظف 1', emp2: 'موظف 2', emp3: 'موظف 3', emp4: 'موظف 4' }, appConfig.employeeNames || {}, (parsed.employeeNames || {}));
         appConfig.employeeThemes = Object.assign({}, appConfig.employeeThemes || {}, parsed.employeeThemes || {});
-      } catch (e) { console.error('Failed to parse saved appConfig', e); }
-    }
+      }
+    } catch (e) { console.error('Failed to load appConfig from DB', e); }
+
     applyTheme();
     renderEmployeeButtons();
   }
@@ -808,15 +852,39 @@
     
     // Populate Sidebar
     const infoDiv = document.getElementById('sidebarInfo');
+    const formatLtr = (val) => `<span class="num-cell">${val}</span>`;
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'غير محدد';
+      try {
+        return new Date(dateStr).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+      } catch(e) { return 'تاريخ غير صالح'; }
+    };
+
+    // التحقق من وجود سجل اتصال سابق (لتجنب عرض تاريخ التحديث عند عدم وجود اتصال)
+    // نعتبر أن هناك سجل إذا كان هناك حالة اتصال مسجلة أو عدد اتصالات أكبر من 0 أو ملاحظات
+    const hasHistory = (data.last_call_status && data.last_call_status.trim() !== "") || (data.call_count > 0) || (data.notes && data.notes.trim() !== "");
+
+    // تعبئة القائمة اليمنى (سجل آخر اتصال)
+    const historyDiv = document.getElementById('historyInfo');
+    historyDiv.innerHTML = `
+      <h3 style="color: var(--primary-color); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات آخر اتصال</h3>
+      <div class="info-group"><div class="info-label">تاريخ آخر اتصال</div><div class="info-value">${hasHistory ? formatDate(data.updated_at) : 'لا يوجد'}</div></div>
+      <div class="info-group"><div class="info-label">ملاحظات آخر اتصال</div><div class="info-value" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto; background:#f9f9f9; padding:8px; border-radius:4px;">${(hasHistory && data.notes) ? data.notes : 'لا يوجد'}</div></div>
+      <div class="info-group"><div class="info-label">حالة الاتصال السابق</div><div class="info-value" style="color: var(--primary-color);">${(hasHistory && data.last_call_status) ? data.last_call_status : 'لا يوجد'}</div></div>
+      <div class="info-group"><div class="info-label">موعد الاتصال القادم المتفق عليه</div><div class="info-value">${(hasHistory && data.next_call_date) ? data.next_call_date : 'لا يوجد'}</div></div>
+      <div class="info-group"><div class="info-label">تم إرسال واتساب سابقاً</div><div class="info-value">${(hasHistory && data.whatsapp_sent) ? 'نعم ✅' : 'لا ❌'}</div></div>
+    `;
+
+    // تعبئة القائمة اليسرى (بيانات ولي الأمر)
     infoDiv.innerHTML = `
-      <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name}</div></div>
-      <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${data.phone}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red">${data.final_balance}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${data.carried_balance || 0}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red">${(data.final_balance || 0).toLocaleString()}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${(data.carried_balance || 0).toLocaleString()}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; direction:ltr;">${(data.final_balance || 0).toLocaleString('en-US')}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value" style="direction:ltr;">${(data.carried_balance || 0).toLocaleString('en-US')}</div></div>
+      <h3 style="color: var(--primary-color); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات ولي الأمر</h3>
+      <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name || '-'}</div></div>
+      <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
+      <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
+      <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
+      <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
+      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${formatLtr((data.carried_balance || 0).toLocaleString('en-US'))}</div></div>
     `;
 
     // Set Inputs (Assuming columns exist, if not they will be null/undefined)
@@ -833,41 +901,53 @@
 
     // Date
     document.getElementById('nextCallDateInput').value = data.next_call_date || "";
+    document.getElementById('whatsappSentCheckbox').checked = data.whatsapp_sent || false;
 
     // Show Sidebar
     document.getElementById('detailsSidebar').classList.add('active');
+    document.getElementById('historySidebar').classList.add('active');
   };
 
   window.closeSidebar = () => {
     document.getElementById('detailsSidebar').classList.remove('active');
+    document.getElementById('historySidebar').classList.remove('active');
     document.querySelectorAll('tr').forEach(row => row.classList.remove('selected'));
   };
 
   window.saveParentInteraction = async () => {
     if (!currentParentId) return;
 
-    const calls = document.getElementById('callCountInput').value;
-    const notes = document.getElementById('notesInput').value;
-    const status = document.getElementById('callStatusSelect').value;
-    const nextDate = document.getElementById('nextCallDateInput').value;
-
-    const { error } = await supabase
-      .from('parents')
-      .update({ 
-        call_count: calls, 
-        notes: notes,
-        last_call_status: status,
-        next_call_date: nextDate || null
-      })
-      .eq('id', currentParentId); // Using internal ID is safer
-
-    if (error) {
-      alert('حدث خطأ أثناء الحفظ');
-      console.error(error);
-    } else {
-      alert('تم حفظ الملاحظات بنجاح ✅');
-      // Refresh data to keep UI in sync? Or just update local object if needed.
-      // For simplicity, we keep as is.
+    try {
+      const callsInput = document.getElementById('callCountInput').value;
+      const calls = callsInput ? parseInt(callsInput) : 0;
+      const notes = document.getElementById('notesInput').value;
+      const status = document.getElementById('callStatusSelect').value;
+      const nextDate = document.getElementById('nextCallDateInput').value;
+      const whatsappSent = document.getElementById('whatsappSentCheckbox').checked;
+  
+      const { error } = await supabase
+        .from('parents')
+        .update({ 
+          call_count: calls, 
+          notes: notes,
+          last_call_status: status,
+          next_call_date: nextDate || null,
+          whatsapp_sent: whatsappSent
+        })
+        .eq('id', currentParentId); // Using internal ID is safer
+  
+      if (error) {
+        alert('حدث خطأ أثناء الحفظ من قاعدة البيانات: ' + error.message);
+        console.error('Supabase Error:', error);
+      } else {
+        alert('تم حفظ الملاحظات بنجاح ✅');
+        closeSidebar();
+        showDataForEmployee(currentEmployee);
+      }
+    } catch (e) {
+      // خطأ في الشبكة أو الاتصال
+      console.error("Network/Fetch error:", e);
+      alert('حدث خطأ في الاتصال بالخادم.\n\nالرجاء التحقق من اتصالك بالإنترنت وحاول مرة أخرى. قد تكون هناك إضافة في متصفحك (مثل مانع الإعلانات) تمنع الاتصال.\n\nتفاصيل الخطأ: ' + e.message);
     }
   };
 
@@ -914,7 +994,7 @@
     document.getElementById("settingsScreen").style.display = "none";
   };
 
-  window.saveAppSettings = () => {
+  window.saveAppSettings = async () => {
     appConfig.theme = document.getElementById('themeColor').value;
     appConfig.paymentUrl = document.getElementById('paymentUrlSetting').value;
     appConfig.passwords.emp1 = document.getElementById('pass_emp1').value;
@@ -929,7 +1009,7 @@
       emp4: document.getElementById('name_emp4').value || 'موظف 4'
     };
 
-    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+    await saveConfigToDB();
     applyTheme();
     renderEmployeeButtons();
   };
@@ -943,24 +1023,24 @@
     document.getElementById('employeeSettingsScreen').style.display = 'flex';
   };
 
-  window.saveEmployeeSettings = () => {
+  window.saveEmployeeSettings = async () => {
     if (!currentEmployee) return alert("الرجاء تسجيل الدخول أولاً");
     const pass = document.getElementById('emp_pass_input').value;
     const theme = document.getElementById('emp_theme_input').value;
     appConfig.passwords[currentEmployee] = pass;
     appConfig.employeeThemes = appConfig.employeeThemes || {};
     appConfig.employeeThemes[currentEmployee] = theme;
-    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+    await saveConfigToDB();
     applyTheme();
     alert('تم حفظ إعدادات الموظف');
     document.getElementById('employeeSettingsScreen').style.display = 'none';
   };
 
-  window.resetEmployeeTheme = () => {
+  window.resetEmployeeTheme = async () => {
     if (!currentEmployee) return;
     if (appConfig.employeeThemes) delete appConfig.employeeThemes[currentEmployee];
     document.getElementById('emp_theme_input').value = appConfig.theme;
-    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+    await saveConfigToDB();
     applyTheme();
     alert('تمت إعادة الواجهة إلى الافتراضي');
   };
@@ -995,15 +1075,17 @@
     const byEmp = {};
     // Ensure we include all known employees even if they have zero records
     const knownEmps = Object.keys(appConfig.employeeNames || {});
-    knownEmps.forEach(e => { byEmp[e] = { count:0, sum_final:0, sum_carried:0, debtors:0 }; });
+    knownEmps.forEach(e => { byEmp[e] = { count:0, sum_final:0, sum_carried:0, debtors:0, total_calls: 0, responded: 0 }; });
 
     (data || []).forEach(r => {
       const emp = r.employee || 'emp1';
-      if (!byEmp[emp]) byEmp[emp] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0 };
+      if (!byEmp[emp]) byEmp[emp] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0, total_calls: 0, responded: 0 };
       byEmp[emp].count += 1;
       byEmp[emp].sum_final += Number(r.final_balance || 0);
       byEmp[emp].sum_carried += Number(r.carried_balance || 0);
       if ((r.final_balance || 0) > 0) byEmp[emp].debtors += 1;
+      byEmp[emp].total_calls += Number(r.call_count || 0);
+      if(r.last_call_status && r.last_call_status.trim() !== '') byEmp[emp].responded += 1;
     });
 
     // أنشئ شاشة عرض مبسطة
@@ -1034,9 +1116,9 @@
       const labels = labelsIds.map(id => getEmployeeLabel(id));
       const totals = labelsIds.map(k => byEmp[k].sum_final);
 
-      const tableHtml = ['<table class="excel-preview-table"><thead><tr><th>الموظف</th><th>عدد السجلات</th><th>مجموع النهائي</th><th>مجموع المدور</th><th>المدينون</th></tr></thead><tbody>'];
+      const tableHtml = ['<table class="excel-preview-table"><thead><tr><th>الموظف</th><th>عدد السجلات</th><th>مجموع النهائي</th><th>مجموع المدور</th><th>المدينون</th><th>إجمالي الاتصالات</th><th>عدد الردود</th></tr></thead><tbody>'];
       labelsIds.forEach(k => {
-        tableHtml.push(`<tr><td>${getEmployeeLabel(k)}</td><td>${byEmp[k].count}</td><td>${formatCurrency(byEmp[k].sum_final)}</td><td>${formatCurrency(byEmp[k].sum_carried)}</td><td>${byEmp[k].debtors}</td></tr>`);
+        tableHtml.push(`<tr><td>${getEmployeeLabel(k)}</td><td>${byEmp[k].count}</td><td>${formatCurrency(byEmp[k].sum_final)}</td><td>${formatCurrency(byEmp[k].sum_carried)}</td><td>${byEmp[k].debtors}</td><td>${byEmp[k].total_calls}</td><td>${byEmp[k].responded}</td></tr>`);
       });
       tableHtml.push('</tbody></table>');
       document.getElementById('statsTable').innerHTML = tableHtml.join('');
@@ -1077,7 +1159,9 @@
     const { data, error } = await supabase.from('parents').select('*');
     if (error) { alert('خطأ في جلب البيانات: ' + error.message); console.error(error); return; }
 
-    const usage = JSON.parse(localStorage.getItem('usageEvents_v1') || '[]');
+    // جلب بيانات الاستخدام من قاعدة البيانات بدلاً من التخزين المحلي
+    const { data: usageData, error: usageError } = await supabase.from('employee_usage').select('*');
+    const usage = usageData || [];
 
     // متغيرات لتخزين الحالة
     let selectedDateRange = 'all'; // all, today, week, month, custom
@@ -1667,7 +1751,7 @@
 
   window.saveSettingsAndData = async (shouldClose, btnElement) => {
     // 1. حفظ الإعدادات العامة (بدون رسائل)
-    saveAppSettings();
+    await saveAppSettings();
 
     // 2. حفظ بيانات الجدول
     const emp = document.getElementById('importEmpSelect').value;
