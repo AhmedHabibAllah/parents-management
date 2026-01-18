@@ -1473,6 +1473,7 @@
 
     window.loadDataToGrid = async () => {
       const emp = document.getElementById('importEmpSelect').value;
+      document.getElementById('excelPasteArea').value = '';
       document.getElementById('gridContainer').innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
 
       const { data, error } = await supabase.from("parents").select("*").eq("employee", emp).order("serial_no");
