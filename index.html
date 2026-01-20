@@ -200,6 +200,12 @@
       border-right: 4px solid var(--primary-color);
     }
 
+    /* تمييز الصفوف التي تم الاتصال بها اليوم */
+    tr.contacted-today,
+    tr.contacted-today td {
+      background-color: #d1e7dd !important; /* لون أخضر فاتح */
+    }
+
     /* القائمة الجانبية (Sidebar) */
     .sidebar {
       position: fixed;
@@ -512,6 +518,19 @@
         مدارس التربية النموذجية الروابي</h1>
       <div class="header-bar">
         <h3 id="employeeName" style="margin:0;"></h3>
+        
+        <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
+            <span style="font-size:14px; font-weight:bold;">ترتيب حسب:</span>
+            <select id="sortCriteria" onchange="applySort()" style="padding:5px; font-size:14px; margin:0; height:40px; width:auto; border-radius:8px;">
+                <option value="serial_no">🔢 التسلسل</option>
+                <option value="updated_at">📅 آخر اتصال</option>
+                <option value="parent_name">abc الاسم</option>
+                <option value="final_balance">💰 الرصيد</option>
+                <option value="call_count">📞 عدد الاتصالات</option>
+            </select>
+            <button id="sortDirectionBtn" class="btn btn-outline" onclick="toggleSortDirection()" style="width:40px; height:40px; margin:0; padding:0; display:flex; align-items:center; justify-content:center;" title="تغيير الترتيب">⬇️</button>
+        </div>
+
         <div>
           <button class="btn btn-secondary" onclick="goBack()" style="width:auto; display:inline-flex;">خروج</button>
           <button class="stat-btn" onclick="openStats()" style="width:auto; display:inline-flex; margin-right:8px;">📊
@@ -576,24 +595,27 @@
         <label class="info-label">تاريخ الاتصال القادم</label>
         <input type="date" id="nextCallDateInput">
 
-        <button class="btn" onclick="saveParentInteraction()">💾 حفظ التعديلات</button>
+        <!-- تم تعديل ترتيب الأزرار حسب الطلب -->
+        <button class="btn" style="background:#ff9800; margin-bottom:10px;" onclick="openPayment()">
+          💳 دفع إلكتروني
+        </button>
 
         <div class="action-buttons">
           <div style="display: flex; gap: 10px; align-items: center;">
-            <button class="btn" style="background:#25D366; flex: 1; margin-bottom:0;" onclick="openWhatsApp()">
+            <button class="btn" style="background:#25D366; flex: 1; margin-bottom:10px;" onclick="openWhatsApp()">
               📱 واتساب
             </button>
             <div
-              style="display: flex; align-items: center; background: #f8f9fa; padding: 0 10px; border-radius: 8px; height: 60px; border: 1px solid #ccc;">
+              style="display: flex; align-items: center; background: #f8f9fa; padding: 0 10px; border-radius: 8px; height: 60px; border: 1px solid #ccc; margin-bottom:10px;">
               <input type="checkbox" id="whatsappSentCheckbox" style="width: 20px; height: 20px; margin: 0;">
               <label for="whatsappSentCheckbox"
                 style="margin-right: 8px; font-size: 14px; cursor: pointer; white-space: nowrap;">تم الإرسال</label>
             </div>
           </div>
-          <button class="btn" style="background:#ff9800; margin-bottom:0;" onclick="openPayment()">
-            💳 دفع إلكتروني
-          </button>
         </div>
+        
+        <button class="btn" onclick="saveParentInteraction()" style="margin-bottom: 10px;">💾 حفظ التعديلات</button>
+        <button class="btn btn-outline" onclick="openFullParentDetailsModal()">📄 تفاصيل كاملة</button>
       </div>
     </div>
 
@@ -756,6 +778,28 @@
         <button class="btn btn-outline" onclick="loadAdminData()">🔄 تحديث البيانات</button>
         <button class="btn btn-secondary" onclick="closeAdminPanel()">إغلاق</button>
       </div>
+    </div>
+  </div>
+
+  <!-- شاشة التفاصيل الكاملة (Modal) -->
+  <div class="center-screen" id="fullDetailsModal" style="display:none; z-index:600;">
+    <div class="box" style="width: 600px; max-width: 95%; text-align: right;">
+      <h2 style="color:var(--primary-color); border-bottom: 2px solid #eee; padding-bottom:10px;">📄 التفاصيل الكاملة</h2>
+      <div id="fullDetailsContent" style="max-height: 60vh; overflow-y: auto; padding: 10px;">
+        <!-- سيتم تعبئة البيانات هنا -->
+      </div>
+      <div style="margin-top:20px; text-align:center;">
+        <button class="btn btn-secondary" onclick="document.getElementById('fullDetailsModal').style.display='none'">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة تفاصيل الموظف في الإحصائيات (Drill-down) -->
+  <div class="center-screen" id="statsDrillDownModal" style="display:none; z-index:650;">
+    <div class="box box-large">
+      <h2 id="drillDownTitle" style="color:var(--primary-color);">تفاصيل الاتصالات</h2>
+      <div id="drillDownContent" style="max-height: 70vh; overflow: auto;"></div>
+      <button class="btn btn-secondary" onclick="document.getElementById('statsDrillDownModal').style.display='none'" style="margin-top:15px;">إغلاق</button>
     </div>
   </div>
 
@@ -929,6 +973,52 @@
       try { recordLogin(emp); } catch (e) { console.error(e); }
     };
 
+    // متغيرات الترتيب
+    window.currentEmployeeData = [];
+    let currentSort = { field: 'serial_no', dir: 'asc' };
+
+    window.applySort = () => {
+      currentSort.field = document.getElementById('sortCriteria').value;
+      sortAndRender();
+    };
+
+    window.toggleSortDirection = () => {
+      currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      document.getElementById('sortDirectionBtn').innerText = currentSort.dir === 'asc' ? '⬇️' : '⬆️';
+      sortAndRender();
+    };
+
+    window.sortAndRender = () => {
+      if (!window.currentEmployeeData || window.currentEmployeeData.length === 0) return;
+      
+      const { field, dir } = currentSort;
+      
+      window.currentEmployeeData.sort((a, b) => {
+        let valA = a[field];
+        let valB = b[field];
+
+        if (field === 'updated_at') {
+            // التعامل مع التواريخ (القيم الفارغة تعتبر قديمة جداً)
+            valA = valA ? new Date(valA).getTime() : 0;
+            valB = valB ? new Date(valB).getTime() : 0;
+        } else if (field === 'serial_no' || field === 'final_balance' || field === 'call_count') {
+            // التعامل مع الأرقام
+            valA = Number(valA) || 0;
+            valB = Number(valB) || 0;
+        } else {
+            // التعامل مع النصوص
+            valA = (valA || '').toString().toLowerCase();
+            valB = (valB || '').toString().toLowerCase();
+        }
+
+        if (valA < valB) return dir === 'asc' ? -1 : 1;
+        if (valA > valB) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      renderParentsTable(window.currentEmployeeData);
+    };
+
     // عرض بيانات الموظف - معدل بحل المشكلة
     window.showDataForEmployee = async (employee) => {
       console.log(`جلب بيانات للموظف: ${employee}`);
@@ -994,23 +1084,14 @@
           const intMap = {};
           interactions.forEach(i => intMap[i.parent_code] = i);
 
-          data.forEach(p => {
+          // دمج البيانات وحفظها
+          window.currentEmployeeData = data.map(p => {
             const interaction = intMap[p.parent_code] || {};
-            const tr = document.createElement("tr");
-            tr.onclick = () => selectParent(tr, { ...p, ...interaction });
-            tr.innerHTML = `
-            <td>${p.serial_no || '-'}</td>
-            <td>${p.parent_code || '-'}</td>
-            <td><strong>${p.parent_name || '-'}</strong></td>
-            <td>${p.identity_no || '-'}</td>
-            <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
-            <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
-            <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
-            <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
-            <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
-          `;
-            tbody.appendChild(tr);
+            return { ...p, ...interaction };
           });
+
+          // عرض الجدول مرتباً
+          sortAndRender();
         }
 
         document.getElementById("employeeScreen").style.display = "none";
@@ -1024,6 +1105,45 @@
         <br><button onclick="showDataForEmployee('${employee}')" style="margin-top:10px; padding:5px 15px; background:#1976d2; color:white; border:none; border-radius:5px;">إعادة المحاولة</button>
       </td></tr>`;
       }
+    };
+
+    window.renderParentsTable = (dataList) => {
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+        const todayDate = new Date();
+
+        dataList.forEach(p => {
+            // التحقق من تاريخ آخر اتصال لتلوين الصف
+            let rowClass = "";
+            let isToday = false;
+            if (p.updated_at) {
+              const lastCallDate = new Date(p.updated_at);
+              if (
+                lastCallDate.getDate() === todayDate.getDate() &&
+                lastCallDate.getMonth() === todayDate.getMonth() &&
+                lastCallDate.getFullYear() === todayDate.getFullYear()
+              ) {
+                rowClass = "contacted-today";
+                isToday = true;
+              }
+            }
+
+            const tr = document.createElement("tr");
+            if (rowClass) tr.className = rowClass;
+            tr.onclick = () => selectParent(tr, p);
+            tr.innerHTML = `
+            <td>${p.serial_no || '-'}</td>
+            <td>${p.parent_code || '-'}</td>
+            <td><strong>${p.parent_name || '-'}${isToday ? ' ✅' : ''}</strong></td>
+            <td>${p.identity_no || '-'}</td>
+            <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
+            <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
+            <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
+            <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
+            <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
+          `;
+            tbody.appendChild(tr);
+        });
     };
 
     // دالة لإنشاء بيانات تجريبية إذا لم تكن موجودة
@@ -1080,6 +1200,7 @@
       currentParentCode = data.parent_code;
       currentParentPhone = data.phone;
       currentParentIdentity = data.identity_no;
+      window.currentParentData = data; // حفظ البيانات الكاملة لاستخدامها في زر التفاصيل
 
       // Generate QR Code
       const qrContainer = document.getElementById('qrCodeContainer');
@@ -1192,6 +1313,41 @@
         console.error("Network/Fetch error:", e);
         alert('حدث خطأ في الاتصال بالخادم: ' + e.message);
       }
+    };
+
+    // دالة عرض التفاصيل الكاملة
+    window.openFullParentDetailsModal = () => {
+      if (!window.currentParentData) return;
+      const d = window.currentParentData;
+      const content = document.getElementById('fullDetailsContent');
+      
+      const formatVal = (v) => (v === null || v === undefined || v === '') ? '---' : v;
+      const formatMoney = (v) => Number(v || 0).toLocaleString('en-US');
+
+      content.innerHTML = `
+        <table class="excel-preview-table" style="width:100%; text-align:right;">
+          <tr><th colspan="2" style="background:#eee; color:#333;">البيانات الشخصية</th></tr>
+          <tr><td>الاسم</td><td>${formatVal(d.parent_name)}</td></tr>
+          <tr><td>رقم الولي (Code)</td><td>${formatVal(d.parent_code)}</td></tr>
+          <tr><td>رقم الهوية</td><td>${formatVal(d.identity_no)}</td></tr>
+          <tr><td>رقم الجوال</td><td>${formatVal(d.phone)}</td></tr>
+          
+          <tr><th colspan="2" style="background:#eee; color:#333;">البيانات المالية</th></tr>
+          <tr><td>الرصيد المدور</td><td>${formatMoney(d.carried_balance)}</td></tr>
+          <tr><td>رصيد الفصل 1</td><td>${formatMoney(d.term1_balance)}</td></tr>
+          <tr><td>رصيد الفصل 2</td><td>${formatMoney(d.term2_balance)}</td></tr>
+          <tr><td>الرصيد النهائي</td><td style="font-weight:bold; color:${d.final_balance > 0 ? 'red' : 'green'}">${formatMoney(d.final_balance)}</td></tr>
+
+          <tr><th colspan="2" style="background:#eee; color:#333;">سجل التفاعل الحالي</th></tr>
+          <tr><td>عدد مرات الاتصال</td><td>${formatVal(d.call_count)}</td></tr>
+          <tr><td>حالة آخر اتصال</td><td>${formatVal(d.last_call_status)}</td></tr>
+          <tr><td>تاريخ آخر تحديث</td><td>${d.updated_at ? new Date(d.updated_at).toLocaleString('ar-EG') : '---'}</td></tr>
+          <tr><td>تاريخ الاتصال القادم</td><td>${formatVal(d.next_call_date)}</td></tr>
+          <tr><td>تم إرسال واتساب</td><td>${d.whatsapp_sent ? 'نعم' : 'لا'}</td></tr>
+          <tr><td>الملاحظات</td><td style="white-space:pre-wrap;">${formatVal(d.notes)}</td></tr>
+        </table>
+      `;
+      document.getElementById('fullDetailsModal').style.display = 'flex';
     };
 
     window.goBack = () => {
@@ -1438,57 +1594,141 @@
       try {
         // 1. جلب البيانات
         const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance');
-        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent');
+        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent, updated_at, parent_code');
         
         // محاولة جلب بيانات الاستخدام (قد لا يكون الجدول موجوداً)
         let usage = [];
         try {
-            const { data: u } = await supabase.from('employee_usage').select('employee, type');
+            const { data: u } = await supabase.from('employee_usage').select('employee, type, ts, start');
             if (u) usage = u;
         } catch(e) { console.log('Usage table info not available'); }
 
-        if (err1) throw err1;
+        if (err1) throw err1; // خطأ في جلب الآباء
+        if (err2) throw err2; // خطأ في جلب التفاعلات
         
-        // 2. تجميع البيانات حسب الموظف
-        const stats = {};
-        const empKeys = Object.keys(appConfig.employeeNames || {emp1:'', emp2:'', emp3:'', emp4:''});
-        empKeys.forEach(k => {
-            stats[k] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
-        });
+        // دالة مساعدة لتصفية التفاعلات حسب التاريخ
+        window.filterAndRenderStats = () => {
+            const period = document.getElementById('advPeriodSelect').value;
+            const dateFrom = document.getElementById('advDateFrom').value;
+            const dateTo = document.getElementById('advDateTo').value;
+            const headerLabel = document.getElementById('advDateHeaderLabel');
 
-        // بيانات الطلاب والمديونية
-        (parents || []).forEach(p => {
-            const e = p.employee || 'emp1';
-            if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
-            stats[e].parents++;
-            stats[e].debt += (Number(p.final_balance) || 0);
-        });
+            let startDate = new Date(0); // 1970
+            let endDate = new Date(8640000000000000); // Far future
 
-        // بيانات التفاعلات
-        (interactions || []).forEach(i => {
-            const e = i.employee || 'emp1';
-            if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
-            stats[e].calls += (Number(i.call_count) || 0);
-            if (i.whatsapp_sent) stats[e].whatsapp++;
-        });
+            const now = new Date();
+            now.setHours(0,0,0,0);
+            
+            let labelText = "كل الفترات";
 
-        // بيانات الدخول
-        usage.forEach(u => {
-            const e = u.employee || 'emp1';
-            if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
-            if (u.type === 'login') stats[e].logins++;
-        });
+            if (period === 'today') {
+                startDate = new Date(now);
+                endDate = new Date(now); endDate.setHours(23,59,59,999);
+                labelText = `اليوم: ${now.toLocaleDateString('ar-EG')}`;
+            } else if (period === 'week') {
+                const day = now.getDay();
+                const diff = now.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
+                startDate = new Date(now.setDate(diff));
+                endDate = new Date(now); endDate.setDate(startDate.getDate() + 6); endDate.setHours(23,59,59,999);
+                labelText = `هذا الأسبوع: ${startDate.toLocaleDateString('ar-EG')} - ${endDate.toLocaleDateString('ar-EG')}`;
+            } else if (period === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                labelText = `هذا الشهر: ${startDate.toLocaleDateString('ar-EG', {month:'long', year:'numeric'})}`;
+            } else if (period === 'year') {
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                labelText = `سنة: ${now.getFullYear()}`;
+            } else if (period === 'custom') {
+                if(dateFrom) startDate = new Date(dateFrom);
+                if(dateTo) { endDate = new Date(dateTo); endDate.setHours(23,59,59,999); }
+                labelText = `فترة مخصصة: ${startDate.toLocaleDateString('ar-EG')} إلى ${endDate.toLocaleDateString('ar-EG')}`;
+            }
+
+            headerLabel.innerText = labelText;
+
+            // تصفية التفاعلات
+            const filteredInteractions = (interactions || []).filter(i => {
+                if (!i.updated_at) return false;
+                const d = new Date(i.updated_at);
+                return d >= startDate && d <= endDate;
+            });
+
+            // تجميع البيانات
+            const stats = {};
+            const empKeys = Object.keys(appConfig.employeeNames || {emp1:'', emp2:'', emp3:'', emp4:''});
+            empKeys.forEach(k => {
+                stats[k] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
+            });
+
+            // بيانات الطلاب والمديونية (إجمالي ثابت لا يتأثر بالتاريخ لأنه رصيد حالي)
+            // لكن المستخدم طلب: "تظهر كل اسماء اولياء الامور التي تم الاتصال بها في المده التي اخترتها"
+            // لذا سنربط المديونية بمن تم الاتصال بهم فقط في حالة Drill-down، أما الإحصائية العامة للمديونية فهي لكل الطلاب
+            (parents || []).forEach(p => {
+                const e = p.employee || 'emp1';
+                if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
+                stats[e].parents++;
+                stats[e].debt += (Number(p.final_balance) || 0);
+            });
+
+            // بيانات التفاعلات (تتأثر بالتاريخ)
+            filteredInteractions.forEach(i => {
+                const e = i.employee || 'emp1';
+                if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
+                stats[e].calls += 1; // تم التعديل: حساب عدد السجلات التي تم تحديثها (عدد الآباء الذين تم التواصل معهم) بدلاً من جمع إجمالي الاتصالات التراكمي
+                // الأدق: عدد السجلات التي تم تحديثها في هذه الفترة
+                if (i.whatsapp_sent) stats[e].whatsapp++;
+                if (i.parent_code) stats[e].contacted_parents_codes.push(i.parent_code);
+            });
+
+            // بيانات الدخول (تتأثر بالتاريخ إذا كان الجدول يحتوي على timestamp)
+            // الجدول الحالي في الكود `employee_usage` يحتوي `ts` أو `start`.
+            usage.forEach(u => {
+                const e = u.employee || 'emp1';
+                const timeStr = u.ts || u.start;
+                if (timeStr) {
+                    const d = new Date(timeStr);
+                    if (d >= startDate && d <= endDate) {
+                        if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
+                        if (u.type === 'login') stats[e].logins++;
+                    }
+                }
+            });
+
+            window.currentStatsData = stats; // حفظ للرسم
+            window.renderAdvChartAndTable();
+        };
 
         // 3. بناء الواجهة
         const html = `
           <div style="padding:10px; height:100%; overflow:auto;">
             <h2 style="text-align:center; color:var(--primary-color);">📊 إحصائيات شاملة ومقارنة الموظفين</h2>
             
+            <!-- قسم اختيار التاريخ -->
+            <div style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid #bbdefb;">
+                <h3 id="advDateHeaderLabel" style="text-align:center; margin:0 0 10px 0; color:#1565c0;">كل الفترات</h3>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center;">
+                    <select id="advPeriodSelect" onchange="toggleCustomDate(); filterAndRenderStats()" style="padding:8px; border-radius:5px;">
+                        <option value="all">كل الوقت</option>
+                        <option value="today">اليوم</option>
+                        <option value="week">هذا الأسبوع</option>
+                        <option value="month">هذا الشهر</option>
+                        <option value="year">هذه السنة</option>
+                        <option value="custom">فترة مخصصة</option>
+                    </select>
+                    <span id="customDateSpan" style="display:none;">
+                        من: <input type="date" id="advDateFrom" onchange="filterAndRenderStats()">
+                        إلى: <input type="date" id="advDateTo" onchange="filterAndRenderStats()">
+                    </span>
+                    <button class="btn" style="width:auto; height:38px; font-size:14px;" onclick="filterAndRenderStats()">تحديث</button>
+                </div>
+            </div>
+
             <div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:20px; background:#f5f5f5; padding:15px; border-radius:10px;">
                 <div style="flex:1; min-width:200px;">
                     <label style="font-weight:bold; display:block; margin-bottom:5px;">اختر المعيار للمقارنة:</label>
-                    <select id="advMetricSelect" onchange="updateAdvChart()" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
-                        <option value="calls">📞 عدد الاتصالات</option>
+                    <select id="advMetricSelect" onchange="renderAdvChartAndTable()" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="calls">📞 عدد الآباء الذين تم الاتصال بهم</option>
                         <option value="logins">🔐 عدد مرات الدخول</option>
                         <option value="whatsapp">💬 رسائل الواتساب</option>
                         <option value="parents">👥 عدد الطلاب (أولياء الأمور)</option>
@@ -1497,7 +1737,7 @@
                 </div>
                 <div style="flex:1; min-width:200px;">
                     <label style="font-weight:bold; display:block; margin-bottom:5px;">شكل المخطط:</label>
-                    <select id="advTypeSelect" onchange="updateAdvChart()" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
+                    <select id="advTypeSelect" onchange="renderAdvChartAndTable()" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
                         <option value="bar">📊 أعمدة (Bar)</option>
                         <option value="pie">🥧 دائري (Pie)</option>
                         <option value="doughnut">🍩 حلقي (Doughnut)</option>
@@ -1512,32 +1752,7 @@
             </div>
 
             <h3 style="margin-top:20px; border-bottom:2px solid #eee; padding-bottom:10px;">تفاصيل الأرقام</h3>
-            <div style="overflow-x:auto;">
-                <table class="excel-preview-table" style="width:100%;">
-                    <thead>
-                        <tr>
-                            <th>الموظف</th>
-                            <th>عدد الاتصالات</th>
-                            <th>الدخول للبرنامج</th>
-                            <th>الواتساب</th>
-                            <th>عدد الطلاب</th>
-                            <th>إجمالي المديونية</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${Object.keys(stats).map(emp => `
-                            <tr>
-                                <td>${getEmployeeLabel(emp)}</td>
-                                <td>${stats[emp].calls}</td>
-                                <td>${stats[emp].logins}</td>
-                                <td>${stats[emp].whatsapp}</td>
-                                <td>${stats[emp].parents}</td>
-                                <td>${formatCurrency(stats[emp].debt)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
+            <div id="advStatsTableContainer" style="overflow-x:auto;"></div>
 
             <div style="text-align:center; margin-top:20px; display:flex; gap:10px; justify-content:center;">
                 <button class="btn" onclick="saveStatsPDF('advStatsScreen')" style="width:auto; display:inline-block;">💾 حفظ التقرير PDF</button>
@@ -1553,8 +1768,38 @@
         screen.innerHTML = `<div class="box box-large" style="max-width:900px;">${html}</div>`;
         document.body.appendChild(screen);
 
+        window.toggleCustomDate = () => {
+            const val = document.getElementById('advPeriodSelect').value;
+            document.getElementById('customDateSpan').style.display = (val === 'custom') ? 'inline-block' : 'none';
+        };
+
+        // دالة عرض تفاصيل الموظف (Drill-down)
+        window.showEmpDrillDown = async (emp) => {
+            const codes = window.currentStatsData[emp].contacted_parents_codes || [];
+            if (codes.length === 0) return alert('لا توجد اتصالات مسجلة لهذا الموظف في الفترة المحددة.');
+
+            // جلب تفاصيل الآباء من قاعدة البيانات المحلية (التي تم جلبها سابقاً في parents)
+            // لكن parents تحتوي فقط على employee, final_balance في الاستعلام الأصلي.
+            // نحتاج لجلب التفاصيل الكاملة لهؤلاء الآباء.
+            
+            const { data: fullParents, error } = await supabase.from('parents').select('*').in('parent_code', codes);
+            
+            if (error || !fullParents) return alert('خطأ في جلب التفاصيل');
+
+            let html = `<table class="excel-preview-table"><thead><tr><th>م</th><th>الاسم</th><th>الجوال</th><th>الرصيد النهائي</th><th>حالة الاتصال</th></tr></thead><tbody>`;
+            fullParents.forEach((p, idx) => {
+                html += `<tr><td>${idx+1}</td><td>${p.parent_name}</td><td>${p.phone}</td><td>${formatCurrency(p.final_balance)}</td><td>تم التحديث</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            
+            document.getElementById('drillDownTitle').innerText = `تفاصيل الاتصالات: ${getEmployeeLabel(emp)}`;
+            document.getElementById('drillDownContent').innerHTML = html;
+            document.getElementById('statsDrillDownModal').style.display = 'flex';
+        };
+
         // 4. منطق الرسم البياني
-        window.updateAdvChart = () => {
+        window.renderAdvChartAndTable = () => {
+            const stats = window.currentStatsData;
             const metric = document.getElementById('advMetricSelect').value;
             const type = document.getElementById('advTypeSelect').value;
             const ctx = document.getElementById('advMainChart').getContext('2d');
@@ -1566,7 +1811,7 @@
             
             const labelMap = {
                 'parents': 'عدد الطلاب',
-                'calls': 'عدد الاتصالات',
+                'calls': 'عدد الآباء الذين تم الاتصال بهم',
                 'whatsapp': 'رسائل الواتساب',
                 'logins': 'عدد مرات الدخول',
                 'debt': 'إجمالي المديونية'
@@ -1599,9 +1844,40 @@
                     scales: (type === 'bar' || type === 'line') ? { y: { beginAtZero: true } } : {}
                 }
             });
+
+            // تحديث الجدول
+            const tableHtml = `
+                <table class="excel-preview-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>الآباء الذين تم الاتصال بهم</th>
+                            <th>الدخول</th>
+                            <th>الواتساب</th>
+                            <th>عدد الطلاب</th>
+                            <th>إجمالي المديونية</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.keys(stats).map(emp => `
+                            <tr style="cursor:pointer;" onclick="showEmpDrillDown('${emp}')" title="اضغط لعرض تفاصيل الاتصالات في هذه الفترة">
+                                <td style="color:var(--primary-color); text-decoration:underline;">${getEmployeeLabel(emp)}</td>
+                                <td>${stats[emp].calls}</td>
+                                <td>${stats[emp].logins}</td>
+                                <td>${stats[emp].whatsapp}</td>
+                                <td>${stats[emp].parents}</td>
+                                <td>${formatCurrency(stats[emp].debt)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p style="text-align:center; font-size:12px; color:#666; margin-top:5px;">* اضغط على اسم الموظف لعرض قائمة أولياء الأمور الذين تم التواصل معهم في الفترة المحددة.</p>
+            `;
+            document.getElementById('advStatsTableContainer').innerHTML = tableHtml;
         };
 
-        window.updateAdvChart();
+        // تشغيل أولي
+        window.filterAndRenderStats();
 
       } catch (e) { 
         alert('خطأ: ' + e.message); 
@@ -1824,6 +2100,97 @@
     };
 
     window.loadAdminData = async () => {
+      const textarea = document.getElementById("adminDataInput");
+      textarea.value = "جاري تحميل جميع البيانات...";
+
+      const { data, error } = await supabase
+        .from("parents")
+        .select("*")
+        .order("employee")
+        .order("serial_no");
+
+      if (error) {
+        textarea.value = "خطأ في التحميل: " + error.message;
+        console.error(error);
+        return;
+      }
+
+      let text = "الموظف\tم\tرقم ولي الأمر\tالاسم\tرقم الهوية\tالجوال\tالرصيد المدور\tرصيد ف1\tرصيد ف2\tالرصيد النهائي\n";
+
+      data.forEach(row => {
+        text += `${row.employee || ''}\t${row.serial_no || ''}\t${row.parent_code || ''}\t${row.parent_name || ''}\t${row.identity_no || ''}\t${row.phone || ''}\t${row.carried_balance || 0}\t${row.term1_balance || 0}\t${row.term2_balance || 0}\t${row.final_balance || 0}\n`;
+      });
+
+      textarea.value = text;
+    };
+
+    window.saveAdminDataFull = async () => {
+      if (!confirm("⚠️ هل أنت متأكد؟ سيتم حذف جميع البيانات القديمة واستبدالها بالبيانات الموجودة في المربع!")) return;
+
+      const rawText = document.getElementById("adminDataInput").value;
+      const rows = rawText.split("\n");
+      const newRecords = [];
+
+      const parseNum = (str) => {
+        return cleanNumber(str);
+      };
+
+      for (let i = 0; i < rows.length; i++) {
+        const line = rows[i].trim();
+        if (!line) continue;
+
+        const cols = line.split("\t");
+        if (isNaN(parseInt(cols[1]))) continue;
+
+        newRecords.push({
+          employee: cols[0]?.trim() || 'emp1',
+          serial_no: parseInt(cols[1]) || 0,
+          parent_code: cols[2] || "",
+          parent_name: cols[3] || "",
+          identity_no: cols[4] || "",
+          phone: cols[5] || "",
+          carried_balance: parseNum(cols[6]),
+          term1_balance: parseNum(cols[7]),
+          term2_balance: parseNum(cols[8]),
+          final_balance: parseNum(cols[9])
+        });
+      }
+
+      const { error: delError } = await supabase.from("parents").delete().neq('id', -1);
+
+      if (delError) {
+        alert("❌ حدث خطأ أثناء حذف البيانات القديمة! العملية ألغيت.");
+        console.error(delError);
+        return;
+      }
+
+      if (newRecords.length > 0) {
+        const { error: insError } = await supabase.from("parents").insert(newRecords);
+        if (insError) {
+          alert("حدث خطأ أثناء حفظ البيانات الجديدة!");
+          console.error(insError);
+        } else {
+          alert(`تم تحديث قاعدة البيانات بنجاح! (${newRecords.length} سجل) ✅`);
+          closeAdminPanel();
+        }
+      } else {
+        alert("تم حذف البيانات ولم يتم إدخال بيانات جديدة (المربع فارغ).");
+        closeAdminPanel();
+      }
+    };
+
+    // تحديث الجدول عند تغيير الموظف
+    document.getElementById('importEmpSelect').addEventListener('change', () => {
+      loadDataToGrid();
+    });
+
+    // Init
+    loadSettings();
+  </script>
+
+</body>
+
+</html>dow.loadAdminData = async () => {
       const textarea = document.getElementById("adminDataInput");
       textarea.value = "جاري تحميل جميع البيانات...";
 
