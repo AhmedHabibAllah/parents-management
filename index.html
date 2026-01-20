@@ -1414,6 +1414,203 @@
       if (s) s.remove();
     };
 
+    window.saveStatsPDF = (elementId) => {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const box = el.querySelector('.box');
+      html2canvas(box).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save("stats.pdf");
+      });
+    };
+
+    window.openAdvancedStats = async () => {
+      // مؤشر التحميل
+      const loadingId = 'loading-' + Date.now();
+      const loadingHTML = `<div id="${loadingId}" class="center-screen" style="z-index:9999"><div class="box" style="width:auto"><h3>⏳ جاري تحميل البيانات...</h3></div></div>`;
+      document.body.insertAdjacentHTML('beforeend', loadingHTML);
+
+      try {
+        // 1. جلب البيانات
+        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance');
+        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent');
+        
+        // محاولة جلب بيانات الاستخدام (قد لا يكون الجدول موجوداً)
+        let usage = [];
+        try {
+            const { data: u } = await supabase.from('employee_usage').select('employee, type');
+            if (u) usage = u;
+        } catch(e) { console.log('Usage table info not available'); }
+
+        if (err1) throw err1;
+        
+        // 2. تجميع البيانات حسب الموظف
+        const stats = {};
+        const empKeys = Object.keys(appConfig.employeeNames || {emp1:'', emp2:'', emp3:'', emp4:''});
+        empKeys.forEach(k => {
+            stats[k] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
+        });
+
+        // بيانات الطلاب والمديونية
+        (parents || []).forEach(p => {
+            const e = p.employee || 'emp1';
+            if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
+            stats[e].parents++;
+            stats[e].debt += (Number(p.final_balance) || 0);
+        });
+
+        // بيانات التفاعلات
+        (interactions || []).forEach(i => {
+            const e = i.employee || 'emp1';
+            if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
+            stats[e].calls += (Number(i.call_count) || 0);
+            if (i.whatsapp_sent) stats[e].whatsapp++;
+        });
+
+        // بيانات الدخول
+        usage.forEach(u => {
+            const e = u.employee || 'emp1';
+            if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0 };
+            if (u.type === 'login') stats[e].logins++;
+        });
+
+        // 3. بناء الواجهة
+        const html = `
+          <div style="padding:10px; height:100%; overflow:auto;">
+            <h2 style="text-align:center; color:var(--primary-color);">📊 إحصائيات شاملة ومقارنة الموظفين</h2>
+            
+            <div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:20px; background:#f5f5f5; padding:15px; border-radius:10px;">
+                <div style="flex:1; min-width:200px;">
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">اختر المعيار للمقارنة:</label>
+                    <select id="advMetricSelect" onchange="updateAdvChart()" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="calls">📞 عدد الاتصالات</option>
+                        <option value="logins">🔐 عدد مرات الدخول</option>
+                        <option value="whatsapp">💬 رسائل الواتساب</option>
+                        <option value="parents">👥 عدد الطلاب (أولياء الأمور)</option>
+                        <option value="debt">💰 إجمالي المديونية</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width:200px;">
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">شكل المخطط:</label>
+                    <select id="advTypeSelect" onchange="updateAdvChart()" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;">
+                        <option value="bar">📊 أعمدة (Bar)</option>
+                        <option value="pie">🥧 دائري (Pie)</option>
+                        <option value="doughnut">🍩 حلقي (Doughnut)</option>
+                        <option value="line">📈 خطي (Line)</option>
+                        <option value="polarArea">❄️ قطبي (Polar Area)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="background:#fff; padding:10px; border-radius:10px; border:1px solid #eee; height:400px; position:relative;">
+                <canvas id="advMainChart"></canvas>
+            </div>
+
+            <h3 style="margin-top:20px; border-bottom:2px solid #eee; padding-bottom:10px;">تفاصيل الأرقام</h3>
+            <div style="overflow-x:auto;">
+                <table class="excel-preview-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>الموظف</th>
+                            <th>عدد الاتصالات</th>
+                            <th>الدخول للبرنامج</th>
+                            <th>الواتساب</th>
+                            <th>عدد الطلاب</th>
+                            <th>إجمالي المديونية</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.keys(stats).map(emp => `
+                            <tr>
+                                <td>${getEmployeeLabel(emp)}</td>
+                                <td>${stats[emp].calls}</td>
+                                <td>${stats[emp].logins}</td>
+                                <td>${stats[emp].whatsapp}</td>
+                                <td>${stats[emp].parents}</td>
+                                <td>${formatCurrency(stats[emp].debt)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="text-align:center; margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                <button class="btn" onclick="saveStatsPDF('advStatsScreen')" style="width:auto; display:inline-block;">💾 حفظ التقرير PDF</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('advStatsScreen').remove()" style="width:auto; display:inline-block;">إغلاق</button>
+            </div>
+          </div>
+        `;
+
+        const screen = document.createElement('div');
+        screen.className = 'center-screen';
+        screen.id = 'advStatsScreen';
+        screen.style.zIndex = 600;
+        screen.innerHTML = `<div class="box box-large" style="max-width:900px;">${html}</div>`;
+        document.body.appendChild(screen);
+
+        // 4. منطق الرسم البياني
+        window.updateAdvChart = () => {
+            const metric = document.getElementById('advMetricSelect').value;
+            const type = document.getElementById('advTypeSelect').value;
+            const ctx = document.getElementById('advMainChart').getContext('2d');
+            
+            if (window._advChart) window._advChart.destroy();
+
+            const labels = Object.keys(stats).map(e => getEmployeeLabel(e));
+            const data = Object.keys(stats).map(e => stats[e][metric]);
+            
+            const labelMap = {
+                'parents': 'عدد الطلاب',
+                'calls': 'عدد الاتصالات',
+                'whatsapp': 'رسائل الواتساب',
+                'logins': 'عدد مرات الدخول',
+                'debt': 'إجمالي المديونية'
+            };
+
+            const bgColors = ['rgba(25, 118, 210, 0.7)', 'rgba(67, 160, 71, 0.7)', 'rgba(251, 192, 45, 0.7)', 'rgba(230, 74, 25, 0.7)', 'rgba(156, 39, 176, 0.7)', 'rgba(0, 172, 193, 0.7)'];
+            const borderColors = ['rgba(25, 118, 210, 1)', 'rgba(67, 160, 71, 1)', 'rgba(251, 192, 45, 1)', 'rgba(230, 74, 25, 1)', 'rgba(156, 39, 176, 1)', 'rgba(0, 172, 193, 1)'];
+
+            window._advChart = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: labelMap[metric],
+                        data: data,
+                        backgroundColor: type === 'line' ? bgColors[0] : bgColors,
+                        borderColor: type === 'line' ? borderColors[0] : borderColors,
+                        borderWidth: 1,
+                        fill: type !== 'line',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: type !== 'bar' && type !== 'line', position: 'bottom' },
+                        title: { display: true, text: 'مقارنة الموظفين حسب: ' + labelMap[metric], font: { size: 18 } }
+                    },
+                    scales: (type === 'bar' || type === 'line') ? { y: { beginAtZero: true } } : {}
+                }
+            });
+        };
+
+        window.updateAdvChart();
+
+      } catch (e) { 
+        alert('خطأ: ' + e.message); 
+      } finally {
+        const l = document.getElementById(loadingId);
+        if(l) l.remove();
+      }
+    };
+
     window.togglePasteArea = () => {
       const area = document.getElementById('excelPasteArea');
       area.style.display = area.style.display === 'none' ? 'block' : 'none';
