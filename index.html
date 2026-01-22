@@ -549,6 +549,7 @@
               <th>الاسم</th>
               <th>رقم الهوية</th>
               <th>الجوال</th>
+              <th>تاريخ آخر اتصال</th>
               <th>الرصيد المدور</th>
               <th>رصيد ف1</th>
               <th>رصيد ف2</th>
@@ -1066,15 +1067,18 @@
         </td></tr>`;
         } else {
           // دمج بيانات التفاعلات
-          const codes = data.map(p => p.parent_code).filter(c => c);
           let interactions = [];
 
-          if (codes.length > 0) {
+          // استخراج أكواد أولياء الأمور لجلب تفاعلاتهم بغض النظر عن الموظف (للحفاظ على التاريخ عند النقل)
+          const parentCodes = data.map(p => p.parent_code).filter(c => c);
+
+          if (parentCodes.length > 0) {
             const { data: intData, error: intError } = await supabase
               .from('interactions')
               .select('*')
-              .in('parent_code', codes)
-              .eq('employee', employee);
+              .in('parent_code', parentCodes)
+              .order('updated_at', { ascending: false })
+              .range(0, 4999);
 
             if (!intError && intData) {
               interactions = intData;
@@ -1082,12 +1086,23 @@
           }
 
           const intMap = {};
-          interactions.forEach(i => intMap[i.parent_code] = i);
+          interactions.forEach(i => {
+            // بما أننا نجلب الأحدث أولاً، نأخذ أول قيمة تظهر لكل ولي أمر لضمان دقة تاريخ آخر اتصال
+            if (!intMap[i.parent_code]) {
+              intMap[i.parent_code] = i;
+            }
+          });
 
           // دمج البيانات وحفظها
           window.currentEmployeeData = data.map(p => {
-            const interaction = intMap[p.parent_code] || {};
-            return { ...p, ...interaction };
+            const interaction = intMap[p.parent_code]; // can be undefined
+            const merged = { ...p, ...interaction };
+            // If there was no interaction, the `updated_at` from the parent record is used, which is wrong.
+            // It reflects data import time, not contact time. We nullify it to fix the "contacted today" check.
+            if (!interaction) {
+              merged.updated_at = null;
+            }
+            return merged;
           });
 
           // عرض الجدول مرتباً
@@ -1137,6 +1152,7 @@
             <td><strong>${p.parent_name || '-'}${isToday ? ' ✅' : ''}</strong></td>
             <td>${p.identity_no || '-'}</td>
             <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
+            <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
             <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
             <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
             <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
@@ -2100,97 +2116,6 @@
     };
 
     window.loadAdminData = async () => {
-      const textarea = document.getElementById("adminDataInput");
-      textarea.value = "جاري تحميل جميع البيانات...";
-
-      const { data, error } = await supabase
-        .from("parents")
-        .select("*")
-        .order("employee")
-        .order("serial_no");
-
-      if (error) {
-        textarea.value = "خطأ في التحميل: " + error.message;
-        console.error(error);
-        return;
-      }
-
-      let text = "الموظف\tم\tرقم ولي الأمر\tالاسم\tرقم الهوية\tالجوال\tالرصيد المدور\tرصيد ف1\tرصيد ف2\tالرصيد النهائي\n";
-
-      data.forEach(row => {
-        text += `${row.employee || ''}\t${row.serial_no || ''}\t${row.parent_code || ''}\t${row.parent_name || ''}\t${row.identity_no || ''}\t${row.phone || ''}\t${row.carried_balance || 0}\t${row.term1_balance || 0}\t${row.term2_balance || 0}\t${row.final_balance || 0}\n`;
-      });
-
-      textarea.value = text;
-    };
-
-    window.saveAdminDataFull = async () => {
-      if (!confirm("⚠️ هل أنت متأكد؟ سيتم حذف جميع البيانات القديمة واستبدالها بالبيانات الموجودة في المربع!")) return;
-
-      const rawText = document.getElementById("adminDataInput").value;
-      const rows = rawText.split("\n");
-      const newRecords = [];
-
-      const parseNum = (str) => {
-        return cleanNumber(str);
-      };
-
-      for (let i = 0; i < rows.length; i++) {
-        const line = rows[i].trim();
-        if (!line) continue;
-
-        const cols = line.split("\t");
-        if (isNaN(parseInt(cols[1]))) continue;
-
-        newRecords.push({
-          employee: cols[0]?.trim() || 'emp1',
-          serial_no: parseInt(cols[1]) || 0,
-          parent_code: cols[2] || "",
-          parent_name: cols[3] || "",
-          identity_no: cols[4] || "",
-          phone: cols[5] || "",
-          carried_balance: parseNum(cols[6]),
-          term1_balance: parseNum(cols[7]),
-          term2_balance: parseNum(cols[8]),
-          final_balance: parseNum(cols[9])
-        });
-      }
-
-      const { error: delError } = await supabase.from("parents").delete().neq('id', -1);
-
-      if (delError) {
-        alert("❌ حدث خطأ أثناء حذف البيانات القديمة! العملية ألغيت.");
-        console.error(delError);
-        return;
-      }
-
-      if (newRecords.length > 0) {
-        const { error: insError } = await supabase.from("parents").insert(newRecords);
-        if (insError) {
-          alert("حدث خطأ أثناء حفظ البيانات الجديدة!");
-          console.error(insError);
-        } else {
-          alert(`تم تحديث قاعدة البيانات بنجاح! (${newRecords.length} سجل) ✅`);
-          closeAdminPanel();
-        }
-      } else {
-        alert("تم حذف البيانات ولم يتم إدخال بيانات جديدة (المربع فارغ).");
-        closeAdminPanel();
-      }
-    };
-
-    // تحديث الجدول عند تغيير الموظف
-    document.getElementById('importEmpSelect').addEventListener('change', () => {
-      loadDataToGrid();
-    });
-
-    // Init
-    loadSettings();
-  </script>
-
-</body>
-
-</html>dow.loadAdminData = async () => {
       const textarea = document.getElementById("adminDataInput");
       textarea.value = "جاري تحميل جميع البيانات...";
 
