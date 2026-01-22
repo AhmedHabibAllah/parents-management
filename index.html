@@ -550,6 +550,7 @@
               <th>رقم الهوية</th>
               <th>الجوال</th>
               <th>تاريخ آخر اتصال</th>
+              <th>الموظف المتصل</th>
               <th>الرصيد المدور</th>
               <th>رصيد ف1</th>
               <th>رصيد ف2</th>
@@ -1153,6 +1154,7 @@
             <td>${p.identity_no || '-'}</td>
             <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
             <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
+            <td>${p.employee ? getEmployeeLabel(p.employee) : '-'}</td>
             <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
             <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
             <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
@@ -1242,15 +1244,20 @@
         (data.call_count > 0) ||
         (data.notes && data.notes.trim() !== "");
 
+      // Check if the last interaction was by another employee
+      const isOtherEmployee = hasHistory && data.employee && data.employee !== currentEmployee;
+      const otherEmployeeStyle = isOtherEmployee ? 'style="background-color: #fffde7; border-left: 3px solid #fbc02d;"' : '';
+
       // تعبئة القائمة اليمنى (سجل آخر اتصال)
       const historyDiv = document.getElementById('historyInfo');
       historyDiv.innerHTML = `
       <h3 style="color: var(--primary-color); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات آخر اتصال</h3>
-      <div class="info-group"><div class="info-label">تاريخ آخر اتصال</div><div class="info-value">${hasHistory ? formatDate(data.updated_at) : 'لا يوجد'}</div></div>
-      <div class="info-group"><div class="info-label">ملاحظات آخر اتصال</div><div class="info-value" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto; background:#f9f9f9; padding:8px; border-radius:4px;">${(hasHistory && data.notes) ? data.notes : 'لا يوجد'}</div></div>
-      <div class="info-group"><div class="info-label">حالة الاتصال السابق</div><div class="info-value" style="color: var(--primary-color);">${(hasHistory && data.last_call_status) ? data.last_call_status : 'لا يوجد'}</div></div>
-      <div class="info-group"><div class="info-label">موعد الاتصال القادم المتفق عليه</div><div class="info-value">${(hasHistory && data.next_call_date) ? data.next_call_date : 'لا يوجد'}</div></div>
-      <div class="info-group"><div class="info-label">تم إرسال واتساب سابقاً</div><div class="info-value">${(hasHistory && data.whatsapp_sent) ? 'نعم ✅' : 'لا ❌'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">الموظف الذي أجرى الاتصال</div><div class="info-value">${(hasHistory && data.employee) ? getEmployeeLabel(data.employee) : 'لا يوجد'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">تاريخ آخر اتصال</div><div class="info-value">${hasHistory ? formatDate(data.updated_at) : 'لا يوجد'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">ملاحظات آخر اتصال</div><div class="info-value" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto; background:#f9f9f9; padding:8px; border-radius:4px;">${(hasHistory && data.notes) ? data.notes : 'لا يوجد'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">حالة الاتصال السابق</div><div class="info-value" style="color: var(--primary-color);">${(hasHistory && data.last_call_status) ? data.last_call_status : 'لا يوجد'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">موعد الاتصال القادم المتفق عليه</div><div class="info-value">${(hasHistory && data.next_call_date) ? data.next_call_date : 'لا يوجد'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">تم إرسال واتساب سابقاً</div><div class="info-value">${(hasHistory && data.whatsapp_sent) ? 'نعم ✅' : 'لا ❌'}</div></div>
     `;
 
       // تعبئة القائمة اليسرى (بيانات ولي الأمر)
