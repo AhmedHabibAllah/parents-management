@@ -7,10 +7,10 @@
 
   <style>
     :root {
-      --primary-color: #8d6e63;
-      --bg-color: #fdfdfd;
+      --primary-color: #e0f7fa;
+      --bg-color: #ffffff;
       --text-color: #000000;
-      --accent-color: #5d4037;
+      --accent-color: #b2ebf2;
       --sidebar-width: 350px;
       --col1-width: 60px;
       --col2-width: 110px;
@@ -27,6 +27,7 @@
       direction: rtl;
       font-size: 20px;
       color: #000;
+      font-weight: 700;
     }
 
     /* شاشات الدخول والاعدادات (Centered Boxes) */
@@ -72,7 +73,7 @@
     h2 {
       margin-bottom: 20px;
       color: #000;
-      text-shadow: 0 0 2px rgba(0,229,255,0.5);
+      text-shadow: none;
     }
 
     .btn {
@@ -84,15 +85,15 @@
       border: none;
       border-radius: 15px;
       cursor: pointer;
-      background: linear-gradient(135deg, #a1887f 0%, #5d4037 100%);
-      color: #fff;
+      background: linear-gradient(135deg, #ffffff 0%, #eeeeee 100%);
+      color: #000;
       transition: 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       font-weight: 900;
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border: 2px solid #000;
       box-shadow: 0 4px 15px rgba(93, 64, 55, 0.3), inset 0 2px 2px rgba(255,255,255,0.4);
       backdrop-filter: blur(4px);
     }
@@ -104,13 +105,13 @@
 
     .btn-outline {
       background: rgba(255, 255, 255, 0.8);
-      border: 2px solid #5d4037;
-      color: #5d4037;
-      font-weight: 700;
+      border: 2px solid #000;
+      color: #000;
+      font-weight: 900;
     }
 
     .btn-outline:hover {
-      background: #5d4037;
+      background: #000;
       color: #fff;
     }
 
@@ -131,7 +132,7 @@
       box-sizing: border-box;
       font-family: inherit;
       font-size: 20px;
-      font-weight: 600;
+      font-weight: 700;
       background: rgba(255, 255, 255, 0.9);
       color: #000;
       transition: 0.3s;
@@ -212,7 +213,7 @@
     }
 
     thead {
-      background: #f0f0f0;
+      background: #e0e0e0;
       color: #000;
       position: sticky;
       top: 0;
@@ -226,7 +227,7 @@
       border-bottom: 1px solid #ccc;
       white-space: nowrap;
       color: #000;
-      font-weight: 600;
+      font-weight: 700;
       background: rgba(255, 255, 255, 0.95);
       font-size: 20px;
     }
@@ -289,7 +290,7 @@
     thead th:nth-child(2),
     thead th:nth-child(3) {
       z-index: 6;
-      background-color: #f0f0f0;
+      background-color: #e0e0e0;
     }
 
     /* مقبض تغيير حجم الأعمدة */
@@ -340,7 +341,7 @@
 
     .sidebar-header {
       padding: 20px;
-      background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
       color: #000;
       display: flex;
       justify-content: space-between;
@@ -382,7 +383,7 @@
 
     .sidebar-right .sidebar-header {
       padding: 20px;
-      background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
       color: #000;
       display: flex;
       justify-content: space-between;
@@ -452,8 +453,8 @@
     }
 
     .excel-preview-table th {
-      background: linear-gradient(135deg, #00e5ff 0%, #2979ff 100%);
-      color: white;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #000;
       position: sticky;
       top: 0;
       font-weight: 700;
@@ -494,8 +495,8 @@
       font-size: 20px;
       border-radius: 10px;
       margin-left: 6px;
-      background: linear-gradient(90deg, #d7ccc8, #bcaaa4);
-      color: #3e2723;
+      background: linear-gradient(90deg, #f5f5f5, #e0e0e0);
+      color: #000;
       border: none;
       box-shadow: 0 6px 18px rgba(141, 110, 99, 0.2);
       display: inline-flex;
@@ -689,7 +690,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <h3 id="employeeName" style="margin:0; font-size: 18px;"></h3>
             
-            <h1 style="margin:0; font-family:'Traditional Arabic', serif; font-size:42px; color:#3e2723; background-color:#fff3e0; padding:5px 30px; border-radius:15px; font-weight:900; text-align:center; border:2px solid #8d6e63; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h1 style="margin:0; font-family:'Traditional Arabic', serif; font-size:42px; color:#000; background-color:#fff; padding:5px 30px; border-radius:15px; font-weight:900; text-align:center; border:2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 مدارس التربية النموذجية الروابي</h1>
     
             <div style="text-align: left; margin-left: 5px;">
@@ -732,11 +733,11 @@
             <!-- الأزرار -->
             <div style="display:flex; align-items:center; gap:8px;">
               <button class="stat-btn" onclick="openStats()" style="width:auto; display:inline-flex;">📊 إحصائيات</button>
-              <button class="btn btn-outline" onclick="exportToExcel()" title="تصدير إلى Excel" style="width:auto; display:inline-flex; background:#e8f5e9; color:#2e7d32; border-color:#2e7d32;">📥 Excel</button>
+              <button class="btn btn-outline" onclick="exportToExcel()" title="تصدير إلى Excel" style="width:auto; display:inline-flex; background:#fff; color:#000; border-color:#000;">📥 Excel</button>
               <button class="btn btn-outline" onclick="toggleDarkMode()" title="الوضع الليلي" style="width:auto; display:inline-flex;">🌙</button>
               <button class="btn btn-outline" onclick="resetView()" title="تحديث وإعادة تعيين العرض" style="width:auto; display:inline-flex;">🔄</button>
               <button class="btn btn-outline" onclick="openEmployeeSettings()" style="width:auto; display:inline-flex;">⚙️</button>
-              <button class="btn" onclick="goBack()" style="width:auto; display:inline-flex; background:#ff1744; color:#000; border:1px solid #d50000;">خروج</button>
+              <button class="btn" onclick="goBack()" style="width:auto; display:inline-flex; background:#ffebee; color:#000; border:2px solid #d32f2f;">خروج</button>
             </div>
         </div>
       </div>
@@ -911,11 +912,14 @@
               <option value="emp2">موظف 2</option>
               <option value="emp3">موظف 3</option>
               <option value="emp4">موظف 4</option>
+              <option value="global_update">اللصق هنا (تحديث شامل)</option>
             </select>
             <button class="btn btn-outline" onclick="loadDataToGrid()" style="width:auto; margin:0;">📂 تحميل البيانات
               الحالية</button>
             <button class="btn btn-outline" onclick="togglePasteArea()" style="width:auto; margin:0;">📋 لصق بيانات
               جديدة</button>
+            <button class="btn btn-outline" onclick="clearPasteAreaAndGrid()"
+              style="width:auto; margin:0; color:#ff5722; border-color:#ff5722;">🧹 مسح</button>
             <button class="btn btn-outline" onclick="deleteEmployeeDataDB()"
               style="width:auto; margin:0; color:red; border-color:red; background:#fff5f5;">❌ حذف بيانات الموظف
               نهائياً</button>
@@ -932,6 +936,11 @@
           </div>
         </div>
 
+      </div>
+
+      <div id="globalUpdateStats" style="display:none; margin-top:10px; padding:10px; background:#e3f2fd; border-radius:8px; text-align:center; font-weight:bold; border: 1px solid #90caf9;">
+        <span style="color:#2e7d32; margin-left:20px;">✅ سيتم تحديث: <span id="updateCount" style="font-size:1.2em;">0</span></span>
+        <span style="color:#c62828;">🚫 سيتم تجاهل (جديد): <span id="ignoreCount" style="font-size:1.2em;">0</span></span>
       </div>
 
       <div style="display:flex; gap:10px; margin-top:15px;">
@@ -2184,9 +2193,24 @@
       if (area.style.display === 'block') area.focus();
     };
 
+    window.clearPasteAreaAndGrid = () => {
+        document.getElementById('excelPasteArea').value = '';
+        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#999;">اختر "تحميل البيانات" أو "لصق بيانات جديدة" للبدء</p>';
+        const stats = document.getElementById('globalUpdateStats');
+        if(stats) {
+            stats.style.display = 'none';
+            document.getElementById('updateCount').innerText = '0';
+            document.getElementById('ignoreCount').innerText = '0';
+        }
+    };
+
     window.deleteEmployeeDataDB = async () => {
       const emp = document.getElementById('importEmpSelect').value;
       const empName = getEmployeeLabel(emp);
+      
+      if (emp === 'global_update') {
+        return alert('❌ لا يمكن حذف البيانات في وضع التحديث الشامل.');
+      }
 
       if (!confirm(`⚠️ تحذير هام جداً!\n\nهل أنت متأكد من رغبتك في حذف جميع بيانات أولياء الأمور الخاصة بـ (${empName}) من قاعدة البيانات نهائياً؟\n\nلا يمكن التراجع عن هذا الإجراء.`)) return;
 
@@ -2241,6 +2265,21 @@
         document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#999;">الرجاء اختيار موظف من القائمة</p>';
         return;
       }
+      
+      if (emp === 'global_update') {
+        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center;">جاري تحميل قاعدة البيانات للمقارنة...</p>';
+        const { data, error } = await supabase.from('parents').select('parent_code');
+        if (error) { alert('خطأ: ' + error.message); return; }
+        window.existingParentsMap = new Set(data.map(p => p.parent_code));
+        
+        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#2979ff; font-weight:bold;">✨ وضع التحديث الشامل ✨<br>الصق البيانات ليتم تحديثها. <span style="color:red; background:#ffebee; padding:2px 5px; border-radius:4px;">الصفوف الحمراء</span> تعني طلاب جدد غير مسجلين (لن يتم حفظهم).</p>';
+        document.getElementById('excelPasteArea').style.display = 'block';
+        document.getElementById('excelPasteArea').value = '';
+        document.getElementById('excelPasteArea').focus();
+        if(document.getElementById('globalUpdateStats')) document.getElementById('globalUpdateStats').style.display = 'none';
+        return;
+      }
+
       document.getElementById('excelPasteArea').value = '';
       document.getElementById('gridContainer').innerHTML = '<p style="text-align:center;">جاري التحميل...</p>';
 
@@ -2261,22 +2300,46 @@
       const data = [];
 
       rows.forEach(row => {
-        if (!row.trim()) return;
-        const c = row.split("\t");
-        if (isNaN(parseInt(c[0]))) return;
+        // تنظيف الصفوف الفارغة تماماً
+        if (!row || !row.trim()) return;
+        
+        // تقسيم الخلايا وتنظيف المسافات الزائدة من كل خلية
+        let c = row.split("\t").map(cell => cell ? cell.trim() : "");
+
+        // تجاهل الصف إذا كان الرقم التسلسلي غير صالح أو كود ولي الأمر مفقود (بيانات غير مكتملة)
+        if (!c[0] || isNaN(parseInt(c[0])) || !c[1]) return;
 
         data.push({
           serial_no: c[0],
           parent_code: c[1],
-          parent_name: c[2],
-          identity_no: c[3],
-          phone: c[4],
+          parent_name: c[2] || "",
+          identity_no: c[3] || "",
+          phone: c[4] || "",
           carried_balance: cleanNumber(c[5]),
           term1_balance: cleanNumber(c[6]),
           term2_balance: cleanNumber(c[7]),
           final_balance: cleanNumber(c[8])
         });
       });
+      
+      const isGlobal = document.getElementById('importEmpSelect').value === 'global_update';
+      let updateCount = 0;
+      let ignoreCount = 0;
+
+      if (isGlobal && window.existingParentsMap) {
+        data.forEach(r => {
+            const exists = window.existingParentsMap.has(r.parent_code);
+            r.is_unassigned = !exists;
+            if (exists) updateCount++; else ignoreCount++;
+        });
+        data.sort((a, b) => (a.is_unassigned === b.is_unassigned) ? 0 : a.is_unassigned ? -1 : 1);
+        
+        const stats = document.getElementById('globalUpdateStats');
+        if(stats) { stats.style.display = 'block'; document.getElementById('updateCount').innerText = updateCount; document.getElementById('ignoreCount').innerText = ignoreCount; }
+      } else {
+        const stats = document.getElementById('globalUpdateStats');
+        if(stats) stats.style.display = 'none';
+      }
       renderGrid(data);
     };
 
@@ -2287,6 +2350,7 @@
       }
 
       let html = `<table class="excel-preview-table">
+      ${document.getElementById('importEmpSelect').value === 'global_update' ? '<caption style="caption-side:top; text-align:center; color:red; font-size:12px;">* الصفوف الحمراء = غير مسندة لموظف (ستظهر في الأعلى)</caption>' : ''}
       <thead>
         <tr>
           <th>حذف</th><th>م</th><th>رقم الولي</th><th>الاسم</th><th>الهوية</th><th>الجوال</th>
@@ -2294,8 +2358,13 @@
         </tr>
       </thead><tbody>`;
 
+      const isGlobal = document.getElementById('importEmpSelect').value === 'global_update';
+
       data.forEach((row, index) => {
-        html += `<tr>
+        let trStyle = "";
+        if (isGlobal && row.is_unassigned) trStyle = "background-color: #ffcdd2; border: 2px solid #e57373;";
+        
+        html += `<tr style="${trStyle}">
         <td><button onclick="this.closest('tr').remove()" style="color:red;border:none;background:none;cursor:pointer;">✖</button></td>
         <td contenteditable="true">${row.serial_no || ''}</td>
         <td contenteditable="true">${row.parent_code || ''}</td>
@@ -2347,6 +2416,65 @@
       // 2. حفظ بيانات الجدول
       const emp = document.getElementById('importEmpSelect').value;
       const table = document.querySelector('#gridContainer table tbody');
+
+      if (emp === 'global_update') {
+        if (!table || table.querySelectorAll('tr').length === 0) {
+          alert('⚠️ لا توجد بيانات للحفظ. يرجى لصق البيانات وتحويلها أولاً.');
+          return;
+        }
+        if (!confirm('⚠️ هل أنت متأكد من تحديث البيانات؟\nسيتم تحديث بيانات الطلاب الموجودين فقط، وسيتم تجاهل الطلاب الجدد (الصفوف الحمراء).')) return;
+        
+        if (btnElement) btnElement.innerText = "جاري التحديث...";
+        
+        const rows = table.querySelectorAll('tr');
+        const pastedData = [];
+        rows.forEach(tr => {
+          const cells = tr.querySelectorAll('td');
+          if (cells.length > 1) {
+            pastedData.push({
+              serial_no: parseInt(cells[1].innerText) || 0,
+              parent_code: cells[2].innerText.trim(),
+              parent_name: cells[3].innerText.trim(),
+              identity_no: cells[4].innerText.trim(),
+              phone: cells[5].innerText.trim(),
+              carried_balance: cleanNumber(cells[6].innerText),
+              term1_balance: cleanNumber(cells[7].innerText),
+              term2_balance: cleanNumber(cells[8].innerText),
+              final_balance: cleanNumber(cells[9].innerText)
+            });
+          }
+        });
+
+        try {
+          const { data: existingParents, error: fetchError } = await supabase.from('parents').select('id, parent_code, employee');
+          if (fetchError) throw fetchError;
+          
+          const parentMap = new Map();
+          existingParents.forEach(p => { if(p.parent_code) parentMap.set(p.parent_code, p); });
+          
+          const updates = [];
+          pastedData.forEach(row => {
+            if (parentMap.has(row.parent_code)) {
+              const existing = parentMap.get(row.parent_code);
+              updates.push({ id: existing.id, employee: existing.employee, ...row });
+            }
+          });
+
+          if (updates.length === 0) {
+            alert('⚠️ لم يتم العثور على بيانات صالحة.');
+            if (btnElement) btnElement.innerText = "حفظ (بدون إغلاق)";
+            return;
+          }
+
+          const { error: updateError } = await supabase.from('parents').upsert(updates);
+          if (updateError) throw updateError;
+
+          alert(`✅ تم معالجة ${updates.length} سجل بنجاح.`);
+          if (shouldClose) closeSettings();
+          else if (btnElement) { btnElement.innerText = "تم الحفظ ✅"; setTimeout(() => btnElement.innerText = "💾 حفظ (بدون إغلاق)", 2000); }
+        } catch (e) { alert('❌ حدث خطأ: ' + e.message); if (btnElement) btnElement.innerText = "حفظ (بدون إغلاق)"; }
+        return;
+      }
 
       // جمع البيانات الجديدة من الجدول
       const newRecords = [];
