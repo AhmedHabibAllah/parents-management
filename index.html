@@ -738,6 +738,7 @@
             <!-- الأزرار -->
             <div style="display:flex; align-items:center; gap:8px;">
               <button class="stat-btn" onclick="openStats()" style="width:auto; display:inline-flex;">📊 إحصائيات</button>
+              <button class="btn btn-outline" onclick="openDebtStats()" title="إحصائيات المديونية" style="width:auto; display:inline-flex;">💰 المديونية</button>
               <button class="btn btn-outline" onclick="exportToExcel()" title="تصدير إلى Excel" style="width:auto; display:inline-flex; background:#fff; color:#000; border-color:#000;">📥 Excel</button>
               <button class="btn btn-outline" onclick="toggleDarkMode()" title="الوضع الليلي" style="width:auto; display:inline-flex;">🌙</button>
               <button class="btn btn-outline" onclick="resetView()" title="تحديث وإعادة تعيين العرض" style="width:auto; display:inline-flex;">🔄</button>
@@ -2901,6 +2902,7 @@
                         <label>من:</label><input type="date" id="debtFromDate" onchange="renderDebtChart()">
                         <label>إلى:</label><input type="date" id="debtToDate" onchange="renderDebtChart()">
                     </div>
+                    <button class="btn" onclick="openDailyCollectionStats()" style="width:auto; height:38px; margin-top:25px; background:#43a047; color:white;">💵 تحصيل يومي تفصيلي</button>
                 </div>
                 <div style="background:#fff; padding:10px; border-radius:10px; border:1px solid #eee; height:500px;"><canvas id="debtChartCanvas"></canvas></div>
                 <div id="debtTableContainer" style="margin-top:20px;"></div>
@@ -3064,9 +3066,16 @@
                 tableHtml += `<tr><td>${key}</td>`;
                 employees.forEach(emp => {
                     const currentDebt = timeSeries[key][emp] || 0;
-                    const previousDebt = prevDebtMap[emp] || 0;
                     
-                    const paid = previousDebt - currentDebt;
+                    // تحسين: معالجة القيمة الأولية للمديونية السابقة لتجنب ظهور المدفوع بالسالب في أول يوم
+                    let previousDebt = prevDebtMap[emp];
+                    let paid = 0;
+
+                    if (previousDebt === undefined) {
+                        previousDebt = currentDebt;
+                    } else {
+                        paid = previousDebt - currentDebt;
+                    }
                     
                     if (paid > 0) {
                         totalPaymentsMap[emp] += paid;
@@ -3105,6 +3114,211 @@
         };
         renderDebtChart();
       } catch (e) { alert('Error: ' + e.message); } finally { document.getElementById(loadingId)?.remove(); }
+    };
+
+    window.openDailyCollectionStats = () => {
+        if (!window._debtRawData) return alert('الرجاء الانتظار حتى يتم تحميل البيانات...');
+        
+        const html = `
+            <div style="padding:10px; height:100%; overflow:auto;">
+                <h2 style="text-align:center; color:#2e7d32;">💵 تقرير التحصيل اليومي التفصيلي</h2>
+                
+                <div style="background:#e8f5e9; padding:15px; border-radius:10px; margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; border:1px solid #c8e6c9;">
+                    <label style="font-weight:bold;">الفترة:</label>
+                    <select id="collPeriodSelect" onchange="toggleCollDateInputs(); renderDailyCollection()" style="padding:8px; border-radius:5px;">
+                        <option value="today">اليوم</option>
+                        <option value="yesterday">أمس</option>
+                        <option value="this_week">هذا الأسبوع</option>
+                        <option value="this_month">هذا الشهر</option>
+                        <option value="custom">فترة مخصصة</option>
+                    </select>
+                    
+                    <div id="collCustomDateDiv" style="display:none;">
+                        <label>من:</label><input type="date" id="collFromDate" onchange="renderDailyCollection()">
+                        <label>إلى:</label><input type="date" id="collToDate" onchange="renderDailyCollection()">
+                    </div>
+                    
+                    <label style="font-weight:bold; margin-right:10px;">المخطط:</label>
+                    <select id="collChartType" onchange="renderDailyCollection()" style="padding:8px; border-radius:5px;">
+                        <option value="bar">أعمدة</option>
+                        <option value="pie">دائري</option>
+                        <option value="doughnut">دونات</option>
+                        <option value="line">خطي</option>
+                    </select>
+                    
+                    <button class="btn" onclick="renderDailyCollection()" style="width:auto; height:38px; margin:0; background:#43a047; color:white;">عرض التحصيل</button>
+                </div>
+
+                <div style="height:300px; margin-bottom:20px; background:#fff; padding:10px; border-radius:10px; border:1px solid #eee;">
+                    <canvas id="collChartCanvas"></canvas>
+                </div>
+
+                <div id="collSummaryBox" style="text-align:center; margin-bottom:20px;"></div>
+                <div id="collTableContainer"></div>
+
+                <div style="text-align:center; margin-top:20px;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('dailyCollectionScreen').remove()">إغلاق</button>
+                </div>
+            </div>
+        `;
+
+        const screen = document.createElement('div');
+        screen.className = 'center-screen';
+        screen.id = 'dailyCollectionScreen';
+        screen.style.zIndex = 710;
+        screen.innerHTML = `<div class="box box-large" style="max-width:700px;">${html}</div>`;
+        document.body.appendChild(screen);
+        
+        renderDailyCollection();
+    };
+
+    window.toggleCollDateInputs = () => {
+        const val = document.getElementById('collPeriodSelect').value;
+        document.getElementById('collCustomDateDiv').style.display = (val === 'custom') ? 'block' : 'none';
+    };
+
+    window.renderDailyCollection = () => {
+        const period = document.getElementById('collPeriodSelect').value;
+        let startDate = new Date();
+        let endDate = new Date();
+        startDate.setHours(0,0,0,0);
+        endDate.setHours(23,59,59,999);
+
+        if (period === 'yesterday') {
+            startDate.setDate(startDate.getDate() - 1);
+            endDate.setDate(endDate.getDate() - 1);
+            startDate.setHours(0,0,0,0); endDate.setHours(23,59,59,999);
+        } else if (period === 'this_week') {
+            const day = startDate.getDay();
+            const diff = startDate.getDate() - day + (day == 0 ? -6:1); 
+            startDate.setDate(diff);
+        } else if (period === 'this_month') {
+            startDate.setDate(1);
+        } else if (period === 'custom') {
+            const f = document.getElementById('collFromDate').value;
+            const t = document.getElementById('collToDate').value;
+            if(!f || !t) return;
+            startDate = new Date(f);
+            endDate = new Date(t);
+            endDate.setHours(23,59,59,999);
+        }
+
+        const timeSeries = {};
+        const timeSeriesSets = {};
+        const employees = Object.keys(appConfig.employeeNames);
+        
+        const allPoints = [...window._debtRawData.interactions];
+        window._debtRawData.parents.forEach(p => {
+            if(p.updated_at) allPoints.push({ parent_code: p.parent_code, updated_at: p.updated_at, employee: p.employee });
+        });
+
+        allPoints.forEach(point => {
+            if (!point.updated_at) return;
+            const d = new Date(point.updated_at);
+            // تصحيح: استخدام التوقيت المحلي بدلاً من UTC لضمان تطابق التاريخ مع اختيار المستخدم
+            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            if (!timeSeriesSets[key]) timeSeriesSets[key] = {};
+            employees.forEach(e => { if(!timeSeriesSets[key][e]) timeSeriesSets[key][e] = new Set(); });
+            const emp = point.employee || 'emp1';
+            if (timeSeriesSets[key][emp]) timeSeriesSets[key][emp].add(point.parent_code);
+        });
+
+        Object.keys(timeSeriesSets).forEach(key => {
+            timeSeries[key] = {};
+            employees.forEach(emp => {
+                let sum = 0;
+                if (timeSeriesSets[key][emp]) {
+                    timeSeriesSets[key][emp].forEach(code => {
+                        sum += (window._debtRawData.balanceMap[code] || 0);
+                    });
+                }
+                timeSeries[key][emp] = sum;
+            });
+        });
+
+        const sortedKeys = Object.keys(timeSeries).sort();
+        const collectionStats = {};
+        employees.forEach(e => collectionStats[e] = 0);
+        let totalCollection = 0;
+        const prevDebtMap = {};
+        
+        sortedKeys.forEach(key => {
+            const keyDate = new Date(key);
+            const inRange = keyDate >= startDate && keyDate <= endDate;
+
+            employees.forEach(emp => {
+                const currentDebt = timeSeries[key][emp] || 0;
+                let previousDebt = prevDebtMap[emp];
+                let paid = 0;
+                if (previousDebt === undefined) previousDebt = currentDebt;
+                else paid = previousDebt - currentDebt;
+                
+                prevDebtMap[emp] = currentDebt;
+
+                if (inRange && paid > 0) {
+                    collectionStats[emp] += paid;
+                    totalCollection += paid;
+                }
+            });
+        });
+
+        // رسم المخطط البياني
+        const ctx = document.getElementById('collChartCanvas').getContext('2d');
+        if (window._collChart) window._collChart.destroy();
+        
+        const chartType = document.getElementById('collChartType').value;
+        const labels = employees.map(e => getEmployeeLabel(e));
+        const data = employees.map(e => collectionStats[e]);
+        const bgColors = ['#4caf50', '#2196f3', '#ff9800', '#f44336', '#9c27b0', '#00bcd4'];
+
+        window._collChart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'قيمة التحصيل',
+                    data: data,
+                    backgroundColor: bgColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: chartType !== 'bar' },
+                    title: { display: true, text: 'توزيع التحصيل حسب الموظف', font: { size: 16 } }
+                }
+            }
+        });
+
+        document.getElementById('collSummaryBox').innerHTML = `
+            <div style="font-size:24px; font-weight:bold; color:#2e7d32;">
+                إجمالي التحصيل: ${totalCollection.toLocaleString('en-US')} ريال
+            </div>
+            <div style="font-size:14px; color:#666;">
+                للفترة من ${startDate.toLocaleDateString('ar-EG')} إلى ${endDate.toLocaleDateString('ar-EG')}
+            </div>
+        `;
+
+        let tableHtml = `<table class="excel-preview-table">
+            <thead>
+                <tr>
+                    <th style="background:#e8f5e9;">الموظف</th>
+                    <th style="background:#c8e6c9;">قيمة التحصيل</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        employees.forEach(emp => {
+            tableHtml += `<tr>
+                <td>${getEmployeeLabel(emp)}</td>
+                <td style="font-weight:bold; color:#2e7d32;">${collectionStats[emp].toLocaleString('en-US')}</td>
+            </tr>`;
+        });
+        
+        tableHtml += `</tbody></table>`;
+        document.getElementById('collTableContainer').innerHTML = tableHtml;
     };
 
     // تحديث الجدول عند تغيير الموظف
