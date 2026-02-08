@@ -661,6 +661,13 @@
       background-color: #1e1e1e !important;
       border-left-color: #333 !important;
     }
+
+    /* تنسيقات القوائم الديناميكية في الإعدادات */
+    .settings-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+    .settings-row input { margin-bottom: 0; flex: 1; }
+    .btn-sm { height: 50px; padding: 0 15px; font-size: 16px; width: auto; }
+    .btn-danger { background: #ffcdd2; color: #c62828; border: 1px solid #c62828; }
+    .btn-add { background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; margin-top: 10px; }
   </style>
 </head>
 
@@ -674,9 +681,10 @@
       <h3 style="font-size:22px; color:#555; margin-top:0;">👋 مرحباً بك</h3>
       <p style="color:#666; margin-bottom:20px;">يرجى اختيار حساب الموظف للمتابعة</p>
       <div id="employeeButtons">
+        <!-- سيتم التحكم في هذا المحتوى عبر الجافاسكريبت -->
         <!-- سيتم توليد الأزرار هنا -->
       </div>
-      <button class="btn btn-outline" onclick="openSettingsAdmin()" style="margin-top:20px;">⚙️ إعدادات النظام</button>
+      <button class="btn btn-outline" onclick="openSettingsAdmin()" style="margin-top:20px;">⚙️ إعدادات النظام (إضافة موظفين/مراحل)</button>
       <div style="margin-top: 20px; font-size: 14px; color: #000;">
         <div style="font-weight: 900;">تصميم وتطوير استاذ احمد حبيب الله</div>
         <a href="mailto:designissue@gmail.com" style="color: #000; text-decoration: none; font-weight: bold;">designissue@gmail.com</a>
@@ -756,6 +764,9 @@
               <th>رقم الولي</th>
               <th>الاسم</th>
               <th>رقم الهوية</th>
+              <th>المدرسة</th>
+              <th>القسم</th>
+              <th>الصف</th>
               <th>الجوال</th>
               <th>تاريخ آخر اتصال</th>
               <th>تاريخ الاتصال القادم</th>
@@ -879,21 +890,17 @@
         </div>
 
         <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
-          <label>🔐 كلمات مرور الموظفين</label>
-          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
-            <input type="text" id="pass_emp1" placeholder="رمز موظف 1" style="margin:0;">
-            <input type="text" id="pass_emp2" placeholder="رمز موظف 2" style="margin:0;">
-            <input type="text" id="pass_emp3" placeholder="رمز موظف 3" style="margin:0;">
-            <input type="text" id="pass_emp4" placeholder="رمز موظف 4" style="margin:0;">
-          </div>
+          <label style="font-size: 18px; color: #1565c0;">👥 إدارة موظفين الاستقبال</label>
+          <p style="font-size:12px; color:#666; margin-top:0;">يمكنك إضافة عدد لا نهائي من الموظفين. المفتاح (Key) يتم توليده تلقائياً.</p>
+          <div id="receptionSettingsContainer"></div>
+          <button class="btn btn-add btn-sm" onclick="addReceptionEmployeeRow()">➕ إضافة موظف استقبال جديد</button>
+        </div>
 
-          <label style="display:block; margin-top:12px;">🧑‍💼 أسماء الموظفين (لعرضها في الواجهة)</label>
-          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-top:6px;">
-            <input type="text" id="name_emp1" placeholder="اسم الموظف 1" style="margin:0;">
-            <input type="text" id="name_emp2" placeholder="اسم الموظف 2" style="margin:0;">
-            <input type="text" id="name_emp3" placeholder="اسم الموظف 3" style="margin:0;">
-            <input type="text" id="name_emp4" placeholder="اسم الموظف 4" style="margin:0;">
-          </div>
+        <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
+          <label style="font-size: 18px; color: #2e7d32;">🏫 إدارة المراحل الدراسية</label>
+          <p style="font-size:12px; color:#666; margin-top:0;">أضف المراحل التي ستظهر في زر "دخول المراحل".</p>
+          <div id="stagesSettingsContainer"></div>
+          <button class="btn btn-add btn-sm" onclick="addStageRow()">➕ إضافة مرحلة جديدة</button>
         </div>
 
         <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
@@ -914,10 +921,7 @@
             <select id="importEmpSelect"
               style="width:200px; margin:0; font-weight:bold; border:2px solid #2979ff;">
               <option value="" selected disabled>اختر الموظف</option>
-              <option value="emp1">موظف 1</option>
-              <option value="emp2">موظف 2</option>
-              <option value="emp3">موظف 3</option>
-              <option value="emp4">موظف 4</option>
+              <!-- سيتم تعبئة القائمة تلقائياً -->
               <option value="global_update">اللصق هنا (تحديث شامل)</option>
             </select>
             <button class="btn btn-outline" onclick="loadDataToGrid()" style="width:auto; margin:0;">📂 تحميل البيانات
@@ -932,7 +936,7 @@
           </div>
 
           <textarea id="excelPasteArea" class="excel-input" style="display:none; margin-bottom:10px;"
-            placeholder="انسخ البيانات من الإكسل والصقها هنا... (تأكد من ترتيب الأعمدة: م - رقم الولي - الاسم - الهوية - الجوال - المدور - ف1 - ف2 - النهائي)"
+            placeholder="انسخ البيانات من الإكسل والصقها هنا... (الترتيب الجديد: الرقم - رقم الطالب - الاسم - الهوية - الجوال - المدرسة - القسم - الصف - المدور - ف1 - ف2 - النهائي)"
             oninput="convertPasteToGrid()">
         </textarea>
 
@@ -1117,7 +1121,8 @@
       employeeNames: { emp1: 'موظف 1', emp2: 'موظف 2', emp3: 'موظف 3', emp4: 'موظف 4' },
       employeeThemes: {},
       statusOptions: "مشغول\nلم يرد\nمع الراتب الجديد\nمع الفصل الدراسي القادم\nتم السداد",
-      manualTargetData: {} // تخزين البيانات اليدوية للمستهدف
+      manualTargetData: {}, // تخزين البيانات اليدوية للمستهدف
+      stages: { 'stage1': { name: 'القسم الابتدائي', pass: '' }, 'stage2': { name: 'القسم المتوسط', pass: '' }, 'stage3': { name: 'القسم الثانوي', pass: '' } }
     };
 
     // دالة مساعدة لحفظ الإعدادات في قاعدة البيانات
@@ -1180,6 +1185,10 @@
             emp3: 'موظف 3',
             emp4: 'موظف 4'
           }, appConfig.employeeNames || {});
+          
+          // إعدادات المراحل الافتراضية
+          appConfig.stages = Object.assign({ 'stage1': { name: 'القسم الابتدائي', pass: '' }, 'stage2': { name: 'القسم المتوسط', pass: '' } }, appConfig.stages || {});
+
           appConfig.employeeThemes = Object.assign({}, appConfig.employeeThemes || {});
 
           console.log('تم تحميل الإعدادات بنجاح:', appConfig);
@@ -1189,7 +1198,8 @@
       }
 
       applyTheme();
-      renderEmployeeButtons();
+      renderEntryScreen('main');
+      updateImportSelect();
       
       if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark-mode');
@@ -1202,19 +1212,67 @@
     }
 
     function getEmployeeLabel(emp) {
-      return (appConfig.employeeNames && appConfig.employeeNames[emp]) || emp;
+      if (appConfig.employeeNames && appConfig.employeeNames[emp]) return appConfig.employeeNames[emp];
+      if (appConfig.stages && appConfig.stages[emp]) return appConfig.stages[emp].name;
+      return emp;
     }
 
-    function renderEmployeeButtons() {
+    // دالة عرض شاشة الدخول (الرئيسية / موظفين / مراحل)
+    window.renderEntryScreen = (view = 'main') => {
       const container = document.getElementById('employeeButtons');
       container.innerHTML = '';
-      ['emp1', 'emp2', 'emp3', 'emp4'].forEach((emp) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.innerText = `👤 ${getEmployeeLabel(emp)}`;
-        btn.onclick = () => checkPasswordAndLogin(emp);
-        container.appendChild(btn);
-      });
+
+      if (view === 'main') {
+        // الزرين الرئيسيين
+        const btnEmployees = document.createElement('button');
+        btnEmployees.className = 'btn';
+        btnEmployees.innerHTML = `👥 دخول الموظفين`;
+        btnEmployees.style.background = 'linear-gradient(135deg, #42a5f5 0%, #1976d2 100%)';
+        btnEmployees.style.color = '#fff';
+        btnEmployees.onclick = () => renderEntryScreen('employees');
+        container.appendChild(btnEmployees);
+
+        const btnStages = document.createElement('button');
+        btnStages.className = 'btn';
+        btnStages.innerHTML = `🏫 دخول المراحل`;
+        btnStages.style.background = 'linear-gradient(135deg, #66bb6a 0%, #388e3c 100%)';
+        btnStages.style.color = '#fff';
+        btnStages.onclick = () => renderEntryScreen('stages');
+        container.appendChild(btnStages);
+
+      } else if (view === 'employees') {
+        // أزرار الموظفين
+        Object.keys(appConfig.employeeNames || {}).forEach((emp) => {
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.innerText = `👤 ${getEmployeeLabel(emp)}`;
+          btn.onclick = () => checkPasswordAndLogin(emp);
+          container.appendChild(btn);
+        });
+        // زر رجوع
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn btn-secondary';
+        backBtn.innerText = '🔙 رجوع';
+        backBtn.onclick = () => renderEntryScreen('main');
+        container.appendChild(backBtn);
+
+      } else if (view === 'stages') {
+        // أزرار المراحل من الإعدادات
+        const stages = appConfig.stages || {};
+        Object.keys(stages).forEach(key => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.innerText = `🏫 ${stages[key].name}`;
+            btn.onclick = () => checkStagePasswordAndLogin(key);
+            container.appendChild(btn);
+        });
+        // زر رجوع
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn btn-secondary';
+        backBtn.innerText = '🔙 رجوع';
+        backBtn.onclick = () => renderEntryScreen('main');
+        container.appendChild(backBtn);
+      }
     }
 
     window.checkPasswordAndLogin = (emp) => {
@@ -1228,6 +1286,19 @@
       }
       showDataForEmployee(emp);
       try { recordLogin(emp); } catch (e) { console.error(e); }
+    };
+
+    window.checkStagePasswordAndLogin = (stageKey) => {
+      const stage = appConfig.stages[stageKey];
+      if (stage && stage.pass && stage.pass.trim() !== "") {
+        const input = prompt(`🔒 أدخل كلمة مرور ${stage.name}:`);
+        if (input !== stage.pass) {
+          alert("كلمة المرور غير صحيحة!");
+          return;
+        }
+      }
+      showDataForStage(stageKey);
+      try { recordLogin(stageKey); } catch (e) { console.error(e); }
     };
 
     // متغيرات الترتيب
@@ -1400,6 +1471,79 @@
       }
     };
 
+    // عرض بيانات المرحلة (فلترة حسب القسم)
+    window.showDataForStage = async (stageKey) => {
+      const stageName = appConfig.stages[stageKey].name;
+      console.log(`جلب بيانات للمرحلة: ${stageName} (${stageKey})`);
+      currentEmployee = stageKey;
+      applyTheme();
+
+      document.getElementById("employeeName").innerText = "لوحة تحكم المرحلة - " + stageName;
+
+      try {
+        // جلب البيانات بناءً على القسم (Section)
+        const { data, error } = await supabase
+          .from("parents")
+          .select("*")
+          .eq("section", stageName)
+          .order("serial_no");
+
+        if (error) {
+          console.error("خطأ في جلب البيانات:", error);
+          const tbody = document.getElementById("tableBody");
+          tbody.innerHTML = `<tr><td colspan='15' style='text-align:center; color:red;'>
+          خطأ في جلب البيانات: ${error.message}
+          <br><button onclick="showDataForStage('${stageKey}')" class="btn btn-sm" style="margin-top:10px;">إعادة المحاولة</button>
+        </td></tr>`;
+          return;
+        }
+
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan='15' style='text-align:center; color:orange; padding:30px;'>
+          لا توجد بيانات للقسم: "<strong>${stageName}</strong>". 
+          <br>يرجى التأكد من أن اسم المرحلة في الإعدادات يطابق تماماً البيانات في عمود "القسم" (Section).
+        </td></tr>`;
+        } else {
+          // دمج التفاعلات (نفس منطق الموظفين)
+          let interactions = [];
+          const parentCodes = data.map(p => p.parent_code).filter(c => c);
+
+          if (parentCodes.length > 0) {
+            const { data: intData, error: intError } = await supabase
+              .from('interactions')
+              .select('*')
+              .in('parent_code', parentCodes)
+              .order('updated_at', { ascending: false })
+              .range(0, 4999);
+
+            if (!intError && intData) interactions = intData;
+          }
+
+          const intMap = {};
+          interactions.forEach(i => { if (!intMap[i.parent_code]) intMap[i.parent_code] = i; });
+
+          window.currentEmployeeData = data.map(p => {
+            const interaction = intMap[p.parent_code];
+            const merged = { ...p, ...interaction };
+            if (!interaction) merged.updated_at = null;
+            return merged;
+          });
+
+          sortAndRender();
+        }
+
+        document.getElementById("employeeScreen").style.display = "none";
+        document.getElementById("dashboardScreen").style.display = "block";
+
+      } catch (e) {
+        console.error("خطأ غير متوقع:", e);
+        alert("حدث خطأ: " + e.message);
+      }
+    };
+
     window.renderParentsTable = (dataList) => {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
@@ -1448,6 +1592,9 @@
             <td>${p.parent_code || '-'}</td>
             <td><strong>${p.parent_name || '-'}${statusBadge}</strong></td>
             <td>${p.identity_no || '-'}</td>
+            <td>${p.school || '-'}</td>
+            <td>${p.section || '-'}</td>
+            <td>${p.grade || '-'}</td>
             <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
             <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
             <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
@@ -1651,6 +1798,9 @@
           <tr><td>رقم الولي (Code)</td><td>${formatVal(d.parent_code)}</td></tr>
           <tr><td>رقم الهوية</td><td>${formatVal(d.identity_no)}</td></tr>
           <tr><td>رقم الجوال</td><td>${formatVal(d.phone)}</td></tr>
+          <tr><td>المدرسة</td><td>${formatVal(d.school)}</td></tr>
+          <tr><td>القسم</td><td>${formatVal(d.section)}</td></tr>
+          <tr><td>الصف</td><td>${formatVal(d.grade)}</td></tr>
           
           <tr><th colspan="2" style="background:#eee; color:#333;">البيانات المالية</th></tr>
           <tr><td>الرصيد المدور</td><td>${formatMoney(d.carried_balance)}</td></tr>
@@ -1674,6 +1824,7 @@
       closeSidebar();
       document.getElementById("dashboardScreen").style.display = "none";
       document.getElementById("employeeScreen").style.display = "flex";
+      renderEntryScreen('main'); // العودة للشاشة الرئيسية
       try { recordLogout(currentEmployee); } catch (e) { console.error(e); }
     };
 
@@ -1690,15 +1841,10 @@
         // Populate fields
         document.getElementById('themeColor').value = appConfig.theme;
         document.getElementById('paymentUrlSetting').value = appConfig.paymentUrl;
-        document.getElementById('pass_emp1').value = appConfig.passwords.emp1 || '';
-        document.getElementById('pass_emp2').value = appConfig.passwords.emp2 || '';
-        document.getElementById('pass_emp3').value = appConfig.passwords.emp3 || '';
-        document.getElementById('pass_emp4').value = appConfig.passwords.emp4 || '';
         document.getElementById('statusOptionsInput').value = appConfig.statusOptions;
-        document.getElementById('name_emp1').value = appConfig.employeeNames.emp1 || 'موظف 1';
-        document.getElementById('name_emp2').value = appConfig.employeeNames.emp2 || 'موظف 2';
-        document.getElementById('name_emp3').value = appConfig.employeeNames.emp3 || 'موظف 3';
-        document.getElementById('name_emp4').value = appConfig.employeeNames.emp4 || 'موظف 4';
+        
+        renderSettingsUI(); // بناء واجهة القوائم الديناميكية
+        updateImportSelect();
 
         document.getElementById("settingsScreen").style.display = "flex";
       } else {
@@ -1708,6 +1854,68 @@
 
     window.closeAdminLogin = () => { document.getElementById('adminLoginScreen').style.display = 'none'; };
 
+    // --- دوال بناء واجهة الإعدادات الديناميكية ---
+    window.renderSettingsUI = () => {
+      // 1. Reception Employees
+      const recContainer = document.getElementById('receptionSettingsContainer');
+      recContainer.innerHTML = '';
+      const empNames = appConfig.employeeNames || {};
+      const empPass = appConfig.passwords || {};
+      
+      Object.keys(empNames).forEach(key => {
+        const div = document.createElement('div');
+        div.className = 'settings-row';
+        div.innerHTML = `
+          <input type="text" value="${empNames[key]}" placeholder="اسم الموظف" data-key="${key}" class="rec-name-input">
+          <input type="text" value="${empPass[key] || ''}" placeholder="كلمة المرور" class="rec-pass-input">
+          <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">🗑️</button>
+        `;
+        recContainer.appendChild(div);
+      });
+
+      // 2. Stages
+      const stageContainer = document.getElementById('stagesSettingsContainer');
+      stageContainer.innerHTML = '';
+      const stages = appConfig.stages || {};
+      
+      Object.keys(stages).forEach(key => {
+        const div = document.createElement('div');
+        div.className = 'settings-row';
+        div.innerHTML = `
+          <input type="text" value="${stages[key].name}" placeholder="اسم المرحلة" data-key="${key}" class="stage-name-input">
+          <input type="text" value="${stages[key].pass || ''}" placeholder="كلمة المرور" class="stage-pass-input">
+          <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">🗑️</button>
+        `;
+        stageContainer.appendChild(div);
+      });
+    };
+
+    window.addReceptionEmployeeRow = () => {
+      const key = 'emp_' + Date.now(); // مفتاح فريد
+      const container = document.getElementById('receptionSettingsContainer');
+      const div = document.createElement('div');
+      div.className = 'settings-row';
+      div.innerHTML = `
+        <input type="text" value="" placeholder="اسم الموظف الجديد" data-key="${key}" class="rec-name-input">
+        <input type="text" value="" placeholder="كلمة المرور" class="rec-pass-input">
+        <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">🗑️</button>
+      `;
+      container.appendChild(div);
+    };
+
+    window.addStageRow = () => {
+      const key = 'stage_' + Date.now(); // مفتاح فريد
+      const container = document.getElementById('stagesSettingsContainer');
+      const div = document.createElement('div');
+      div.className = 'settings-row';
+      div.innerHTML = `
+        <input type="text" value="" placeholder="اسم المرحلة الجديدة" data-key="${key}" class="stage-name-input">
+        <input type="text" value="" placeholder="كلمة المرور" class="stage-pass-input">
+        <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">🗑️</button>
+      `;
+      container.appendChild(div);
+    };
+
     window.closeSettings = () => {
       document.getElementById("settingsScreen").style.display = "none";
     };
@@ -1715,21 +1923,42 @@
     window.saveAppSettings = async () => {
       appConfig.theme = document.getElementById('themeColor').value;
       appConfig.paymentUrl = document.getElementById('paymentUrlSetting').value;
-      appConfig.passwords.emp1 = document.getElementById('pass_emp1').value;
-      appConfig.passwords.emp2 = document.getElementById('pass_emp2').value;
-      appConfig.passwords.emp3 = document.getElementById('pass_emp3').value;
-      appConfig.passwords.emp4 = document.getElementById('pass_emp4').value;
       appConfig.statusOptions = document.getElementById('statusOptionsInput').value;
-      appConfig.employeeNames = {
-        emp1: document.getElementById('name_emp1').value || 'موظف 1',
-        emp2: document.getElementById('name_emp2').value || 'موظف 2',
-        emp3: document.getElementById('name_emp3').value || 'موظف 3',
-        emp4: document.getElementById('name_emp4').value || 'موظف 4'
-      };
+      
+      // حفظ الموظفين
+      const newNames = {};
+      const newPass = {};
+      document.querySelectorAll('#receptionSettingsContainer .settings-row').forEach(row => {
+        const nameInput = row.querySelector('.rec-name-input');
+        const passInput = row.querySelector('.rec-pass-input');
+        const key = nameInput.getAttribute('data-key');
+        if (nameInput.value.trim()) {
+            newNames[key] = nameInput.value.trim();
+            newPass[key] = passInput.value.trim();
+        }
+      });
+      appConfig.employeeNames = newNames;
+      appConfig.passwords = newPass;
+
+      // حفظ المراحل
+      const newStages = {};
+      document.querySelectorAll('#stagesSettingsContainer .settings-row').forEach(row => {
+        const nameInput = row.querySelector('.stage-name-input');
+        const passInput = row.querySelector('.stage-pass-input');
+        const key = nameInput.getAttribute('data-key');
+        if (nameInput.value.trim()) {
+            newStages[key] = {
+                name: nameInput.value.trim(),
+                pass: passInput.value.trim()
+            };
+        }
+      });
+      appConfig.stages = newStages;
 
       await saveConfigToDB();
       applyTheme();
-      renderEmployeeButtons();
+      updateImportSelect(); // تحديث قائمة الاستيراد
+      renderEntryScreen('main');
       alert('تم حفظ الإعدادات بنجاح ✅');
     };
 
@@ -1808,7 +2037,8 @@
         }
 
         const byEmp = {};
-        const knownEmps = Object.keys(appConfig.employeeNames || {});
+        // نجمع كل المفاتيح المعروفة (موظفين + مراحل)
+        const knownEmps = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
         knownEmps.forEach(e => {
           byEmp[e] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0, total_calls: 0, responded: 0 };
         });
@@ -1835,6 +2065,11 @@
           '<option value="total_calls">إجمالي الاتصالات</option>',
           '<option value="responded">عدد الردود</option>',
           '</select>',
+          '<select id="statsCategory" onchange="renderStatsTable()" style="margin-left:5px;">',
+          '<option value="all">عرض الكل</option>',
+          '<option value="reception">موظفين الاستقبال</option>',
+          '<option value="stages">المراحل الدراسية</option>',
+          '</select>',
           '<select id="statsChartType" onchange="renderStatsTable()"><option value="bar">أعمدة</option><option value="pie">دائري</option><option value="doughnut">دونات</option><option value="line">خطي</option></select>',
           '<button onclick="renderStatsTable()" class="btn">تحديث</button>',
           '<button class="btn" onclick="saveStatsPDF(\'statsScreen\')">حفظ كـ PDF</button>',
@@ -1853,6 +2088,7 @@
 
         window.renderStatsTable = () => {
           const metric = document.getElementById('statsMetric')?.value || 'sum_final';
+          const category = document.getElementById('statsCategory')?.value || 'all';
           const metricLabels = {
              'sum_final': 'مجموع الرصيد النهائي',
              'sum_carried': 'مجموع الرصيد المدور',
@@ -1862,7 +2098,17 @@
              'responded': 'عدد الردود'
           };
 
-          const labelsIds = Object.keys(byEmp);
+          let labelsIds = Object.keys(byEmp);
+          
+          // تصفية حسب الفئة
+          if (category === 'reception') {
+              const receptionKeys = Object.keys(appConfig.employeeNames || {});
+              labelsIds = labelsIds.filter(id => receptionKeys.includes(id));
+          } else if (category === 'stages') {
+              const stageKeys = Object.keys(appConfig.stages || {});
+              labelsIds = labelsIds.filter(id => stageKeys.includes(id));
+          }
+
           const labels = labelsIds.map(id => getEmployeeLabel(id));
           const dataValues = labelsIds.map(k => byEmp[k][metric]);
 
@@ -1995,7 +2241,7 @@
 
             // تجميع البيانات
             const stats = {};
-            const empKeys = Object.keys(appConfig.employeeNames || {emp1:'', emp2:'', emp3:'', emp4:''});
+            const empKeys = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
             empKeys.forEach(k => {
                 stats[k] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
             });
@@ -2438,6 +2684,23 @@
       } catch (e) { alert('Error: ' + e.message); } finally { document.getElementById(loadingId)?.remove(); }
     };
 
+    // تحديث قائمة الموظفين في شاشة الاستيراد
+    window.updateImportSelect = () => {
+        const select = document.getElementById('importEmpSelect');
+        if(!select) return;
+        select.innerHTML = '<option value="" selected disabled>اختر الموظف / المرحلة</option>';
+        
+        // إضافة الموظفين
+        Object.keys(appConfig.employeeNames || {}).forEach(key => {
+            select.innerHTML += `<option value="${key}">👤 ${appConfig.employeeNames[key]}</option>`;
+        });
+        // إضافة المراحل
+        Object.keys(appConfig.stages || {}).forEach(key => {
+            select.innerHTML += `<option value="${key}">🏫 ${appConfig.stages[key].name}</option>`;
+        });
+        select.innerHTML += '<option value="global_update">اللصق هنا (تحديث شامل)</option>';
+    };
+
     window.togglePasteArea = () => {
       const area = document.getElementById('excelPasteArea');
       area.style.display = area.style.display === 'none' ? 'block' : 'none';
@@ -2532,10 +2795,13 @@
           parent_name: c[2] || "",
           identity_no: c[3] || "",
           phone: c[4] || "",
-          carried_balance: cleanNumber(c[5]),
-          term1_balance: cleanNumber(c[6]),
-          term2_balance: cleanNumber(c[7]),
-          final_balance: cleanNumber(c[8])
+          school: c[5] || "",
+          section: c[6] || "",
+          grade: c[7] || "",
+          carried_balance: cleanNumber(c[8]),
+          term1_balance: cleanNumber(c[9]),
+          term2_balance: cleanNumber(c[10]),
+          final_balance: cleanNumber(c[11])
         });
       });
       
@@ -2570,7 +2836,7 @@
       ${document.getElementById('importEmpSelect').value === 'global_update' ? '<caption style="caption-side:top; text-align:center; color:red; font-size:12px;">* الصفوف الحمراء = غير مسندة لموظف (ستظهر في الأعلى)</caption>' : ''}
       <thead>
         <tr>
-          <th>حذف</th><th>م</th><th>رقم الولي</th><th>الاسم</th><th>الهوية</th><th>الجوال</th>
+          <th>حذف</th><th>م</th><th>رقم الولي</th><th>الاسم</th><th>الهوية</th><th>الجوال</th><th>المدرسة</th><th>القسم</th><th>الصف</th>
           <th>المدور</th><th>ف1</th><th>ف2</th><th>النهائي</th>
         </tr>
       </thead><tbody>`;
@@ -2588,6 +2854,9 @@
         <td contenteditable="true">${row.parent_name || ''}</td>
         <td contenteditable="true">${row.identity_no || ''}</td>
         <td contenteditable="true">${row.phone || ''}</td>
+        <td contenteditable="true">${row.school || ''}</td>
+        <td contenteditable="true">${row.section || ''}</td>
+        <td contenteditable="true">${row.grade || ''}</td>
         <td contenteditable="true">${row.carried_balance || 0}</td>
         <td contenteditable="true">${row.term1_balance || 0}</td>
         <td contenteditable="true">${row.term2_balance || 0}</td>
@@ -2609,6 +2878,9 @@
         "الاسم": row.parent_name,
         "رقم الهوية": row.identity_no,
         "الجوال": row.phone,
+        "المدرسة": row.school,
+        "القسم": row.section,
+        "الصف": row.grade,
         "تاريخ آخر اتصال": row.updated_at ? new Date(row.updated_at).toLocaleDateString('en-GB') : '',
         "تاريخ الاتصال القادم": row.next_call_date || '',
         "الموظف": row.employee ? getEmployeeLabel(row.employee) : '',
@@ -2655,10 +2927,13 @@
               parent_name: cells[3].innerText.trim(),
               identity_no: cells[4].innerText.trim(),
               phone: cells[5].innerText.trim(),
-              carried_balance: cleanNumber(cells[6].innerText),
-              term1_balance: cleanNumber(cells[7].innerText),
-              term2_balance: cleanNumber(cells[8].innerText),
-              final_balance: cleanNumber(cells[9].innerText)
+              school: cells[6].innerText.trim(),
+              section: cells[7].innerText.trim(),
+              grade: cells[8].innerText.trim(),
+              carried_balance: cleanNumber(cells[9].innerText),
+              term1_balance: cleanNumber(cells[10].innerText),
+              term2_balance: cleanNumber(cells[11].innerText),
+              final_balance: cleanNumber(cells[12].innerText)
             });
           }
         });
@@ -2708,10 +2983,13 @@
               parent_name: cells[3].innerText,
               identity_no: cells[4].innerText,
               phone: cells[5].innerText,
-              carried_balance: cleanNumber(cells[6].innerText),
-              term1_balance: cleanNumber(cells[7].innerText),
-              term2_balance: cleanNumber(cells[8].innerText),
-              final_balance: cleanNumber(cells[9].innerText)
+              school: cells[6].innerText,
+              section: cells[7].innerText,
+              grade: cells[8].innerText,
+              carried_balance: cleanNumber(cells[9].innerText),
+              term1_balance: cleanNumber(cells[10].innerText),
+              term2_balance: cleanNumber(cells[11].innerText),
+              final_balance: cleanNumber(cells[12].innerText)
             });
           }
         });
@@ -2949,7 +3227,7 @@
             // الهيكل: { "YYYY-MM-DD": { "emp1": 1000, "emp2": 500 } }
             const timeSeries = {};
             const timeSeriesSets = {}; // لتخزين الآباء الفريدين لكل فترة
-            const employees = Object.keys(appConfig.employeeNames);
+            const employees = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
             
             // دمج التفاعلات والآباء للحصول على تواريخ التحديث
             // نستخدم التفاعلات لأنها أدق تاريخياً، ونستخدم الآباء للرصيد
@@ -3205,7 +3483,7 @@
 
         const timeSeries = {};
         const timeSeriesSets = {};
-        const employees = Object.keys(appConfig.employeeNames);
+        const employees = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
         
         const allPoints = [...window._debtRawData.interactions];
         window._debtRawData.parents.forEach(p => {
@@ -3398,6 +3676,7 @@
 
     // Init
     loadSettings();
+    // سيتم استدعاء updateImportSelect داخل loadSettings بعد تحميل البيانات
     makeTableResizable(document.getElementById('parentsTable'));
   </script>
 
