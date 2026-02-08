@@ -214,6 +214,7 @@
       min-width: 1600px;
     }
 
+    /* تنسيق الهيدر */
     thead {
       background: #e0e0e0;
       color: #000;
@@ -904,6 +905,28 @@
         </div>
 
         <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
+          <label style="font-size: 18px; color: #6a1b9a;">🔍 بحث شامل في قاعدة البيانات</label>
+          <p style="font-size:12px; color:#666; margin-top:0;">ابحث عن أي طالب أو ولي أمر في النظام بالكامل لمعرفة الموظف المسند إليه.</p>
+          <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <select id="globalSearchCol" style="width:150px; margin-bottom:0;">
+              <option value="parent_name">اسم ولي الأمر</option>
+              <option value="parent_code">رقم ولي الأمر</option>
+              <option value="student_name">اسم الطالب</option>
+              <option value="student_code">رقم الطالب</option>
+              <option value="phone">رقم الجوال</option>
+              <option value="identity_no">رقم الهوية</option>
+            </select>
+            <input type="text" id="globalSearchInput" placeholder="اكتب للبحث..." style="margin-bottom:0; flex:1;">
+            <div style="display:flex; align-items:center; background:#f5f5f5; padding:0 10px; border-radius:12px; border:2px solid #e0e0e0; height:54px;">
+                <input type="checkbox" id="globalSearchExact" style="width:20px; height:20px; margin:0;">
+                <label for="globalSearchExact" style="margin-right:8px; font-size:14px; cursor:pointer; white-space:nowrap;">مطابق تماماً</label>
+            </div>
+            <button class="btn" onclick="searchGlobalDB()" style="width:auto; margin-bottom:0; background:#6a1b9a; color:white;">بحث</button>
+          </div>
+          <div id="globalSearchResults" style="margin-top:15px; overflow:auto; max-height:300px; border:1px solid #eee; border-radius:8px;"></div>
+        </div>
+
+        <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
           <label>📝 خيارات حالة الاتصال (ضع كل خيار في سطر جديد)</label>
           <textarea id="statusOptionsInput" placeholder="مشغول
 لم يرد
@@ -936,7 +959,7 @@
           </div>
 
           <textarea id="excelPasteArea" class="excel-input" style="display:none; margin-bottom:10px;"
-            placeholder="انسخ البيانات من الإكسل والصقها هنا... (الترتيب الجديد: الرقم - رقم الطالب - الاسم - الهوية - الجوال - المدرسة - القسم - الصف - المدور - ف1 - ف2 - النهائي)"
+            placeholder="انسخ البيانات من الإكسل والصقها هنا... (الترتيب: الرقم - رقم الطالب - اسم الطالب - رقم الولي - اسم الولي - الهوية - الجوال - المدور - ف1 - ف2 - النهائي)"
             oninput="convertPasteToGrid()">
         </textarea>
 
@@ -1303,6 +1326,7 @@
 
     // متغيرات الترتيب
     window.currentEmployeeData = [];
+    window.currentViewMode = 'reception'; // 'reception' or 'stage'
     let currentSort = { field: 'serial_no', dir: 'asc' };
 
     window.applySort = () => {
@@ -1373,6 +1397,7 @@
     window.showDataForEmployee = async (employee) => {
       console.log(`جلب بيانات للموظف: ${employee}`);
       currentEmployee = employee;
+      window.currentViewMode = 'reception'; // وضع الاستقبال (تجميع)
       applyTheme();
 
       document.getElementById("employeeName").innerText = "لوحة تحكم - " + getEmployeeLabel(employee);
@@ -1415,54 +1440,11 @@
           <br>الرجاء إضافة بيانات من خلال الإعدادات.
         </td></tr>`;
         } else {
-          // تجميع البيانات حسب رقم ولي الأمر (parent_code) لدمج المديونيات
-          const groupedMap = {};
-          data.forEach(row => {
-            const code = row.parent_code;
-            const key = code ? code : `unique_${row.id}`;
-            
-            if (!groupedMap[key]) {
-              groupedMap[key] = {
-                ...row,
-                schools: new Set(row.school ? [row.school] : []),
-                sections: new Set(row.section ? [row.section] : []),
-                grades: new Set(row.grade ? [row.grade] : []),
-                carried_balance: cleanNumber(row.carried_balance),
-                term1_balance: cleanNumber(row.term1_balance),
-                term2_balance: cleanNumber(row.term2_balance),
-                final_balance: cleanNumber(row.final_balance),
-                count: 1
-              };
-            } else {
-              const existing = groupedMap[key];
-              existing.carried_balance += cleanNumber(row.carried_balance);
-              existing.term1_balance += cleanNumber(row.term1_balance);
-              existing.term2_balance += cleanNumber(row.term2_balance);
-              existing.final_balance += cleanNumber(row.final_balance);
-              
-              if (row.school) existing.schools.add(row.school);
-              if (row.section) existing.sections.add(row.section);
-              if (row.grade) existing.grades.add(row.grade);
-              existing.count++;
-            }
-          });
-
-          const groupedData = Object.values(groupedMap).map((item, index) => {
-            if (item.count > 1) {
-              item.school = Array.from(item.schools).join('، ');
-              item.section = Array.from(item.sections).join('، ');
-              item.grade = Array.from(item.grades).join('، ');
-            }
-            delete item.schools; delete item.sections; delete item.grades; delete item.count;
-            item.serial_no = index + 1;
-            return item;
-          });
-
           // دمج بيانات التفاعلات
           let interactions = [];
 
           // استخراج أكواد أولياء الأمور لجلب تفاعلاتهم بغض النظر عن الموظف (للحفاظ على التاريخ عند النقل)
-          const parentCodes = groupedData.map(p => p.parent_code).filter(c => c);
+          const parentCodes = data.map(p => p.parent_code).filter(c => c);
 
           if (parentCodes.length > 0) {
             const { data: intData, error: intError } = await supabase
@@ -1485,16 +1467,54 @@
             }
           });
 
-          // دمج البيانات وحفظها
-          window.currentEmployeeData = groupedData.map(p => {
+          // 1. دمج التفاعلات مع البيانات الخام أولاً
+          const rawDataWithInteractions = data.map(p => {
             const interaction = intMap[p.parent_code]; // can be undefined
             const merged = { ...p, ...interaction };
-            // If there was no interaction, the `updated_at` from the parent record is used, which is wrong.
-            // It reflects data import time, not contact time. We nullify it to fix the "contacted today" check.
-            if (!interaction) {
-              merged.updated_at = null;
-            }
+            if (!interaction) merged.updated_at = null;
             return merged;
+          });
+
+          // 2. تجميع البيانات حسب ولي الأمر (Aggregation)
+          const groupedData = {};
+          rawDataWithInteractions.forEach(row => {
+            const pCode = row.parent_code ? String(row.parent_code).trim() : "UNKNOWN";
+            if (!groupedData[pCode]) {
+              // تهيئة السجل المجمع
+              groupedData[pCode] = {
+                ...row, // نسخ بيانات أول طالب كبيانات أساسية لولي الأمر
+                student_count: 0,
+                carried_balance: 0,
+                term1_balance: 0,
+                term2_balance: 0,
+                final_balance: 0,
+                _student_ids: new Set()
+              };
+            }
+
+            // حساب عدد الطلاب (بناءً على رقم الطالب الفريد لتجنب تكرار العد لنفس الطالب)
+            const sCode = row.student_code ? String(row.student_code).trim() : null;
+            if (sCode) {
+                if (!groupedData[pCode]._student_ids.has(sCode)) {
+                    groupedData[pCode]._student_ids.add(sCode);
+                    groupedData[pCode].student_count++;
+                }
+            } else {
+                // في حال عدم وجود رقم طالب، نعد الصف كطالب
+                groupedData[pCode].student_count++;
+            }
+
+            // جمع الأرصدة
+            groupedData[pCode].carried_balance += Number(row.carried_balance || 0);
+            groupedData[pCode].term1_balance += Number(row.term1_balance || 0);
+            groupedData[pCode].term2_balance += Number(row.term2_balance || 0);
+            groupedData[pCode].final_balance += Number(row.final_balance || 0);
+          });
+
+          // تحويل الكائن إلى مصفوفة
+          window.currentEmployeeData = Object.values(groupedData).map((item, index) => {
+            item.serial_no = index + 1; // إعادة تسلسل للعرض
+            return item;
           });
 
           // عرض الجدول مرتباً
@@ -1519,16 +1539,17 @@
       const stageName = appConfig.stages[stageKey].name;
       console.log(`جلب بيانات للمرحلة: ${stageName} (${stageKey})`);
       currentEmployee = stageKey;
+      window.currentViewMode = 'stage'; // وضع المراحل (تفصيلي)
       applyTheme();
 
       document.getElementById("employeeName").innerText = "لوحة تحكم المرحلة - " + stageName;
 
       try {
-        // جلب البيانات بناءً على القسم (Section)
+        // جلب البيانات بناءً على الموظف (المرحلة المسندة)
         const { data, error } = await supabase
           .from("parents")
           .select("*")
-          .eq("section", stageName)
+          .eq("employee", stageKey) // التعديل هنا: الاعتماد على الإسناد وليس اسم القسم
           .order("serial_no");
 
         if (error) {
@@ -1546,8 +1567,7 @@
 
         if (!data || data.length === 0) {
           tbody.innerHTML = `<tr><td colspan='15' style='text-align:center; color:orange; padding:30px;'>
-          لا توجد بيانات للقسم: "<strong>${stageName}</strong>". 
-          <br>يرجى التأكد من أن اسم المرحلة في الإعدادات يطابق تماماً البيانات في عمود "القسم" (Section).
+          لا توجد بيانات مسندة لهذه المرحلة حالياً.
         </td></tr>`;
         } else {
           // دمج التفاعلات (نفس منطق الموظفين)
@@ -1588,8 +1608,45 @@
     };
 
     window.renderParentsTable = (dataList) => {
+        const tableHead = document.querySelector("#parentsTable thead");
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
+
+        // تغيير عناوين الجدول بناءً على الوضع (استقبال / مراحل)
+        if (window.currentViewMode === 'stage') {
+          tableHead.innerHTML = `
+            <tr>
+              <th>م</th>
+              <th>رقم الطالب</th>
+              <th>اسم الطالب</th>
+              <th>رقم ولي الأمر</th>
+              <th>اسم ولي الأمر</th>
+              <th>الجوال</th>
+              <th>آخر اتصال</th>
+              <th>الاتصال القادم</th>
+              <th>المدور</th>
+              <th>ف1</th>
+              <th>ف2</th>
+              <th>النهائي</th>
+            </tr>`;
+        } else {
+          // وضع الاستقبال (الافتراضي)
+          tableHead.innerHTML = `
+            <tr>
+              <th>م</th>
+              <th>رقم الولي</th>
+              <th>اسم ولي الأمر</th>
+              <th>رقم الهوية</th>
+              <th>الجوال</th>
+              <th>آخر اتصال</th>
+              <th>الاتصال القادم</th>
+              <th>المدور</th>
+              <th>ف1</th>
+              <th>ف2</th>
+              <th>النهائي</th>
+            </tr>`;
+        }
+
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0); // تصفير الوقت لحساب فرق الأيام بدقة
 
@@ -1630,23 +1687,39 @@
             const tr = document.createElement("tr");
             if (rowClass) tr.className = rowClass;
             tr.onclick = () => selectParent(tr, p);
-            tr.innerHTML = `
-            <td>${p.serial_no || '-'}</td>
-            <td>${p.parent_code || '-'}</td>
-            <td><strong>${p.parent_name || '-'}${statusBadge}</strong></td>
-            <td>${p.identity_no || '-'}</td>
-            <td>${p.school || '-'}</td>
-            <td>${p.section || '-'}</td>
-            <td>${p.grade || '-'}</td>
-            <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
-            <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
-            <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
-            <td>${p.employee ? getEmployeeLabel(p.employee) : '-'}</td>
-            <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
-            <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
-            <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
-            <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
-          `;
+
+            if (window.currentViewMode === 'stage') {
+              // عرض المراحل (تفصيلي للطالب)
+              tr.innerHTML = `
+                <td>${p.serial_no || '-'}</td>
+                <td>${p.student_code || '-'}</td>
+                <td><strong>${p.student_name || '-'}</strong></td>
+                <td>${p.parent_code || '-'}</td>
+                <td>${p.parent_name || '-'}${statusBadge}</td>
+                <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
+                <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
+                <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
+                <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
+                <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
+                <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
+                <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
+              `;
+            } else {
+              // عرض الاستقبال (مجمع لولي الأمر)
+              tr.innerHTML = `
+                <td>${p.serial_no || '-'}</td>
+                <td>${p.parent_code || '-'}</td>
+                <td><strong>${p.parent_name || '-'}${statusBadge}</strong></td>
+                <td>${p.identity_no || '-'}</td>
+                <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
+                <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
+                <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
+                <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
+                <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
+                <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
+                <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
+              `;
+            }
             tbody.appendChild(tr);
         });
     };
@@ -1753,6 +1826,7 @@
       <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name || '-'}</div></div>
       <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
       <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
+      <div class="info-group"><div class="info-label">عدد الأبناء</div><div class="info-value">${formatLtr(data.student_count || 1)}</div></div>
       <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
       <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
       <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
@@ -1841,9 +1915,7 @@
           <tr><td>رقم الولي (Code)</td><td>${formatVal(d.parent_code)}</td></tr>
           <tr><td>رقم الهوية</td><td>${formatVal(d.identity_no)}</td></tr>
           <tr><td>رقم الجوال</td><td>${formatVal(d.phone)}</td></tr>
-          <tr><td>المدرسة</td><td>${formatVal(d.school)}</td></tr>
-          <tr><td>القسم</td><td>${formatVal(d.section)}</td></tr>
-          <tr><td>الصف</td><td>${formatVal(d.grade)}</td></tr>
+          <tr><td>عدد الأبناء</td><td>${formatVal(d.student_count || 1)}</td></tr>
           
           <tr><th colspan="2" style="background:#eee; color:#333;">البيانات المالية</th></tr>
           <tr><td>الرصيد المدور</td><td>${formatMoney(d.carried_balance)}</td></tr>
@@ -2834,17 +2906,16 @@
 
         data.push({
           serial_no: c[0],
-          parent_code: c[1],
-          parent_name: c[2] || "",
-          identity_no: c[3] || "",
-          phone: c[4] || "",
-          school: c[5] || "",
-          section: c[6] || "",
-          grade: c[7] || "",
-          carried_balance: cleanNumber(c[8]),
-          term1_balance: cleanNumber(c[9]),
-          term2_balance: cleanNumber(c[10]),
-          final_balance: cleanNumber(c[11])
+          student_code: c[1] || "",
+          student_name: c[2] || "",
+          parent_code: c[3] || "",
+          parent_name: c[4] || "",
+          identity_no: c[5] || "",
+          phone: c[6] || "",
+          carried_balance: cleanNumber(c[7]),
+          term1_balance: cleanNumber(c[8]),
+          term2_balance: cleanNumber(c[9]),
+          final_balance: cleanNumber(c[10])
         });
       });
       
@@ -2879,7 +2950,7 @@
       ${document.getElementById('importEmpSelect').value === 'global_update' ? '<caption style="caption-side:top; text-align:center; color:red; font-size:12px;">* الصفوف الحمراء = غير مسندة لموظف (ستظهر في الأعلى)</caption>' : ''}
       <thead>
         <tr>
-          <th>حذف</th><th>م</th><th>رقم الولي</th><th>الاسم</th><th>الهوية</th><th>الجوال</th><th>المدرسة</th><th>القسم</th><th>الصف</th>
+          <th>حذف</th><th>م</th><th>رقم الطالب</th><th>اسم الطالب</th><th>رقم الولي</th><th>اسم الولي</th><th>الهوية</th><th>الجوال</th>
           <th>المدور</th><th>ف1</th><th>ف2</th><th>النهائي</th>
         </tr>
       </thead><tbody>`;
@@ -2893,13 +2964,12 @@
         html += `<tr style="${trStyle}">
         <td><button onclick="this.closest('tr').remove()" style="color:red;border:none;background:none;cursor:pointer;">✖</button></td>
         <td contenteditable="true">${row.serial_no || ''}</td>
+        <td contenteditable="true">${row.student_code || ''}</td>
+        <td contenteditable="true">${row.student_name || ''}</td>
         <td contenteditable="true">${row.parent_code || ''}</td>
         <td contenteditable="true">${row.parent_name || ''}</td>
         <td contenteditable="true">${row.identity_no || ''}</td>
         <td contenteditable="true">${row.phone || ''}</td>
-        <td contenteditable="true">${row.school || ''}</td>
-        <td contenteditable="true">${row.section || ''}</td>
-        <td contenteditable="true">${row.grade || ''}</td>
         <td contenteditable="true">${row.carried_balance || 0}</td>
         <td contenteditable="true">${row.term1_balance || 0}</td>
         <td contenteditable="true">${row.term2_balance || 0}</td>
@@ -2911,19 +2981,95 @@
       makeTableResizable(document.querySelector('#gridContainer table'));
     }
 
+    window.searchGlobalDB = async () => {
+      const col = document.getElementById('globalSearchCol').value;
+      const query = document.getElementById('globalSearchInput').value.trim();
+      const isExact = document.getElementById('globalSearchExact').checked;
+      const container = document.getElementById('globalSearchResults');
+
+      if (!query) {
+        container.innerHTML = '<p style="text-align:center; color:#666; padding:10px;">الرجاء إدخال نص للبحث</p>';
+        return;
+      }
+
+      container.innerHTML = '<p style="text-align:center; padding:10px;">جاري البحث...</p>';
+
+      try {
+        let queryBuilder = supabase.from('parents').select('*');
+
+        if (isExact) {
+            queryBuilder = queryBuilder.eq(col, query);
+        } else {
+            queryBuilder = queryBuilder.ilike(col, `%${query}%`);
+        }
+
+        const { data, error } = await queryBuilder.limit(50);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color:#d32f2f; padding:10px;">لا توجد نتائج مطابقة</p>';
+          return;
+        }
+
+        let html = `<table class="excel-preview-table">
+          <thead>
+            <tr>
+              <th style="background:#e1bee7;">الموظف المسند</th>
+              <th>رقم الطالب</th>
+              <th>اسم الطالب</th>
+              <th>رقم الولي</th>
+              <th>اسم الولي</th>
+              <th>الجوال</th>
+              <th>الرصيد النهائي</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+        // إصلاح مشكلة "غير مسند" عند تكرار ولي الأمر
+        // نقوم بإنشاء خريطة تربط كود ولي الأمر بالموظف إذا وجد في أي صف
+        const parentEmpMap = {};
+        data.forEach(r => {
+            if (r.parent_code && r.employee) {
+                parentEmpMap[r.parent_code] = r.employee;
+            }
+        });
+
+        data.forEach(row => {
+          // نستخدم الموظف الموجود في الصف، أو نبحث عنه في الخريطة باستخدام كود ولي الأمر
+          const effectiveEmp = row.employee || parentEmpMap[row.parent_code];
+          html += `<tr>
+            <td style="font-weight:bold; color:#4a148c;">${getEmployeeLabel(effectiveEmp) || 'غير مسند'}</td>
+            <td>${row.student_code || '-'}</td>
+            <td>${row.student_name || '-'}</td>
+            <td>${row.parent_code || '-'}</td>
+            <td>${row.parent_name || '-'}</td>
+            <td>${row.phone || '-'}</td>
+            <td>${(row.final_balance || 0).toLocaleString('en-US')}</td>
+          </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+      } catch (e) {
+        console.error(e);
+        container.innerHTML = `<p style="text-align:center; color:red; padding:10px;">خطأ: ${e.message}</p>`;
+      }
+    };
+
     window.exportToExcel = () => {
       const data = window.currentFilteredData || window.currentEmployeeData;
       if (!data || data.length === 0) return alert("لا توجد بيانات للتصدير");
 
       const exportData = data.map(row => ({
         "م": row.serial_no,
+        "رقم الطالب": row.student_code,
+        "اسم الطالب": row.student_name,
         "رقم الولي": row.parent_code,
-        "الاسم": row.parent_name,
+        "اسم ولي الأمر": row.parent_name,
         "رقم الهوية": row.identity_no,
         "الجوال": row.phone,
-        "المدرسة": row.school,
-        "القسم": row.section,
-        "الصف": row.grade,
         "تاريخ آخر اتصال": row.updated_at ? new Date(row.updated_at).toLocaleDateString('en-GB') : '',
         "تاريخ الاتصال القادم": row.next_call_date || '',
         "الموظف": row.employee ? getEmployeeLabel(row.employee) : '',
@@ -2966,32 +3112,57 @@
           if (cells.length > 1) {
             pastedData.push({
               serial_no: parseInt(cells[1].innerText) || 0,
-              parent_code: cells[2].innerText.trim(),
-              parent_name: cells[3].innerText.trim(),
-              identity_no: cells[4].innerText.trim(),
-              phone: cells[5].innerText.trim(),
-              school: cells[6].innerText.trim(),
-              section: cells[7].innerText.trim(),
-              grade: cells[8].innerText.trim(),
-              carried_balance: cleanNumber(cells[9].innerText),
-              term1_balance: cleanNumber(cells[10].innerText),
-              term2_balance: cleanNumber(cells[11].innerText),
-              final_balance: cleanNumber(cells[12].innerText)
+              student_code: cells[2].innerText.trim(),
+              student_name: cells[3].innerText.trim(),
+              parent_code: cells[4].innerText.trim(),
+              parent_name: cells[5].innerText.trim(),
+              identity_no: cells[6].innerText.trim(),
+              phone: cells[7].innerText.trim(),
+              carried_balance: cleanNumber(cells[8].innerText),
+              term1_balance: cleanNumber(cells[9].innerText),
+              term2_balance: cleanNumber(cells[10].innerText),
+              final_balance: cleanNumber(cells[11].innerText)
             });
           }
         });
 
         try {
-          const { data: existingParents, error: fetchError } = await supabase.from('parents').select('id, parent_code, employee');
+          const { data: existingParents, error: fetchError } = await supabase.from('parents').select('id, parent_code, student_code, student_name, employee');
           if (fetchError) throw fetchError;
           
+          const studentMap = new Map();
           const parentMap = new Map();
-          existingParents.forEach(p => { if(p.parent_code) parentMap.set(p.parent_code, p); });
+          
+          existingParents.forEach(p => { 
+             if(p.student_code) studentMap.set(p.student_code, p);
+             if(p.parent_code) {
+                 if(!parentMap.has(p.parent_code)) parentMap.set(p.parent_code, []);
+                 parentMap.get(p.parent_code).push(p);
+             }
+          });
           
           const updates = [];
           pastedData.forEach(row => {
-            if (parentMap.has(row.parent_code)) {
-              const existing = parentMap.get(row.parent_code);
+            let existing = null;
+            
+            // 1. المحاولة الأولى: المطابقة برقم الطالب (الأدق)
+            if (row.student_code && studentMap.has(row.student_code)) {
+                existing = studentMap.get(row.student_code);
+            }
+            // 2. المحاولة الثانية: المطابقة برقم ولي الأمر + اسم الطالب (للحالات التي لا يوجد فيها رقم طالب في القاعدة)
+            else if (row.parent_code && parentMap.has(row.parent_code)) {
+                const candidates = parentMap.get(row.parent_code);
+                if (row.student_name) {
+                    const nameMatch = candidates.find(c => c.student_name === row.student_name);
+                    if (nameMatch) existing = nameMatch;
+                }
+                // 3. المحاولة الثالثة: إذا كان هناك سجل واحد فقط لهذا الولي في القاعدة، نحدثه (دعم للبيانات القديمة)
+                if (!existing && candidates.length === 1) {
+                    existing = candidates[0];
+                }
+            }
+
+            if (existing) {
               updates.push({ id: existing.id, employee: existing.employee, ...row });
             }
           });
@@ -3022,17 +3193,16 @@
             newRecords.push({
               employee: emp,
               serial_no: parseInt(cells[1].innerText) || 0,
-              parent_code: cells[2].innerText,
-              parent_name: cells[3].innerText,
-              identity_no: cells[4].innerText,
-              phone: cells[5].innerText,
-              school: cells[6].innerText,
-              section: cells[7].innerText,
-              grade: cells[8].innerText,
-              carried_balance: cleanNumber(cells[9].innerText),
-              term1_balance: cleanNumber(cells[10].innerText),
-              term2_balance: cleanNumber(cells[11].innerText),
-              final_balance: cleanNumber(cells[12].innerText)
+              student_code: cells[2].innerText,
+              student_name: cells[3].innerText,
+              parent_code: cells[4].innerText,
+              parent_name: cells[5].innerText,
+              identity_no: cells[6].innerText,
+              phone: cells[7].innerText,
+              carried_balance: cleanNumber(cells[8].innerText),
+              term1_balance: cleanNumber(cells[9].innerText),
+              term2_balance: cleanNumber(cells[10].innerText),
+              final_balance: cleanNumber(cells[11].innerText)
             });
           }
         });
