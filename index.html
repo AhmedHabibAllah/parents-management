@@ -1415,11 +1415,54 @@
           <br>الرجاء إضافة بيانات من خلال الإعدادات.
         </td></tr>`;
         } else {
+          // تجميع البيانات حسب رقم ولي الأمر (parent_code) لدمج المديونيات
+          const groupedMap = {};
+          data.forEach(row => {
+            const code = row.parent_code;
+            const key = code ? code : `unique_${row.id}`;
+            
+            if (!groupedMap[key]) {
+              groupedMap[key] = {
+                ...row,
+                schools: new Set(row.school ? [row.school] : []),
+                sections: new Set(row.section ? [row.section] : []),
+                grades: new Set(row.grade ? [row.grade] : []),
+                carried_balance: cleanNumber(row.carried_balance),
+                term1_balance: cleanNumber(row.term1_balance),
+                term2_balance: cleanNumber(row.term2_balance),
+                final_balance: cleanNumber(row.final_balance),
+                count: 1
+              };
+            } else {
+              const existing = groupedMap[key];
+              existing.carried_balance += cleanNumber(row.carried_balance);
+              existing.term1_balance += cleanNumber(row.term1_balance);
+              existing.term2_balance += cleanNumber(row.term2_balance);
+              existing.final_balance += cleanNumber(row.final_balance);
+              
+              if (row.school) existing.schools.add(row.school);
+              if (row.section) existing.sections.add(row.section);
+              if (row.grade) existing.grades.add(row.grade);
+              existing.count++;
+            }
+          });
+
+          const groupedData = Object.values(groupedMap).map((item, index) => {
+            if (item.count > 1) {
+              item.school = Array.from(item.schools).join('، ');
+              item.section = Array.from(item.sections).join('، ');
+              item.grade = Array.from(item.grades).join('، ');
+            }
+            delete item.schools; delete item.sections; delete item.grades; delete item.count;
+            item.serial_no = index + 1;
+            return item;
+          });
+
           // دمج بيانات التفاعلات
           let interactions = [];
 
           // استخراج أكواد أولياء الأمور لجلب تفاعلاتهم بغض النظر عن الموظف (للحفاظ على التاريخ عند النقل)
-          const parentCodes = data.map(p => p.parent_code).filter(c => c);
+          const parentCodes = groupedData.map(p => p.parent_code).filter(c => c);
 
           if (parentCodes.length > 0) {
             const { data: intData, error: intError } = await supabase
@@ -1443,7 +1486,7 @@
           });
 
           // دمج البيانات وحفظها
-          window.currentEmployeeData = data.map(p => {
+          window.currentEmployeeData = groupedData.map(p => {
             const interaction = intMap[p.parent_code]; // can be undefined
             const merged = { ...p, ...interaction };
             // If there was no interaction, the `updated_at` from the parent record is used, which is wrong.
