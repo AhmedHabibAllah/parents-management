@@ -1103,6 +1103,7 @@
     let currentEmployee = "";
     let currentParentId = null;
     let currentParentCode = "";
+    let currentStudentCode = "";
     let currentParentPhone = "";
     let currentParentIdentity = "";
 
@@ -1572,13 +1573,13 @@
         } else {
           // دمج التفاعلات (نفس منطق الموظفين)
           let interactions = [];
-          const parentCodes = data.map(p => p.parent_code).filter(c => c);
+          const studentCodes = data.map(p => p.student_code).filter(c => c);
 
-          if (parentCodes.length > 0) {
+          if (studentCodes.length > 0) {
             const { data: intData, error: intError } = await supabase
               .from('interactions')
               .select('*')
-              .in('parent_code', parentCodes)
+              .in('student_code', studentCodes)
               .order('updated_at', { ascending: false })
               .range(0, 4999);
 
@@ -1586,10 +1587,10 @@
           }
 
           const intMap = {};
-          interactions.forEach(i => { if (!intMap[i.parent_code]) intMap[i.parent_code] = i; });
+          interactions.forEach(i => { if (i.student_code && !intMap[i.student_code]) intMap[i.student_code] = i; });
 
           window.currentEmployeeData = data.map(p => {
-            const interaction = intMap[p.parent_code];
+            const interaction = intMap[p.student_code];
             const merged = { ...p, ...interaction };
             if (!interaction) merged.updated_at = null;
             return merged;
@@ -1693,9 +1694,9 @@
               tr.innerHTML = `
                 <td>${p.serial_no || '-'}</td>
                 <td>${p.student_code || '-'}</td>
-                <td><strong>${p.student_name || '-'}</strong></td>
+                <td><strong>${p.student_name || '-'}${statusBadge}</strong></td>
                 <td>${p.parent_code || '-'}</td>
-                <td>${p.parent_name || '-'}${statusBadge}</td>
+                <td>${p.parent_name || '-'}</td>
                 <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
                 <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
                 <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
@@ -1776,6 +1777,7 @@
       // Set Data
       currentParentId = data.id;
       currentParentCode = data.parent_code;
+      currentStudentCode = data.student_code || "";
       currentParentPhone = data.phone;
       currentParentIdentity = data.identity_no;
       window.currentParentData = data; // حفظ البيانات الكاملة لاستخدامها في زر التفاصيل
@@ -1820,18 +1822,33 @@
       <div class="info-group" ${otherEmployeeStyle}><div class="info-label">تم إرسال واتساب سابقاً</div><div class="info-value">${(hasHistory && data.whatsapp_sent) ? 'نعم ✅' : 'لا ❌'}</div></div>
     `;
 
-      // تعبئة القائمة اليسرى (بيانات ولي الأمر)
-      infoDiv.innerHTML = `
-      <h3 style="color: #2979ff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات ولي الأمر</h3>
-      <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name || '-'}</div></div>
-      <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
-      <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
-      <div class="info-group"><div class="info-label">عدد الأبناء</div><div class="info-value">${formatLtr(data.student_count || 1)}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
-      <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
-      <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
-      <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${formatLtr((data.carried_balance || 0).toLocaleString('en-US'))}</div></div>
-    `;
+      // تعبئة القائمة اليسرى (بيانات ولي الأمر أو الطالب حسب الوضع)
+      if (window.currentViewMode === 'stage') {
+        infoDiv.innerHTML = `
+        <h3 style="color: #2979ff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات الطالب</h3>
+        <div class="info-group"><div class="info-label">اسم الطالب</div><div class="info-value">${data.student_name || '-'}</div></div>
+        <div class="info-group"><div class="info-label">رقم الطالب</div><div class="info-value">${data.student_code || '-'}</div></div>
+        <div class="info-group"><div class="info-label">ولي الأمر</div><div class="info-value">${data.parent_name || '-'}</div></div>
+        <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
+        <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
+        <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${formatLtr((data.carried_balance || 0).toLocaleString('en-US'))}</div></div>
+        `;
+      } else {
+        infoDiv.innerHTML = `
+        <h3 style="color: #2979ff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات ولي الأمر</h3>
+        <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name || '-'}</div></div>
+        <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
+        <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
+        <div class="info-group"><div class="info-label">عدد الأبناء</div><div class="info-value">${formatLtr(data.student_count || 1)}</div></div>
+        <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${formatLtr((data.carried_balance || 0).toLocaleString('en-US'))}</div></div>
+        `;
+      }
 
       // Set Inputs
       document.getElementById('callCountInput').value = data.call_count || 0;
@@ -1870,10 +1887,13 @@
         const nextDate = document.getElementById('nextCallDateInput').value;
         const whatsappSent = document.getElementById('whatsappSentCheckbox').checked;
 
+        const sCode = (window.currentViewMode === 'stage' && currentStudentCode) ? currentStudentCode : '';
+
         const { error } = await supabase
           .from('interactions')
           .upsert({
             parent_code: currentParentCode,
+            student_code: sCode,
             employee: currentEmployee,
             call_count: calls,
             notes: notes,
@@ -1882,7 +1902,7 @@
             whatsapp_sent: whatsappSent,
             updated_at: new Date().toISOString()
           }, {
-            onConflict: 'parent_code,employee'
+            onConflict: 'employee,parent_code,student_code'
           });
 
         if (error) {
@@ -2035,7 +2055,7 @@
       document.getElementById("settingsScreen").style.display = "none";
     };
 
-    window.saveAppSettings = async () => {
+    window.saveAppSettings = async (silent = false) => {
       appConfig.theme = document.getElementById('themeColor').value;
       appConfig.paymentUrl = document.getElementById('paymentUrlSetting').value;
       appConfig.statusOptions = document.getElementById('statusOptionsInput').value;
@@ -2074,7 +2094,7 @@
       applyTheme();
       updateImportSelect(); // تحديث قائمة الاستيراد
       renderEntryScreen('main');
-      alert('تم حفظ الإعدادات بنجاح ✅');
+      if (!silent) alert('تم حفظ الإعدادات بنجاح ✅');
     };
 
     // إعدادات الموظف
@@ -2906,7 +2926,7 @@
 
         data.push({
           serial_no: c[0],
-          student_code: c[1] || "",
+          student_code: (c[1] || '').trim() || null,
           student_name: c[2] || "",
           parent_code: c[3] || "",
           parent_name: c[4] || "",
@@ -3089,11 +3109,20 @@
     };
 
     window.saveSettingsAndData = async (shouldClose, btnElement) => {
-      // 1. حفظ الإعدادات العامة
-      await saveAppSettings();
+      // حفظ القيمة المحددة حالياً لأن تحديث الإعدادات يعيد بناء القائمة ويفقد التحديد
+      const currentSelectedEmp = document.getElementById('importEmpSelect').value;
+
+      // 1. حفظ الإعدادات العامة (بدون إزعاج)
+      await saveAppSettings(true);
+      
+      // استعادة التحديد
+      if (currentSelectedEmp) {
+        const sel = document.getElementById('importEmpSelect');
+        if (sel) sel.value = currentSelectedEmp;
+      }
 
       // 2. حفظ بيانات الجدول
-      const emp = document.getElementById('importEmpSelect').value;
+      const emp = currentSelectedEmp;
       const table = document.querySelector('#gridContainer table tbody');
 
       if (emp === 'global_update') {
@@ -3112,7 +3141,7 @@
           if (cells.length > 1) {
             pastedData.push({
               serial_no: parseInt(cells[1].innerText) || 0,
-              student_code: cells[2].innerText.trim(),
+              student_code: cells[2].innerText.trim() || null,
               student_name: cells[3].innerText.trim(),
               parent_code: cells[4].innerText.trim(),
               parent_name: cells[5].innerText.trim(),
@@ -3186,6 +3215,10 @@
       // جمع البيانات الجديدة من الجدول
       const newRecords = [];
       if (table && table.querySelectorAll('tr').length > 0) {
+        // مصفوفة للتأكد من عدم تكرار رقم الطالب داخل الملف نفسه
+        const studentCodesCheck = new Set();
+        const duplicates = [];
+
         const rows = table.querySelectorAll('tr');
         rows.forEach(tr => {
           const cells = tr.querySelectorAll('td');
@@ -3193,19 +3226,39 @@
             newRecords.push({
               employee: emp,
               serial_no: parseInt(cells[1].innerText) || 0,
-              student_code: cells[2].innerText,
-              student_name: cells[3].innerText,
-              parent_code: cells[4].innerText,
-              parent_name: cells[5].innerText,
-              identity_no: cells[6].innerText,
-              phone: cells[7].innerText,
+              // تنظيف رقم الطالب من المسافات والفراغات المخفية وتحويله لـ null إذا كان فارغاً
+              student_code: (cells[2].innerText || '').replace(/\u00a0/g, ' ').trim() || null,
+              student_name: (cells[3].innerText || '').trim(),
+              parent_code: (cells[4].innerText || '').trim(),
+              parent_name: (cells[5].innerText || '').trim(),
+              identity_no: (cells[6].innerText || '').trim(),
+              phone: (cells[7].innerText || '').trim(),
               carried_balance: cleanNumber(cells[8].innerText),
               term1_balance: cleanNumber(cells[9].innerText),
               term2_balance: cleanNumber(cells[10].innerText),
               final_balance: cleanNumber(cells[11].innerText)
             });
+
+            // فحص التكرار
+            const sCode = newRecords[newRecords.length - 1].student_code;
+            if (sCode) {
+              if (studentCodesCheck.has(sCode)) {
+                duplicates.push(sCode);
+              } else {
+                studentCodesCheck.add(sCode);
+              }
+            }
           }
         });
+
+        if (duplicates.length > 0) {
+          alert(`⚠️ تنبيه: يوجد تكرار في أرقام الطلاب (Student Code) في البيانات التي تحاول حفظها!\n\nالأرقام المكررة: ${duplicates.join(', ')}\n\nيجب أن يكون لكل طالب رقم مميز. للأخوة، اترك رقم الطالب فارغاً أو ضع رقماً مختلفاً لكل أخ.`);
+          if (btnElement) {
+            btnElement.innerText = "حفظ (بدون إغلاق)";
+            btnElement.style.background = "";
+          }
+          return; // إيقاف الحفظ
+        }
       }
 
       // حذف البيانات القديمة
@@ -3275,10 +3328,10 @@
         return;
       }
 
-      let text = "الموظف\tم\tرقم ولي الأمر\tالاسم\tرقم الهوية\tالجوال\tالرصيد المدور\tرصيد ف1\tرصيد ف2\tالرصيد النهائي\n";
+      let text = "الموظف\tم\tرقم الطالب\tاسم الطالب\tرقم ولي الأمر\tالاسم\tرقم الهوية\tالجوال\tالرصيد المدور\tرصيد ف1\tرصيد ف2\tالرصيد النهائي\n";
 
       data.forEach(row => {
-        text += `${row.employee || ''}\t${row.serial_no || ''}\t${row.parent_code || ''}\t${row.parent_name || ''}\t${row.identity_no || ''}\t${row.phone || ''}\t${row.carried_balance || 0}\t${row.term1_balance || 0}\t${row.term2_balance || 0}\t${row.final_balance || 0}\n`;
+        text += `${row.employee || ''}\t${row.serial_no || ''}\t${row.student_code || ''}\t${row.student_name || ''}\t${row.parent_code || ''}\t${row.parent_name || ''}\t${row.identity_no || ''}\t${row.phone || ''}\t${row.carried_balance || 0}\t${row.term1_balance || 0}\t${row.term2_balance || 0}\t${row.final_balance || 0}\n`;
       });
 
       textarea.value = text;
@@ -3305,14 +3358,16 @@
         newRecords.push({
           employee: cols[0]?.trim() || 'emp1',
           serial_no: parseInt(cols[1]) || 0,
-          parent_code: cols[2] || "",
-          parent_name: cols[3] || "",
-          identity_no: cols[4] || "",
-          phone: cols[5] || "",
-          carried_balance: parseNum(cols[6]),
-          term1_balance: parseNum(cols[7]),
-          term2_balance: parseNum(cols[8]),
-          final_balance: parseNum(cols[9])
+          student_code: (cols[2] || '').trim() || null,
+          student_name: (cols[3] || '').trim(),
+          parent_code: cols[4] || "",
+          parent_name: cols[5] || "",
+          identity_no: cols[6] || "",
+          phone: cols[7] || "",
+          carried_balance: parseNum(cols[8]),
+          term1_balance: parseNum(cols[9]),
+          term2_balance: parseNum(cols[10]),
+          final_balance: parseNum(cols[11])
         });
       }
 
