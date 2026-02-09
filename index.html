@@ -3313,6 +3313,8 @@
           });
           
           const updates = [];
+          const usedIds = new Set();
+
           pastedData.forEach(row => {
             let existing = null;
             
@@ -3327,16 +3329,18 @@
                     const nameMatch = candidates.find(c => c.student_name === row.student_name);
                     if (nameMatch) existing = nameMatch;
                 }
-                // 3. المحاولة الثالثة: إذا كان هناك سجل واحد فقط لهذا الولي في القاعدة، نحدثه (دعم للبيانات القديمة)
-                if (!existing && candidates.length === 1) {
-                    existing = candidates[0];
-                }
+                // تم إزالة المطابقة العشوائية برقم ولي الأمر فقط لمنع دمج بيانات الأشقاء بالخطأ
             }
 
             if (existing) {
-              updates.push({ id: existing.id, employee: existing.employee, ...row });
+              // التأكد من عدم تحديث نفس السجل مرتين (لمنع خطأ ON CONFLICT)
+              if (!usedIds.has(existing.id)) {
+                updates.push({ id: existing.id, employee: existing.employee, ...row });
+                usedIds.add(existing.id);
+              }
             }
           });
+
 
           if (updates.length === 0) {
             alert('⚠️ لم يتم العثور على بيانات صالحة.');
