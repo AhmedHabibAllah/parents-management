@@ -106,6 +106,8 @@
       background: linear-gradient(145deg, #efebe9, #d7ccc8);
       color: #3e2723;
       border: 3px solid #5d4037;
+      color: var(--primary-color);
+      border: 3px solid var(--primary-color);
       transition: 0.2s;
       display: flex;
       align-items: center;
@@ -122,6 +124,7 @@
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
       background: #d7ccc8;
       border-color: #3e2723;
+      border-color: var(--primary-color);
     }
 
     /* تصميم الكروت (Cards) للموظفين والمراحل */
@@ -164,6 +167,7 @@
       position: absolute;
       top: 0; left: 0; width: 100%; height: 5px;
       background: #3e2723;
+      background: var(--primary-color);
       opacity: 1;
     }
 
@@ -180,21 +184,30 @@
     }
 
     .emp-card .title {
-      font-size: 20px;
+      font-size: 40px;
       font-weight: 800;
       color: #333;
+    }
+
+    .emp-card .subtitle {
+      font-size: 22px;
+      font-weight: 600;
+      color: #555;
     }
 
     .btn-outline {
       background: transparent;
       border: 3px solid #3e2723;
       color: #3e2723;
+      border: 3px solid var(--primary-color);
+      color: var(--primary-color);
       font-weight: 900;
       box-shadow: none;
     }
 
     .btn-outline:hover {
       background: #3e2723;
+      background: var(--primary-color);
       color: #fff;
     }
 
@@ -302,6 +315,7 @@
     /* تنسيق الهيدر */
     thead {
       background: #3e2723;
+      background: var(--primary-color);
       color: #ffffff;
       position: sticky;
       top: 0;
@@ -335,6 +349,7 @@
     tr.selected {
       background-color: #e2e8f0;
       border-right: 4px solid #3e2723;
+      border-right: 4px solid var(--primary-color);
     }
 
     /* تثبيت أول 3 أعمدة (Sticky Columns) */
@@ -380,6 +395,7 @@
     thead th:nth-child(3) {
       z-index: 6;
       background-color: #3e2723 !important;
+      background-color: var(--primary-color) !important;
       color: #ffffff;
     }
 
@@ -433,6 +449,7 @@
     .sidebar-header {
       padding: 20px;
       background: #3e2723;
+      background: var(--primary-color);
       color: #ffffff;
       display: flex;
       justify-content: space-between;
@@ -475,6 +492,7 @@
     .sidebar-right .sidebar-header {
       padding: 20px;
       background: #3e2723;
+      background: var(--primary-color);
       color: #ffffff;
       display: flex;
       justify-content: space-between;
@@ -547,6 +565,7 @@
 
     .excel-preview-table th {
       background: #3e2723;
+      background: var(--primary-color);
       color: #ffffff;
       position: sticky;
       top: 0;
@@ -590,8 +609,10 @@
       margin-left: 6px;
       background: linear-gradient(145deg, #efebe9, #d7ccc8);
       color: #3e2723;
+      color: var(--primary-color);
       font-weight: 900;
       border: 2px solid #5d4037;
+      border: 2px solid var(--primary-color);
       box-shadow: 0 6px 18px rgba(141, 110, 99, 0.2);
       display: inline-flex;
       align-items: center;
@@ -1009,9 +1030,12 @@
           <div style="flex:1;">
             <label style="font-size: 20px;">🎨 لون الموقع</label>
             <input type="color" id="themeColor" style="height:40px; padding:2px;">
+            <label style="font-size: 20px;">اللون</label>
+            <input type="color" id="themeColor" style="height:40px; padding:2px;" oninput="document.documentElement.style.setProperty('--primary-color', this.value)">
           </div>
           <div style="flex:2;">
             <label style="font-size: 20px;">🔗 رابط الدفع</label>
+            <label style="font-size: 20px;">الرابط</label>
             <input type="text" id="paymentUrlSetting" style="margin-bottom:0;">
           </div>
         </div>
@@ -2608,7 +2632,7 @@
                         من: <input type="date" id="advDateFrom" onchange="filterAndRenderStats()">
                         إلى: <input type="date" id="advDateTo" onchange="filterAndRenderStats()">
                     </span>
-                    <button class="btn" style="width:auto; height:38px; font-size:14px;" onclick="filterAndRenderStats()">تحديث</button>
+                    <button class="btn" style="width:180px; height:55px; font-size:20px; padding:0;" onclick="filterAndRenderStats()">تحديث</button>
                 </div>
             </div>
 
