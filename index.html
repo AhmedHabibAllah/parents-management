@@ -8,17 +8,19 @@
 
   <style>
     :root {
-      --primary-color: #3e2723;
-      --bg-color: #d7ccc8;
-      --text-color: #210e0b;
-      --accent-color: #5d4037;
+      --primary-color: #1565C0; /* أزرق ملكي عصري */
+      --secondary-color: #00838f; /* تركواز غامق */
+      --bg-color: #f0f2f5; /* رمادي فاتح جداً للخلفية */
+      --text-color: #1a1a1a;
+      --accent-color: #ff6f00; /* برتقالي حيوي للأزرار */
       --sidebar-width: 350px;
+      --sidebar-width: 400px;
       --col1-width: 80px;
       --col2-width: 150px;
       --col3-width: 400px;
-      --glass-bg: #efebe9;
-      --glass-border: 1px solid #8d6e63;
-      --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --glass-bg: rgba(255, 255, 255, 0.95);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     }
 
     body {
@@ -26,8 +28,8 @@
       font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-color);
       /* خلفية احترافية هادئة */
-      background-color: #a1887f;
-      background: linear-gradient(135deg, #8d6e63 0%, #5d4037 100%);
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      background: #f8f9fa;
       margin: 0;
       min-height: 100vh;
       overflow: auto;
@@ -62,7 +64,21 @@
       max-height: 100vh;
       backdrop-filter: blur(5px);
       background: rgba(255, 255, 255, 0.1); /* شفافية للشاشة الكاملة */
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
+    }
+
+    /* تخصيص شاشة الدخول لتملأ الشاشة */
+    #employeeScreen .box {
+      width: 100%;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0;
+      border: none;
     }
 
     .box {
@@ -103,11 +119,9 @@
       border: none;
       border-radius: 20px;
       cursor: pointer;
-      background: linear-gradient(145deg, #efebe9, #d7ccc8);
-      color: #3e2723;
-      border: 3px solid #5d4037;
+      background: linear-gradient(135deg, #ffffff, #f5f5f5);
       color: var(--primary-color);
-      border: 3px solid var(--primary-color);
+      border: 2px solid var(--primary-color);
       transition: 0.2s;
       display: flex;
       align-items: center;
@@ -122,10 +136,81 @@
     .btn:hover {
       transform: translateY(-4px);
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-      background: #d7ccc8;
-      border-color: #3e2723;
+      background: var(--primary-color);
       border-color: var(--primary-color);
+      color: #fff;
     }
+
+    /* تصميم شبكة الكروت الرئيسية الجديد */
+    .main-dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+      width: 100%;
+      max-width: 1600px;
+      margin: 40px auto;
+      padding: 0 40px;
+      box-sizing: border-box;
+    }
+
+    .dash-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dash-card:hover {
+      transform: translateY(-15px);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+      background: #ffffff;
+    }
+
+    .dash-card .icon {
+      font-size: 80px;
+      margin-bottom: 25px;
+      display: block;
+      transition: transform 0.3s;
+    }
+
+    .dash-card:hover .icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .dash-card h3 {
+      font-size: 32px;
+      font-weight: 900;
+      color: #000;
+      margin: 0 0 15px 0;
+    }
+
+    .dash-card p {
+      font-size: 20px;
+      color: #555;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    /* ألوان مميزة للكروت */
+    .card-employees { border-bottom: 10px solid #2196F3; }
+    .card-employees .icon { color: #2196F3; }
+    .card-stages { border-bottom: 10px solid #009688; }
+    .card-stages .icon { color: #009688; }
+    .card-admin { border-bottom: 10px solid #D32F2F; background: linear-gradient(145deg, #fff, #fff5f5); }
+    .card-admin .icon { color: #D32F2F; }
+    .card-settings { border-bottom: 10px solid #FF9800; background: linear-gradient(145deg, #fff, #fff8e1); }
+    .card-settings .icon { color: #FF9800; }
 
     /* تصميم الكروت (Cards) للموظفين والمراحل */
     .card-container {
@@ -165,8 +250,7 @@
     .emp-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 5px;
-      background: #3e2723;
+      top: 0; left: 0; width: 100%; height: 6px;
       background: var(--primary-color);
       opacity: 1;
     }
@@ -197,18 +281,16 @@
 
     .btn-outline {
       background: transparent;
-      border: 3px solid #3e2723;
-      color: #3e2723;
-      border: 3px solid var(--primary-color);
+      border: 2px solid var(--primary-color);
       color: var(--primary-color);
       font-weight: 900;
       box-shadow: none;
     }
 
     .btn-outline:hover {
-      background: #3e2723;
       background: var(--primary-color);
       color: #fff;
+      box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3);
     }
 
     .btn-secondary {
@@ -240,7 +322,7 @@
 
     input:focus, select:focus, textarea:focus {
       border-color: var(--primary-color);
-      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+      box-shadow: 0 0 10px rgba(21, 101, 192, 0.2);
       outline: none;
     }
 
@@ -282,26 +364,26 @@
       background: #ffffff;
       border-radius: 12px;
       box-shadow: var(--glass-shadow);
-      overflow: auto;
+      overflow: auto; /* تفعيل التمرير في الاتجاهين */
       width: 100%;
       max-height: calc(100vh - 180px); /* تعديل الارتفاع لضمان ظهور شريط التمرير في الشاشة */
       padding-bottom: 15px; /* مساحة إضافية لشريط التمرير الأفقي */
     }
 
     /* تنسيق شريط التمرير ليكون واضحاً */
-    .table-container::-webkit-scrollbar, textarea::-webkit-scrollbar {
+    ::-webkit-scrollbar {
       height: 16px;
       width: 16px;
     }
-    .table-container::-webkit-scrollbar-track, textarea::-webkit-scrollbar-track {
+    ::-webkit-scrollbar-track {
       background: #f1f1f1;
     }
-    .table-container::-webkit-scrollbar-thumb, textarea::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {
       background: #c1c1c1;
       border-radius: 8px;
       border: 3px solid #f1f1f1;
     }
-    .table-container::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover {
+    ::-webkit-scrollbar-thumb:hover {
       background: #a8a8a8;
     }
 
@@ -309,17 +391,16 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: auto; /* السماح للأعمدة بأخذ العرض المناسب للمحتوى */
-      min-width: 1600px;
+      min-width: max-content; /* ضمان ظهور شريط التمرير عند كثرة الأعمدة */
     }
 
     /* تنسيق الهيدر */
     thead {
-      background: #3e2723;
       background: var(--primary-color);
       color: #ffffff;
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 100;
     }
 
     th,
@@ -329,6 +410,8 @@
       border-bottom: 1px solid #ccc;
       white-space: nowrap;
       color: #000;
+      overflow: hidden;
+      text-overflow: ellipsis;
       font-weight: 600;
       background: #ffffff;
       font-size: 18px;
@@ -348,15 +431,14 @@
 
     tr.selected {
       background-color: #e2e8f0;
-      border-right: 4px solid #3e2723;
-      border-right: 4px solid var(--primary-color);
+      border-right: 5px solid var(--primary-color);
     }
 
     /* تثبيت أول 3 أعمدة (Sticky Columns) */
     th:nth-child(1), td:nth-child(1) {
       position: sticky;
       right: 0;
-      z-index: 2;
+      z-index: 50;
       width: var(--col1-width);
       min-width: var(--col1-width);
       max-width: var(--col1-width);
@@ -368,7 +450,7 @@
     th:nth-child(2), td:nth-child(2) {
       position: sticky;
       right: var(--col1-width);
-      z-index: 2;
+      z-index: 50;
       width: var(--col2-width);
       min-width: var(--col2-width);
       max-width: var(--col2-width);
@@ -380,7 +462,7 @@
     th:nth-child(3), td:nth-child(3) {
       position: sticky;
       right: calc(var(--col1-width) + var(--col2-width));
-      z-index: 2;
+      z-index: 50;
       width: var(--col3-width);
       min-width: var(--col3-width);
       box-sizing: border-box;
@@ -393,8 +475,6 @@
     thead th:nth-child(1), 
     thead th:nth-child(2),
     thead th:nth-child(3) {
-      z-index: 6;
-      background-color: #3e2723 !important;
       background-color: var(--primary-color) !important;
       color: #ffffff;
     }
@@ -404,16 +484,19 @@
       position: absolute;
       left: 0;
       top: 0;
-      width: 5px;
+      width: 8px; /* عرض أكبر قليلاً لسهولة الإمساك */
       height: 100%;
       cursor: col-resize;
       user-select: none;
       touch-action: none;
       z-index: 10;
+      opacity: 0; /* مخفي افتراضياً */
+      transition: opacity 0.2s;
     }
-    .resizer:hover, .resizing {
+    th:hover .resizer, .resizer:hover, .resizing {
       background-color: #2979ff;
       width: 7px;
+      opacity: 1; /* يظهر عند التحويم */
     }
     th {
       position: relative;
@@ -448,7 +531,6 @@
 
     .sidebar-header {
       padding: 20px;
-      background: #3e2723;
       background: var(--primary-color);
       color: #ffffff;
       display: flex;
@@ -491,7 +573,6 @@
 
     .sidebar-right .sidebar-header {
       padding: 20px;
-      background: #3e2723;
       background: var(--primary-color);
       color: #ffffff;
       display: flex;
@@ -551,6 +632,7 @@
       font-size: 13px;
       margin-top: 10px;
       table-layout: auto;
+      min-width: max-content; /* لضمان التمرير الأفقي في الجداول الإحصائية */
     }
 
     .excel-preview-table th,
@@ -564,7 +646,6 @@
     }
 
     .excel-preview-table th {
-      background: #3e2723;
       background: var(--primary-color);
       color: #ffffff;
       position: sticky;
@@ -607,12 +688,10 @@
       font-size: 20px;
       border-radius: 10px;
       margin-left: 6px;
-      background: linear-gradient(145deg, #efebe9, #d7ccc8);
-      color: #3e2723;
+      background: #fff;
       color: var(--primary-color);
       font-weight: 900;
-      border: 2px solid #5d4037;
-      border: 2px solid var(--primary-color);
+      border: 2px solid #e0e0e0;
       box-shadow: 0 6px 18px rgba(141, 110, 99, 0.2);
       display: inline-flex;
       align-items: center;
@@ -796,6 +875,41 @@
       max-width: 1400px;
       margin: 0 auto;
     }
+
+    /* تنسيق سحب الأعمدة */
+    th.draggable { cursor: move; user-select: none; }
+    th.dragging { opacity: 0.5; background: #ccc; }
+    th.drag-over { border-left: 4px solid #ff9800; }
+
+    /* تنسيقات شاشة الإدارة العامة */
+    .admin-dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      text-align: center;
+      transition: transform 0.3s;
+      border: 1px solid #f0f0f0;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+    .stat-card h3 { font-size: 42px; margin: 10px 0; color: var(--primary-color); font-weight: 900; }
+    .stat-card p { font-size: 18px; color: #666; margin: 0; font-weight: 600; }
+    .stat-card .icon { font-size: 50px; opacity: 0.1; position: absolute; top: 10px; left: 10px; }
+    
+    .chart-container-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
   </style>
 </head>
 
@@ -803,21 +917,20 @@
 
   <!-- شاشة اختيار الموظف -->
   <div class="center-screen" id="employeeScreen">
-    <div class="box" style="width: 95%; margin: 0 auto;">
+    <div class="box">
       <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:25px;">
         <div style="display:flex; flex-direction: row; align-items:center; justify-content:center; gap:20px; margin-bottom:15px; flex-wrap: wrap;">
-            <img src="logo3.png" alt="شعار المدرسة" style="height:160px; width:auto; display:block;">
-            <h1 style="color:#3e2723; font-size:50px; margin:0; font-weight:900; letter-spacing: -0.5px; text-align:center;">مدارس التربية النموذجية الروابي</h1>
+            <img src="logo3.png" alt="شعار المدرسة" style="height:160px; width:auto; display:block; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));">
+            <h1 style="color:#1a237e; font-size:55px; margin:0; font-weight:900; letter-spacing: -1px; text-align:center; text-shadow: 2px 2px 0px rgba(255,255,255,0.5);">مدارس التربية النموذجية الروابي</h1>
         </div>
-        <h2 style="font-size:24px; color:#5d4037; margin:0; font-weight:600;">برنامج تحصيل الرسوم</h2>
+        <h2 style="font-size:28px; color:#455a64; margin:0; font-weight:700;">برنامج تحصيل الرسوم الذكي والمتابعة</h2>
       </div>
       <h3 style="font-size:22px; color:#333; margin-top:0;">👋 مرحباً بك</h3>
       <p style="color:#666; margin-bottom:30px; font-size: 18px;">يرجى اختيار القسم للمتابعة</p>
-      <div id="employeeButtons">
+      <div id="employeeButtons" style="width: 100%;">
         <!-- سيتم التحكم في هذا المحتوى عبر الجافاسكريبت -->
         <!-- سيتم توليد الأزرار هنا -->
       </div>
-      <button class="btn btn-outline" onclick="openSettingsAdmin()" style="margin-top:20px;">⚙️ إعدادات النظام (إضافة موظفين/مراحل)</button>
       <div style="margin-top: 20px; font-size: 14px; color: #000;">
         <div style="font-weight: 900;">تصميم وتطوير استاذ احمد حبيب الله</div>
         <a href="mailto:designissue@gmail.com" style="color: #000; text-decoration: none; font-weight: bold;">designissue@gmail.com</a>
@@ -892,23 +1005,7 @@
       <div class="table-container">
         <table id="parentsTable">
           <thead>
-            <tr>
-              <th>م</th>
-              <th>رقم الولي</th>
-              <th>الاسم</th>
-              <th>رقم الهوية</th>
-              <th>المدرسة</th>
-              <th>القسم</th>
-              <th>الصف</th>
-              <th>الجوال</th>
-              <th>تاريخ آخر اتصال</th>
-              <th>تاريخ الاتصال القادم</th>
-              <th>الموظف المتصل</th>
-              <th>الرصيد المدور</th>
-              <th>رصيد ف1</th>
-              <th>رصيد ف2</th>
-              <th>الرصيد النهائي</th>
-            </tr>
+            <!-- سيتم توليد العناوين ديناميكياً -->
           </thead>
           <tbody id="tableBody">
             <!-- الصفوف -->
@@ -969,7 +1066,7 @@
           </div>
         </div>
         
-        <button class="btn" onclick="saveParentInteraction()" style="margin-bottom: 10px;">💾 حفظ التعديلات</button>
+        <button class="btn" onclick="saveParentInteraction()" style="margin-bottom: 10px; background: linear-gradient(135deg, #2e7d32, #4caf50); color: white; border: none;">💾 حفظ التعديلات</button>
         <button class="btn btn-outline" onclick="openFullParentDetailsModal()">📄 تفاصيل كاملة</button>
       </div>
     </div>
@@ -1003,6 +1100,22 @@
     </div>
   </div>
 
+  <!-- شاشة تسجيل دخول الإدارة العامة (Password masked) -->
+  <div class="center-screen" id="generalAdminLoginModal" style="display:none; z-index:950;">
+    <div class="box" style="width:95%; margin:0 auto; text-align:right;">
+      <h2 style="text-align:center;">🔒 دخول الإدارة العامة</h2>
+      <div style="padding:6px 0; text-align:right;">
+        <label>كلمة المرور</label>
+        <input type="password" id="general_admin_pass_input" placeholder="أدخل كلمة المرور"
+          style="width:100%; padding:10px; margin-top:6px;">
+        <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
+          <button class="btn" onclick="submitGeneralAdminLogin()">دخول</button>
+          <button class="btn btn-secondary" onclick="closeGeneralAdminLogin()">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="center-screen" id="settingsScreen" style="display:none; z-index:20;">
     <div class="box"
       style="width: 98%; max-width:none; height:98%; display:flex; flex-direction:column; text-align: right;">
@@ -1018,6 +1131,7 @@
            <button class="btn" onclick="openTargetStats()">🎯 نسبة تحقيق المستهدف</button>
            <button class="btn" onclick="openDebtStats()">💰 إحصائيات المديونية</button>
            <button class="btn" onclick="showSettingsSection('data')">📝 إدخال بيانات أولياء الأمور والبحث</button>
+           <button class="btn" onclick="openAllParentsReport()" style="background:linear-gradient(135deg, #009688, #4db6ac); color:white;">📋 عرض كل أولياء الأمور (تقرير شامل)</button>
            <button class="btn btn-secondary" onclick="closeSettings()" style="background:#ffebee; border-color:#ef5350; color:#c62828;">🚪 خروج من الإعدادات</button>
         </div>
 
@@ -1151,6 +1265,40 @@
     </div>
   </div>
 
+  <!-- شاشة عرض كل أولياء الأمور (تقرير شامل) -->
+  <div class="center-screen" id="allParentsScreen" style="display:none; z-index:800;">
+    <div class="box box-large" style="display:flex; flex-direction:column; height:95vh;">
+      <div class="header-bar">
+        <h3>📋 تقرير شامل لكل أولياء الأمور</h3>
+        <div style="display:flex; gap:10px; align-items:center;">
+           <select id="allParentsFilterEmp" onchange="filterAllParentsTable()" style="margin:0; width:180px;">
+             <option value="all">كل الموظفين</option>
+             <!-- سيتم التعبئة -->
+           </select>
+           
+           <!-- إضافة قائمة اختيار عمود البحث -->
+           <select id="allParentsSearchCol" onchange="filterAllParentsTable()" style="margin:0; width:150px;">
+             <option value="all">بحث شامل</option>
+             <option value="parent_name">اسم ولي الأمر</option>
+             <option value="parent_code">رقم ولي الأمر</option>
+             <option value="phone">رقم الجوال</option>
+             <option value="student_name">اسم الطالب</option>
+             <option value="notes">الملاحظات</option>
+           </select>
+
+           <input type="text" id="allParentsSearch" oninput="filterAllParentsTable()" placeholder="اكتب للبحث..." style="margin:0; width:200px;">
+           <button class="btn btn-outline" onclick="exportAllParentsToExcel()" style="width:auto; margin:0;">📥 Excel</button>
+           <button class="btn btn-secondary" onclick="document.getElementById('allParentsScreen').style.display='none'" style="width:auto; margin:0;">إغلاق</button>
+        </div>
+      </div>
+      <div class="table-container" style="flex:1; margin-top:10px;">
+        <table id="allParentsTable">
+          <thead></thead><tbody id="allParentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- شاشة الأدمن (تعديل البيانات الشامل) -->
   <div class="center-screen" id="adminScreen" style="display:none; z-index:30;">
 
@@ -1213,6 +1361,62 @@
       <h2 id="drillDownTitle" style="color:#2979ff;">تفاصيل الاتصالات</h2>
       <div id="drillDownContent" style="max-height: 70vh; overflow: auto;"></div>
       <button class="btn btn-secondary" onclick="document.getElementById('statsDrillDownModal').style.display='none'" style="margin-top:15px;">إغلاق</button>
+    </div>
+  </div>
+
+  <!-- شاشة الإدارة العامة (Dashboard) -->
+  <div class="center-screen" id="generalAdminScreen" style="display:none; z-index:900;">
+    <div class="box box-large" style="background: #f8f9fa; display: flex; flex-direction: column; height: 98vh; padding: 0; overflow: hidden;">
+      <div class="header-bar" style="background: #fff; margin: 10px; border-radius: 12px; flex-shrink: 0;">
+        <h2 style="margin:0; color: var(--primary-color);">🏛️ الإدارة العامة</h2>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select id="adminPeriodSelect" onchange="toggleAdminDateInputs(); renderGeneralAdminDashboard()" style="padding:10px; border-radius:8px; border:1px solid #ddd; font-weight:bold;">
+                <option value="today">اليوم</option>
+                <option value="week">هذا الأسبوع</option>
+                <option value="month" selected>هذا الشهر</option>
+                <option value="all">الكل (منذ البداية)</option>
+                <option value="custom">فترة محددة</option>
+            </select>
+            <div id="adminCustomDateDiv" style="display:none; align-items:center; gap:5px;">
+                <input type="date" id="adminDateFrom" style="padding:8px; border-radius:8px; border:1px solid #ddd; margin:0; width:auto;">
+                <span>إلى</span>
+                <input type="date" id="adminDateTo" style="padding:8px; border-radius:8px; border:1px solid #ddd; margin:0; width:auto;">
+                <button class="btn btn-sm" onclick="renderGeneralAdminDashboard()" style="height:38px; margin:0;">عرض</button>
+            </div>
+            <button class="btn btn-outline" onclick="exportAdminStatsToExcel()" style="width:auto; font-size:14px; padding:5px 15px;">📥 Excel</button>
+            <button class="btn btn-outline" onclick="changeAdminPassword()" style="width:auto; font-size:14px; padding:5px 15px;">🔑 تغيير كلمة المرور</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('generalAdminScreen').style.display='none'" style="width:auto;">خروج</button>
+        </div>
+      </div>
+
+      <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 0 10px 10px 10px;">
+        
+        <!-- القسم العلوي: الرسم البياني الزمني -->
+        <div style="flex: 0 0 45%; background: #fff; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0; color: var(--primary-color);">📊 إحصائيات الاتصالات اليومية</h3>
+                <select id="adminChartType" onchange="renderGeneralAdminDashboard(true)" style="width:auto; padding:5px; border-radius:5px; border:1px solid #ccc; font-weight:bold;">
+                    <option value="bar">أعمدة (Bar)</option>
+                    <option value="line">خطي (Line)</option>
+                </select>
+            </div>
+            <div style="flex:1; position:relative; min-height: 0;">
+                <canvas id="adminDailyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- القسم السفلي: جدول النشاط التفصيلي -->
+        <div class="table-container" style="flex: 1; overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; border: 1px solid #eee;">
+            <table id="adminFullStatsTable" class="excel-preview-table" style="width: 100%; min-width: max-content;">
+                <thead>
+                    <!-- سيتم التعبئة بالجافاسكريبت -->
+                </thead>
+                <tbody>
+                    <!-- سيتم التعبئة بالجافاسكريبت -->
+                </tbody>
+            </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1311,7 +1515,10 @@
       employeeThemes: {},
       statusOptions: "مشغول\nلم يرد\nمع الراتب الجديد\nمع الفصل الدراسي القادم\nتم السداد",
       manualTargetData: {}, // تخزين البيانات اليدوية للمستهدف
-      stages: { 'stage1': { name: 'القسم الابتدائي', pass: '' }, 'stage2': { name: 'القسم المتوسط', pass: '' }, 'stage3': { name: 'القسم الثانوي', pass: '' } }
+      stages: { 'stage1': { name: 'القسم الابتدائي', pass: '' }, 'stage2': { name: 'القسم المتوسط', pass: '' }, 'stage3': { name: 'القسم الثانوي', pass: '' } },
+      adminPass: 'admin', // كلمة مرور الإدارة العامة الافتراضية
+      schoolTotalFees: 0, // إجمالي رسوم المدرسة
+      schoolTarget: 0 // المستهدف العام
     };
 
     // دالة مساعدة لحفظ الإعدادات في قاعدة البيانات
@@ -1377,6 +1584,9 @@
           
           // إعدادات المراحل الافتراضية
           appConfig.stages = Object.assign({ 'stage1': { name: 'القسم الابتدائي', pass: '' }, 'stage2': { name: 'القسم المتوسط', pass: '' } }, appConfig.stages || {});
+          appConfig.adminPass = appConfig.adminPass || 'admin';
+          appConfig.schoolTotalFees = appConfig.schoolTotalFees || 0;
+          appConfig.schoolTarget = appConfig.schoolTarget || 0;
 
           appConfig.employeeThemes = Object.assign({}, appConfig.employeeThemes || {});
 
@@ -1411,31 +1621,53 @@
       const container = document.getElementById('employeeButtons');
       container.innerHTML = '';
 
-      // إنشاء حاوية الشبكة (Grid) للكروت
-      const grid = document.createElement('div');
-      grid.className = 'card-container';
-
       if (view === 'main') {
-        // كرت دخول الموظفين
-        const cardEmp = document.createElement('div');
-        cardEmp.className = 'emp-card';
-        cardEmp.innerHTML = `<div class="title">دخول الموظفين</div><div class="subtitle">موظفي الاستقبال والتحصيل</div>`;
-        cardEmp.style.animationDelay = '0.1s';
-        cardEmp.onclick = () => renderEntryScreen('employees');
-        grid.appendChild(cardEmp);
+        // إنشاء شبكة الكروت الرئيسية
+        const grid = document.createElement('div');
+        grid.className = 'main-dashboard-grid';
 
-        // كرت دخول المراحل
-        const cardStage = document.createElement('div');
-        cardStage.className = 'emp-card';
-        cardStage.innerHTML = `<div class="title">دخول المراحل</div><div class="subtitle">مشرفي المراحل الدراسية</div>`;
-        cardStage.style.animationDelay = '0.2s';
-        cardStage.onclick = () => renderEntryScreen('stages');
-        grid.appendChild(cardStage);
+        // 1. كرت الموظفين
+        grid.innerHTML += `
+            <div class="dash-card card-employees" onclick="renderEntryScreen('employees')">
+                <div class="icon">👥</div>
+                <h3>دخول الموظفين</h3>
+                <p>موظفي الاستقبال والتحصيل</p>
+            </div>
+        `;
 
+        // 2. كرت المراحل
+        grid.innerHTML += `
+            <div class="dash-card card-stages" onclick="renderEntryScreen('stages')">
+                <div class="icon">🏫</div>
+                <h3>دخول المراحل</h3>
+                <p>مشرفي المراحل الدراسية</p>
+            </div>
+        `;
+
+        // 3. كرت الإدارة العامة (مميز)
+        grid.innerHTML += `
+            <div class="dash-card card-admin" onclick="openGeneralAdmin()">
+                <div class="icon">🏛️</div>
+                <h3>الإدارة العامة</h3>
+                <p>لوحة القيادة والتقارير</p>
+            </div>
+        `;
+
+        // 4. كرت الإعدادات (مميز)
+        grid.innerHTML += `
+            <div class="dash-card card-settings" onclick="openSettingsAdmin()">
+                <div class="icon">⚙️</div>
+                <h3>إعدادات النظام</h3>
+                <p>إدارة الموظفين والبيانات</p>
+            </div>
+        `;
+        
         container.appendChild(grid);
 
       } else if (view === 'employees') {
         // أزرار الموظفين
+        const grid = document.createElement('div');
+        grid.className = 'card-container';
         // كروت الموظفين
         Object.keys(appConfig.employeeNames || {}).forEach((emp, index) => {
           const card = document.createElement('div');
@@ -1457,6 +1689,8 @@
 
       } else if (view === 'stages') {
         // أزرار المراحل من الإعدادات
+        const grid = document.createElement('div');
+        grid.className = 'card-container';
         // كروت المراحل
         const stages = appConfig.stages || {};
         Object.keys(stages).forEach((key, index) => {
@@ -1509,6 +1743,24 @@
     window.currentEmployeeData = [];
     window.currentViewMode = 'reception'; // 'reception' or 'stage'
     let currentSort = { field: 'serial_no', dir: 'asc' };
+    
+    // تعريف الأعمدة المتاحة
+    const columnDefinitions = {
+      last_call_status: { label: 'حالة الاتصال', type: 'text' },
+      notes: { label: 'ملاحظات', type: 'text', style: 'max-width:200px; overflow:hidden; text-overflow:ellipsis;' },
+      serial_no: { label: 'م', type: 'number' },
+      parent_code: { label: 'رقم الولي', type: 'text' },
+      parent_name: { label: 'الاسم', type: 'text' },
+      identity_no: { label: 'رقم الهوية', type: 'text' },
+      phone: { label: 'الجوال', type: 'text' },
+      updated_at: { label: 'تاريخ آخر اتصال', type: 'date' },
+      next_call_date: { label: 'تاريخ الاتصال القادم', type: 'date' },
+      carried_balance: { label: 'الرصيد المدور', type: 'money' },
+      term1_balance: { label: 'رصيد ف1', type: 'money' },
+      term2_balance: { label: 'رصيد ف2', type: 'money' },
+      final_balance: { label: 'الرصيد النهائي', type: 'money' }
+    };
+    let currentColumnOrder = [];
 
     window.applySort = () => {
       currentSort.field = document.getElementById('sortCriteria').value;
@@ -1580,6 +1832,15 @@
       currentEmployee = employee;
       window.currentViewMode = 'reception'; // وضع الاستقبال (تجميع)
       applyTheme();
+
+      // تحميل ترتيب الأعمدة المحفوظ أو استخدام الافتراضي
+      const savedOrder = localStorage.getItem(`colOrder_${employee}`);
+      if (savedOrder) {
+        currentColumnOrder = JSON.parse(savedOrder);
+      } else {
+        // الترتيب الافتراضي المطلوب: الملاحظات والحالة أولاً
+        currentColumnOrder = ['last_call_status', 'notes', 'serial_no', 'parent_code', 'parent_name', 'identity_no', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+      }
 
       document.getElementById("employeeName").innerText = "لوحة تحكم - " + getEmployeeLabel(employee);
 
@@ -1723,6 +1984,14 @@
       window.currentViewMode = 'stage'; // وضع المراحل (تفصيلي)
       applyTheme();
 
+      // تحميل ترتيب الأعمدة للمراحل
+      const savedOrder = localStorage.getItem(`colOrder_${stageKey}`);
+      if (savedOrder) {
+        currentColumnOrder = JSON.parse(savedOrder);
+      } else {
+        currentColumnOrder = ['last_call_status', 'notes', 'serial_no', 'student_code', 'student_name', 'parent_code', 'parent_name', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+      }
+
       document.getElementById("employeeName").innerText = "لوحة تحكم المرحلة - " + stageName;
 
       try {
@@ -1789,44 +2058,38 @@
     };
 
     window.renderParentsTable = (dataList) => {
-        const tableHead = document.querySelector("#parentsTable thead");
+        const thead = document.querySelector("#parentsTable thead");
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
+        thead.innerHTML = "";
 
-        // تغيير عناوين الجدول بناءً على الوضع (استقبال / مراحل)
-        if (window.currentViewMode === 'stage') {
-          tableHead.innerHTML = `
-            <tr>
-              <th>م</th>
-              <th>رقم الطالب</th>
-              <th>اسم الطالب</th>
-              <th>رقم ولي الأمر</th>
-              <th>اسم ولي الأمر</th>
-              <th>الجوال</th>
-              <th>آخر اتصال</th>
-              <th>الاتصال القادم</th>
-              <th>المدور</th>
-              <th>ف1</th>
-              <th>ف2</th>
-              <th>النهائي</th>
-            </tr>`;
-        } else {
-          // وضع الاستقبال (الافتراضي)
-          tableHead.innerHTML = `
-            <tr>
-              <th>م</th>
-              <th>رقم الولي</th>
-              <th>اسم ولي الأمر</th>
-              <th>رقم الهوية</th>
-              <th>الجوال</th>
-              <th>آخر اتصال</th>
-              <th>الاتصال القادم</th>
-              <th>المدور</th>
-              <th>ف1</th>
-              <th>ف2</th>
-              <th>النهائي</th>
-            </tr>`;
-        }
+        // بناء الهيدر ديناميكياً بناءً على الترتيب الحالي
+        const trHead = document.createElement('tr');
+        currentColumnOrder.forEach((colKey, index) => {
+            // تخطي الأعمدة غير الموجودة في التعريف (مثل student_code في وضع الاستقبال)
+            if (window.currentViewMode !== 'stage' && (colKey === 'student_code' || colKey === 'student_name')) return;
+            
+            // تعريف الأعمدة الخاصة بالمراحل إذا لم تكن معرفة عامة
+            let label = columnDefinitions[colKey] ? columnDefinitions[colKey].label : colKey;
+            if (colKey === 'student_code') label = 'رقم الطالب';
+            if (colKey === 'student_name') label = 'اسم الطالب';
+
+            const th = document.createElement('th');
+            th.innerText = label;
+            th.className = 'draggable';
+            th.draggable = true;
+            th.dataset.key = colKey;
+            th.dataset.index = index;
+            
+            // أحداث السحب والإفلات
+            th.addEventListener('dragstart', handleDragStart);
+            th.addEventListener('dragover', handleDragOver);
+            th.addEventListener('drop', handleDrop);
+            th.addEventListener('dragend', handleDragEnd);
+
+            trHead.appendChild(th);
+        });
+        thead.appendChild(trHead);
 
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0); // تصفير الوقت لحساب فرق الأيام بدقة
@@ -1868,42 +2131,84 @@
             const tr = document.createElement("tr");
             if (rowClass) tr.className = rowClass;
             tr.onclick = () => selectParent(tr, p);
+            
+            currentColumnOrder.forEach(colKey => {
+                if (window.currentViewMode !== 'stage' && (colKey === 'student_code' || colKey === 'student_name')) return;
 
-            if (window.currentViewMode === 'stage') {
-              // عرض المراحل (تفصيلي للطالب)
-              tr.innerHTML = `
-                <td>${p.serial_no || '-'}</td>
-                <td>${p.student_code || '-'}</td>
-                <td><strong>${p.student_name || '-'}${statusBadge}</strong></td>
-                <td>${p.parent_code || '-'}</td>
-                <td>${p.parent_name || '-'}</td>
-                <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
-                <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
-                <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
-                <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
-                <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
-                <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
-                <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
-              `;
-            } else {
-              // عرض الاستقبال (مجمع لولي الأمر)
-              tr.innerHTML = `
-                <td>${p.serial_no || '-'}</td>
-                <td>${p.parent_code || '-'}</td>
-                <td><strong>${p.parent_name || '-'}${statusBadge}</strong></td>
-                <td>${p.identity_no || '-'}</td>
-                <td class="num-cell" style="text-align:right;">${p.phone || '-'}</td>
-                <td class="num-cell" style="text-align:center; direction:ltr;">${p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-GB') : '-'}</td>
-                <td class="num-cell" style="text-align:center; direction:ltr; ${nextCallStyle}">${p.next_call_date || '-'}</td>
-                <td class="num-cell">${(p.carried_balance || 0).toLocaleString('en-US')}</td>
-                <td class="num-cell">${(p.term1_balance || 0).toLocaleString('en-US')}</td>
-                <td class="num-cell">${(p.term2_balance || 0).toLocaleString('en-US')}</td>
-                <td class="num-cell" style="color:${(p.final_balance || 0) > 0 ? 'red' : 'green'}">${(p.final_balance || 0).toLocaleString('en-US')}</td>
-              `;
-            }
+                const td = document.createElement('td');
+                let val = p[colKey];
+                
+                // تنسيق القيم
+                if (colKey === 'updated_at') val = val ? new Date(val).toLocaleDateString('en-GB') : '-';
+                else if (colKey === 'next_call_date') {
+                    val = val || '-';
+                    if (nextCallStyle) td.style.cssText = nextCallStyle;
+                }
+                else if (['carried_balance', 'term1_balance', 'term2_balance', 'final_balance'].includes(colKey)) {
+                    val = Number(val || 0).toLocaleString('en-US');
+                    if (colKey === 'final_balance') td.style.color = (p.final_balance || 0) > 0 ? 'red' : 'green';
+                }
+                else if (colKey === 'parent_name' || colKey === 'student_name') {
+                    td.innerHTML = `<strong>${val || '-'}${statusBadge}</strong>`;
+                    val = null; // Prevent overwriting innerHTML
+                }
+                else if (colKey === 'notes') {
+                    td.style.maxWidth = '200px';
+                    td.style.overflow = 'hidden';
+                    td.style.textOverflow = 'ellipsis';
+                    td.title = val || ''; // Tooltip
+                }
+                
+                if (val !== null) td.innerText = val || '-';
+                tr.appendChild(td);
+            });
+
             tbody.appendChild(tr);
         });
+        
+        // إعادة تفعيل تغيير الحجم
+        makeTableResizable(document.querySelector('#parentsTable'));
     };
+
+    // دوال السحب والإفلات للأعمدة
+    let dragSrcEl = null;
+    function handleDragStart(e) {
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+        this.classList.add('dragging');
+    }
+    function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drag-over');
+        return false;
+    }
+    function handleDrop(e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (dragSrcEl !== this) {
+            const fromIndex = parseInt(dragSrcEl.dataset.index);
+            const toIndex = parseInt(this.dataset.index);
+            
+            // إعادة ترتيب المصفوفة
+            // ملاحظة: المصفوفة تحتوي على كل الأعمدة، لكن العرض قد يخفي بعضها.
+            // هنا نفترض أن السحب يتم فقط بين الأعمدة الظاهرة.
+            // الحل الأبسط: تحريك العنصر في المصفوفة الأصلية
+            const item = currentColumnOrder.splice(fromIndex, 1)[0];
+            currentColumnOrder.splice(toIndex, 0, item);
+            
+            // حفظ الترتيب
+            localStorage.setItem(`colOrder_${currentEmployee}`, JSON.stringify(currentColumnOrder));
+            
+            // إعادة الرسم
+            renderParentsTable(window.currentFilteredData || window.currentEmployeeData);
+        }
+        return false;
+    }
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        document.querySelectorAll('th').forEach(th => th.classList.remove('drag-over'));
+    }
 
     // دالة لإنشاء بيانات تجريبية إذا لم تكن موجودة
     async function createSampleData(employee) {
@@ -2329,6 +2634,12 @@
     window.openWhatsApp = () => {
       if (!currentParentPhone) return alert("لا يوجد رقم جوال");
       let phone = currentParentPhone.replace(/\D/g, '');
+      
+      // تصحيح الرقم: إذا بدأ بـ 05، نضيف 966 ونحذف الصفر
+      if (phone.startsWith('05')) {
+          phone = '966' + phone.substring(1);
+      }
+      
       window.open(`https://wa.me/${phone}`, '_blank');
     };
 
@@ -2371,18 +2682,19 @@
         // نجمع كل المفاتيح المعروفة (موظفين + مراحل)
         const knownEmps = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
         knownEmps.forEach(e => {
-          byEmp[e] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0, total_calls: 0, responded: 0 };
+          byEmp[e] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0, total_calls: 0, responded: 0, no_answer: 0 };
         });
 
         mergedData.forEach(r => {
           const emp = r.employee || 'emp1';
-          if (!byEmp[emp]) byEmp[emp] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0, total_calls: 0, responded: 0 };
+          if (!byEmp[emp]) byEmp[emp] = { count: 0, sum_final: 0, sum_carried: 0, debtors: 0, total_calls: 0, responded: 0, no_answer: 0 };
           byEmp[emp].count += 1;
           byEmp[emp].sum_final += Number(r.final_balance || 0);
           byEmp[emp].sum_carried += Number(r.carried_balance || 0);
           if ((r.final_balance || 0) > 0) byEmp[emp].debtors += 1;
           byEmp[emp].total_calls += Number(r.call_count || 0);
           if (r.last_call_status && r.last_call_status.trim() !== '') byEmp[emp].responded += 1;
+          if (r.last_call_status === 'لم يرد' || r.last_call_status === 'لا يوجد رد') byEmp[emp].no_answer += 1;
         });
 
         const html = ['<div style="padding:10px; max-height:70vh; overflow:auto;">',
@@ -2395,6 +2707,7 @@
           '<option value="debtors">عدد المدينين</option>',
           '<option value="total_calls">إجمالي الاتصالات</option>',
           '<option value="responded">عدد الردود</option>',
+          '<option value="no_answer">لم يتم الرد</option>',
           '</select>',
           '<select id="statsCategory" onchange="renderStatsTable()" style="margin-left:5px;">',
           '<option value="all">عرض الكل</option>',
@@ -2426,7 +2739,8 @@
              'count': 'عدد السجلات',
              'debtors': 'عدد المدينين',
              'total_calls': 'إجمالي الاتصالات',
-             'responded': 'عدد الردود'
+             'responded': 'عدد الردود',
+             'no_answer': 'لم يتم الرد'
           };
 
           let labelsIds = Object.keys(byEmp);
@@ -2443,9 +2757,9 @@
           const labels = labelsIds.map(id => getEmployeeLabel(id));
           const dataValues = labelsIds.map(k => byEmp[k][metric]);
 
-          const tableHtml = ['<table class="excel-preview-table"><thead><tr><th>الموظف</th><th>عدد السجلات</th><th>مجموع النهائي</th><th>مجموع المدور</th><th>المدينون</th><th>إجمالي الاتصالات</th><th>عدد الردود</th></tr></thead><tbody>'];
+          const tableHtml = ['<table class="excel-preview-table"><thead><tr><th>الموظف</th><th>عدد السجلات</th><th>مجموع النهائي</th><th>مجموع المدور</th><th>المدينون</th><th>إجمالي الاتصالات</th><th>عدد الردود</th><th>لم يرد</th></tr></thead><tbody>'];
           labelsIds.forEach(k => {
-            tableHtml.push(`<tr><td>${getEmployeeLabel(k)}</td><td>${byEmp[k].count}</td><td>${formatCurrency(byEmp[k].sum_final)}</td><td>${formatCurrency(byEmp[k].sum_carried)}</td><td>${byEmp[k].debtors}</td><td>${byEmp[k].total_calls}</td><td>${byEmp[k].responded}</td></tr>`);
+            tableHtml.push(`<tr><td>${getEmployeeLabel(k)}</td><td>${byEmp[k].count}</td><td>${formatCurrency(byEmp[k].sum_final)}</td><td>${formatCurrency(byEmp[k].sum_carried)}</td><td>${byEmp[k].debtors}</td><td>${byEmp[k].total_calls}</td><td>${byEmp[k].responded}</td><td>${byEmp[k].no_answer}</td></tr>`);
           });
           tableHtml.push('</tbody></table>');
           document.getElementById('statsTable').innerHTML = tableHtml.join('');
@@ -4083,6 +4397,298 @@
         document.getElementById('collTableContainer').innerHTML = tableHtml;
     };
 
+    // --- شاشة عرض كل أولياء الأمور (التقرير الشامل) ---
+    window.openAllParentsReport = async () => {
+        document.getElementById('allParentsScreen').style.display = 'flex';
+        document.getElementById('allParentsTableBody').innerHTML = '<tr><td colspan="10" style="text-align:center;">جاري تحميل البيانات...</td></tr>';
+        
+        // تعبئة قائمة الموظفين
+        const empSelect = document.getElementById('allParentsFilterEmp');
+        empSelect.innerHTML = '<option value="all">كل الموظفين</option>';
+        Object.keys(appConfig.employeeNames || {}).forEach(k => empSelect.innerHTML += `<option value="${k}">${appConfig.employeeNames[k]}</option>`);
+        Object.keys(appConfig.stages || {}).forEach(k => empSelect.innerHTML += `<option value="${k}">${appConfig.stages[k].name}</option>`);
+
+        // جلب البيانات
+        const { data: parents, error } = await supabase.from('parents').select('*');
+        const { data: interactions } = await supabase.from('interactions').select('*');
+        
+        if (error) { alert('خطأ: ' + error.message); return; }
+        
+        // دمج البيانات
+        const intMap = {};
+        (interactions || []).forEach(i => intMap[i.parent_code] = i);
+        
+        window.allParentsData = parents.map(p => {
+            const i = intMap[p.parent_code] || {};
+            return { ...p, ...i };
+        });
+        
+        filterAllParentsTable();
+    };
+
+    window.filterAllParentsTable = () => {
+        const empFilter = document.getElementById('allParentsFilterEmp').value;
+        const searchCol = document.getElementById('allParentsSearchCol').value;
+        const search = document.getElementById('allParentsSearch').value.toLowerCase();
+        
+        const filtered = window.allParentsData.filter(row => {
+            if (empFilter !== 'all' && row.employee !== empFilter) return false;
+            if (search) {
+                if (searchCol === 'all') {
+                    return [row.parent_name, row.parent_code, row.phone, row.student_name, row.notes].some(v => String(v||'').toLowerCase().includes(search));
+                } else {
+                    return String(row[searchCol] || '').toLowerCase().includes(search);
+                }
+            }
+            return true;
+        });
+        
+        const tbody = document.getElementById('allParentsTableBody');
+        const thead = document.querySelector('#allParentsTable thead');
+        
+        // بناء الهيدر (شامل كل الأعمدة)
+        thead.innerHTML = `<tr>
+            <th>الموظف</th><th>رقم الولي</th><th>الاسم</th><th>الجوال</th><th>رقم الطالب</th><th>اسم الطالب</th>
+            <th>الرصيد النهائي</th><th>آخر اتصال</th><th>حالة الاتصال</th><th>ملاحظات</th>
+        </tr>`;
+        
+        let html = '';
+        filtered.forEach(r => {
+            html += `<tr>
+                <td>${getEmployeeLabel(r.employee)}</td>
+                <td>${r.parent_code || ''}</td>
+                <td>${r.parent_name || ''}</td>
+                <td>${r.phone || ''}</td>
+                <td>${r.student_code || ''}</td>
+                <td>${r.student_name || ''}</td>
+                <td>${Number(r.final_balance||0).toLocaleString('en-US')}</td>
+                <td>${r.updated_at ? new Date(r.updated_at).toLocaleDateString('en-GB') : '-'}</td>
+                <td>${r.last_call_status || '-'}</td>
+                <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.notes||''}">${r.notes || '-'}</td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+        
+        // تفعيل تغيير حجم الأعمدة للجدول الجديد
+        makeTableResizable(document.querySelector('#allParentsTable'));
+    };
+
+    window.exportAllParentsToExcel = () => {
+        const wb = XLSX.utils.table_to_book(document.getElementById('allParentsTable'), {sheet:"Report"});
+        XLSX.writeFile(wb, "All_Parents_Report.xlsx");
+    };
+
+    // --- شاشة الإدارة العامة (General Admin) ---
+    window.openGeneralAdmin = () => {
+        document.getElementById('general_admin_pass_input').value = '';
+        document.getElementById('generalAdminLoginModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('general_admin_pass_input').focus(), 100);
+    };
+
+    window.submitGeneralAdminLogin = () => {
+        const pass = document.getElementById('general_admin_pass_input').value;
+        if (pass === appConfig.adminPass) {
+            document.getElementById('generalAdminLoginModal').style.display = 'none';
+            document.getElementById('generalAdminScreen').style.display = 'flex';
+            renderGeneralAdminDashboard();
+        } else {
+            alert("كلمة المرور غير صحيحة ❌");
+        }
+    };
+
+    window.closeGeneralAdminLogin = () => {
+        document.getElementById('generalAdminLoginModal').style.display = 'none';
+    };
+
+    window.changeAdminPassword = async () => {
+        const newPass = prompt("أدخل كلمة المرور الجديدة للإدارة العامة:");
+        if (newPass && newPass.trim() !== "") {
+            appConfig.adminPass = newPass.trim();
+            await saveConfigToDB();
+            alert("تم تغيير كلمة المرور بنجاح ✅");
+        }
+    };
+
+    window.toggleAdminDateInputs = () => {
+        const val = document.getElementById('adminPeriodSelect').value;
+        document.getElementById('adminCustomDateDiv').style.display = (val === 'custom') ? 'flex' : 'none';
+    };
+
+    window.renderGeneralAdminDashboard = async (updateChartOnly = false) => {
+        const period = document.getElementById('adminPeriodSelect').value;
+        const chartType = document.getElementById('adminChartType').value || 'bar';
+        
+        // تحديد التواريخ
+        let startDate = new Date(0);
+        let endDate = new Date();
+        endDate.setHours(23, 59, 59, 999);
+        
+        const now = new Date();
+
+        if (period === 'today') {
+            startDate = new Date(now); startDate.setHours(0,0,0,0);
+        } else if (period === 'week') {
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day == 0 ? -6:1);
+            startDate = new Date(now.setDate(diff));
+            startDate.setHours(0,0,0,0);
+        } else if (period === 'month') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else if (period === 'all') {
+            startDate = new Date(0);
+        } else if (period === 'custom') {
+            const f = document.getElementById('adminDateFrom').value;
+            const t = document.getElementById('adminDateTo').value;
+            if (f) startDate = new Date(f);
+            if (t) {
+                endDate = new Date(t);
+                endDate.setHours(23, 59, 59, 999);
+            }
+        }
+
+        // مؤشر التحميل
+        const tbody = document.querySelector('#adminFullStatsTable tbody');
+        if (tbody && !updateChartOnly) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">جاري تحميل البيانات...</td></tr>';
+
+        // جلب البيانات
+        let interactions = window._adminCachedInteractions;
+        if (!interactions || !updateChartOnly) {
+             const resInt = await supabase.from('interactions').select('*');
+             if (resInt.error) {
+                console.error("Error fetching admin data", resInt.error);
+                if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">خطأ في الاتصال بقاعدة البيانات</td></tr>';
+                return;
+             }
+             interactions = resInt.data;
+             window._adminCachedInteractions = interactions;
+        }
+
+        // تصفية البيانات حسب التاريخ
+        const filtered = interactions.filter(i => {
+            if (!i.updated_at) return false;
+            const d = new Date(i.updated_at);
+            return d >= startDate && d <= endDate;
+        });
+
+        // 1. تجهيز بيانات المخطط (تجميع حسب التاريخ)
+        const dateMap = {};
+        filtered.forEach(i => {
+            const d = new Date(i.updated_at);
+            const key = d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+            dateMap[key] = (dateMap[key] || 0) + 1;
+        });
+
+        // رسم المخطط الزمني
+        const ctx = document.getElementById('adminDailyChart').getContext('2d');
+        if (window._adminDailyChart) window._adminDailyChart.destroy();
+
+        const sortedDates = Object.keys(dateMap).sort();
+        const chartData = sortedDates.map(k => dateMap[k]);
+
+        window._adminDailyChart = new Chart(ctx, {
+            type: chartType,
+            data: {
+                labels: sortedDates,
+                datasets: [{
+                    label: 'عدد الاتصالات',
+                    data: chartData,
+                    backgroundColor: 'rgba(21, 101, 192, 0.5)',
+                    borderColor: 'rgba(21, 101, 192, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'نشاط الاتصالات خلال الفترة المحددة' }
+                },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+
+        // 2. تجهيز بيانات الجدول (تجميع حسب الموظف)
+        const empStats = {};
+        const employees = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
+        employees.forEach(e => empStats[e] = { calls: 0, answered: 0, whatsapp: 0, no_answer: 0 });
+
+        filtered.forEach(i => {
+            const emp = i.employee || 'emp1';
+            if (!empStats[emp]) empStats[emp] = { calls: 0, answered: 0, whatsapp: 0, no_answer: 0 };
+            
+            empStats[emp].calls++;
+            if (i.whatsapp_sent) empStats[emp].whatsapp++;
+            
+            const status = (i.last_call_status || '').trim();
+            const negativeStatuses = ['لم يرد', 'لا يوجد رد', 'مشغول', 'مغلق', 'خارج الخدمة', ''];
+            if (!negativeStatuses.includes(status) && status !== '') {
+                empStats[emp].answered++;
+            } else {
+                empStats[emp].no_answer++;
+            }
+        });
+
+        // حساب إجمالي الاتصالات الكلي لجميع الموظفين
+        const totalAllCalls = Object.values(empStats).reduce((acc, val) => acc + val.calls, 0);
+
+        // رسم الجدول
+        const thead = document.querySelector('#adminFullStatsTable thead');
+        thead.innerHTML = `
+            <tr>
+                <th>الموظف</th>
+                <th>إجمالي الاتصالات</th>
+                <th>تم الرد</th>
+                <th>لم يتم الرد</th>
+                <th>واتساب</th>
+                <th>نسبة الاتصالات</th>
+            </tr>
+        `;
+
+        let tableHtml = '';
+        employees.forEach(e => {
+            const s = empStats[e];
+            // حساب نسبة مساهمة الموظف من إجمالي الاتصالات
+            const ratio = totalAllCalls > 0 ? Math.round((s.calls / totalAllCalls) * 100) : 0;
+            
+            tableHtml += `<tr>
+                <td style="font-weight:bold;">${getEmployeeLabel(e)}</td>
+                <td>${s.calls}</td>
+                <td style="color:green;">${s.answered}</td>
+                <td style="color:red;">${s.no_answer}</td>
+                <td>${s.whatsapp}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <div style="flex:1; background:#e0e0e0; height:8px; border-radius:4px; overflow:hidden;">
+                            <div style="width:${ratio}%; background:${ratio > 20 ? '#1565C0' : '#64b5f6'}; height:100%;"></div>
+                        </div>
+                        <span style="font-size:12px;">${ratio}%</span>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        tbody.innerHTML = tableHtml;
+
+        // تفعيل خاصية تغيير حجم الأعمدة للجدول
+        makeTableResizable(document.getElementById('adminFullStatsTable'));
+    };
+
+    window.saveSchoolTargetSettings = async () => {
+        appConfig.schoolTotalFees = cleanNumber(document.getElementById('schoolTotalFeesInput').value);
+        appConfig.schoolTarget = cleanNumber(document.getElementById('schoolTargetInput').value);
+        await saveConfigToDB();
+        renderGeneralAdminDashboard(true); // تحديث الرسوم فقط
+    };
+
+    window.exportAdminStatsToExcel = () => {
+        const table = document.getElementById('adminFullStatsTable');
+        if (!table) return alert('لا توجد بيانات للتصدير');
+        const wb = XLSX.utils.table_to_book(table, {sheet: "AdminStats"});
+        XLSX.writeFile(wb, "Admin_Dashboard_Stats.xlsx");
+    };
+
     // تحديث الجدول عند تغيير الموظف
     document.getElementById('importEmpSelect').addEventListener('change', () => {
       loadDataToGrid();
@@ -4095,7 +4701,7 @@
       const isMainTable = table.id === 'parentsTable';
       
       headers.forEach((th, index) => {
-        if (th.querySelector('.resizer')) return;
+        if (th.querySelector('.resizer')) th.querySelector('.resizer').remove(); // إزالة القديم إن وجد لتجنب التكرار
 
         const resizer = document.createElement('div');
         resizer.classList.add('resizer');
