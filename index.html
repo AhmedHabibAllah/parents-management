@@ -503,10 +503,18 @@
     }
     /* جعل الأعمدة غير المثبتة قابلة للتمدد حسب المحتوى */
 
+    /* تمييز الصفوف التي عليها مديونية (أقساط) */
+    tr.has-debt,
+    tr.has-debt td {
+      background-color: #ffcdd2 !important; /* خلفية حمراء فاتحة */
+      color: #b71c1c !important; /* نص أحمر غامق */
+    }
+
     /* تمييز الصفوف التي تم الاتصال بها اليوم */
     tr.contacted-today,
     tr.contacted-today td {
       background-color: #b9f6ca !important; /* لون أخضر فسفوري فاتح */
+      color: #000 !important;
     }
 
     /* القائمة الجانبية (Sidebar) */
@@ -1513,7 +1521,7 @@
       passwords: { emp1: '', emp2: '', emp3: '', emp4: '' },
       employeeNames: { emp1: 'موظف 1', emp2: 'موظف 2', emp3: 'موظف 3', emp4: 'موظف 4' },
       employeeThemes: {},
-      statusOptions: "مشغول\nلم يرد\nمع الراتب الجديد\nمع الفصل الدراسي القادم\nتم السداد",
+      statusOptions: "اقساط\nمشغول\nلم يرد\nمع الراتب الجديد\nمع الفصل الدراسي القادم\nتم السداد",
       manualTargetData: {}, // تخزين البيانات اليدوية للمستهدف
       stages: { 'stage1': { name: 'القسم الابتدائي', pass: '' }, 'stage2': { name: 'القسم المتوسط', pass: '' }, 'stage3': { name: 'القسم الثانوي', pass: '' } },
       adminPass: 'admin', // كلمة مرور الإدارة العامة الافتراضية
@@ -2099,6 +2107,11 @@
             let rowClass = "";
             let statusBadge = "";
 
+            // تلوين الصف بالأحمر إذا كانت حالة الاتصال اقساط
+            if (p.last_call_status === 'اقساط') {
+                rowClass = "has-debt";
+            }
+
             if (p.updated_at) {
               const lastCallDate = new Date(p.updated_at);
               lastCallDate.setHours(0, 0, 0, 0); // تصفير الوقت
@@ -2115,6 +2128,11 @@
                 // تكبير المربع وتنسيقه
                 statusBadge = ` <span style="display:inline-block; background:${badgeColor}; color:white; padding:4px 12px; border-radius:8px; font-size:16px; margin-right:5px; font-weight:bold; min-width:30px; text-align:center;" title="تم الاتصال منذ ${diffDays} يوم">${diffDays}</span>`;
               }
+            }
+
+            // تلوين الصف بالأحمر إذا كانت حالة الاتصال اقساط (أولوية قصوى)
+            if (p.last_call_status === 'اقساط') {
+                rowClass = "has-debt";
             }
 
             let nextCallStyle = "";
