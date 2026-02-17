@@ -3624,14 +3624,16 @@
         // نقوم بإنشاء خريطة تربط كود ولي الأمر بالموظف إذا وجد في أي صف
         const parentEmpMap = {};
         data.forEach(r => {
-            if (r.parent_code && r.employee) {
-                parentEmpMap[r.parent_code] = r.employee;
+            const pCode = r.parent_code ? String(r.parent_code).trim() : "";
+            if (pCode && r.employee) {
+                parentEmpMap[pCode] = r.employee;
             }
         });
 
         data.forEach(row => {
+          const pCode = row.parent_code ? String(row.parent_code).trim() : "";
           // نستخدم الموظف الموجود في الصف، أو نبحث عنه في الخريطة باستخدام كود ولي الأمر
-          const effectiveEmp = row.employee || parentEmpMap[row.parent_code];
+          const effectiveEmp = row.employee || parentEmpMap[pCode];
           html += `<tr>
             <td style="font-weight:bold; color:#4a148c;">${getEmployeeLabel(effectiveEmp) || 'غير مسند'}</td>
             <td>${row.student_code || '-'}</td>
@@ -4477,9 +4479,20 @@
         const intMap = {};
         (interactions || []).forEach(i => intMap[i.parent_code] = i);
         
+        // توحيد الموظف لنفس ولي الأمر (إصلاح مشكلة ظهور طالب مسند وآخر غير مسند)
+        const parentEmpMap = {};
+        parents.forEach(p => {
+             const pCode = p.parent_code ? String(p.parent_code).trim() : "";
+             if (pCode && p.employee) {
+                 parentEmpMap[pCode] = p.employee;
+             }
+        });
+
         window.allParentsData = parents.map(p => {
+            const pCode = p.parent_code ? String(p.parent_code).trim() : "";
             const i = intMap[p.parent_code] || {};
-            return { ...p, ...i };
+            const effectiveEmp = p.employee || parentEmpMap[pCode];
+            return { ...p, ...i, employee: effectiveEmp };
         });
         
         filterAllParentsTable();
