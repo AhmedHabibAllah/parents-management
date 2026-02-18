@@ -1246,7 +1246,7 @@
           </div>
 
           <textarea id="excelPasteArea" class="excel-input" style="display:none; margin-bottom:10px;"
-            placeholder="انسخ البيانات من الإكسل والصقها هنا... (الترتيب: الرقم - رقم الطالب - اسم الطالب - رقم الولي - اسم الولي - الهوية - الجوال - المدور - ف1 - ف2 - النهائي)"
+            placeholder="يمكنك لصق عمود واحد فقط (للجلب التلقائي):&#10;- لموظفي الاستقبال: الصق عمود (أرقام أولياء الأمور) فقط.&#10;- لموظفي المراحل: الصق عمود (أرقام الطلاب) فقط.&#10;&#10;أو الصق البيانات الكاملة بالترتيب: (الرقم - رقم الطالب - اسم الطالب - رقم الولي - اسم الولي - الهوية - الجوال - المدور - ف1 - ف2 - النهائي)"
             oninput="convertPasteToGrid()">
         </textarea>
 
@@ -3458,10 +3458,85 @@
       document.getElementById('excelPasteArea').style.display = 'none';
     };
 
-    window.convertPasteToGrid = () => {
+    window.convertPasteToGrid = async () => {
       const text = document.getElementById('excelPasteArea').value;
+      if (!text.trim()) return;
+
       const rows = text.split("\n");
       const data = [];
+      
+      // التحقق مما إذا كان اللصق عبارة عن عمود واحد (أكواد فقط)
+      // نفترض أنه عمود واحد إذا لم نجد علامة Tab في السطر الأول وكان هناك نص
+      const isSingleColumn = rows.length > 0 && !rows[0].includes("\t") && text.trim().length > 0;
+
+      if (isSingleColumn) {
+        const emp = document.getElementById('importEmpSelect').value;
+        if (!emp) return alert("الرجاء اختيار الموظف أولاً");
+
+        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#2979ff; font-weight:bold;">⏳ جاري البحث عن البيانات ومطابقة الأكواد...</p>';
+
+        const codes = rows.map(r => r.trim()).filter(c => c);
+        // تحديد نوع الموظف (مرحلة أم استقبال)
+        const isStage = appConfig.stages && appConfig.stages[emp]; 
+
+        try {
+            let query = supabase.from('parents').select('*');
+            let results = [];
+
+            if (isStage) {
+                // إذا كان موظف مرحلة -> نبحث بأكواد الطلاب
+                const { data, error } = await query.in('student_code', codes);
+                if (error) throw error;
+                results = data;
+            } else {
+                // إذا كان موظف استقبال -> نبحث بأكواد أولياء الأمور
+                const { data, error } = await query.in('parent_code', codes);
+                if (error) throw error;
+                results = data;
+            }
+
+            if (!results || results.length === 0) {
+                document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:red;">لم يتم العثور على بيانات مطابقة للأكواد المدخلة.</p>';
+                return;
+            }
+
+            // تحويل النتائج إلى تنسيق الشبكة
+            results.forEach((row, idx) => {
+                data.push({
+                    serial_no: idx + 1,
+                    student_code: row.student_code,
+                    student_name: row.student_name,
+                    parent_code: row.parent_code,
+                    parent_name: row.parent_name,
+                    identity_no: row.identity_no,
+                    phone: row.phone,
+                    carried_balance: row.carried_balance,
+                    term1_balance: row.term1_balance,
+                    term2_balance: row.term2_balance,
+                    final_balance: row.final_balance,
+                    is_update: true // علامة بأن البيانات موجودة
+                });
+            });
+
+            // عرض النتائج في الشبكة
+            renderGrid(data);
+
+            // عرض إحصائية بسيطة
+            const stats = document.getElementById('globalUpdateStats');
+            if(stats) {
+                stats.style.display = 'block';
+                stats.innerHTML = `<span style="color:#2e7d32; font-weight:bold;">✅ تم جلب بيانات ${data.length} سجل بناءً على الأكواد.</span>`;
+            }
+            return; // الخروج من الدالة لأننا انتهينا من المعالجة الخاصة
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('gridContainer').innerHTML = `<p style="text-align:center; color:red;">خطأ في جلب البيانات: ${err.message}</p>`;
+            return;
+        }
+      }
+
+      // --- المنطق القديم (لصق متعدد الأعمدة) ---
 
       rows.forEach(row => {
         // تنظيف الصفوف الفارغة تماماً
