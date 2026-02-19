@@ -1372,6 +1372,15 @@
     </div>
   </div>
 
+  <!-- شاشة تفاصيل الاتصال في الإحصائيات -->
+  <div class="center-screen" id="interactionDetailsModal" style="display:none; z-index:700;">
+    <div class="box" style="width: 90%; max-width: 500px; text-align: right;">
+      <h2 style="color:#2979ff;">تفاصيل الاتصال</h2>
+      <div id="interactionDetailsContent" style="max-height: 60vh; overflow-y: auto; padding: 10px;"></div>
+      <button class="btn btn-secondary" onclick="document.getElementById('interactionDetailsModal').style.display='none'" style="margin-top:15px;">إغلاق</button>
+    </div>
+  </div>
+
   <!-- شاشة الإدارة العامة (Dashboard) -->
   <div class="center-screen" id="generalAdminScreen" style="display:none; z-index:900;">
     <div class="box box-large" style="background: #f8f9fa; display: flex; flex-direction: column; height: 98vh; padding: 0; overflow: hidden;">
@@ -1619,6 +1628,7 @@
     }
 
     function getEmployeeLabel(emp) {
+      if (emp === 'unassigned') return 'غير مسند';
       if (appConfig.employeeNames && appConfig.employeeNames[emp]) return appConfig.employeeNames[emp];
       if (appConfig.stages && appConfig.stages[emp]) return appConfig.stages[emp].name;
       return emp;
@@ -1840,14 +1850,19 @@
       currentEmployee = employee;
       window.currentViewMode = 'reception'; // وضع الاستقبال (تجميع)
       applyTheme();
-
-      // تحميل ترتيب الأعمدة المحفوظ أو استخدام الافتراضي
-      const savedOrder = localStorage.getItem(`colOrder_${employee}`);
-      if (savedOrder) {
-        currentColumnOrder = JSON.parse(savedOrder);
+      
+      // تحميل ترتيب الأعمدة مع ضمان وجود الأعمدة الجديدة
+      const defaultOrder = ['last_call_status', 'notes', 'serial_no', 'parent_code', 'parent_name', 'identity_no', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+      const savedOrderJSON = localStorage.getItem(`colOrder_${employee}`);
+      if (savedOrderJSON) {
+          const savedOrder = JSON.parse(savedOrderJSON);
+          const combined = [...savedOrder];
+          defaultOrder.forEach(col => {
+              if (!combined.includes(col)) combined.push(col);
+          });
+          currentColumnOrder = combined;
       } else {
-        // الترتيب الافتراضي المطلوب: الملاحظات والحالة أولاً
-        currentColumnOrder = ['last_call_status', 'notes', 'serial_no', 'parent_code', 'parent_name', 'identity_no', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+          currentColumnOrder = defaultOrder;
       }
 
       document.getElementById("employeeName").innerText = "لوحة تحكم - " + getEmployeeLabel(employee);
@@ -1996,12 +2011,18 @@
       window.currentViewMode = 'stage'; // وضع المراحل (تفصيلي)
       applyTheme();
 
-      // تحميل ترتيب الأعمدة للمراحل
-      const savedOrder = localStorage.getItem(`colOrder_${stageKey}`);
-      if (savedOrder) {
-        currentColumnOrder = JSON.parse(savedOrder);
+      // تحميل ترتيب الأعمدة مع ضمان وجود الأعمدة الجديدة
+      const defaultOrder = ['last_call_status', 'notes', 'serial_no', 'student_code', 'student_name', 'parent_code', 'parent_name', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+      const savedOrderJSON = localStorage.getItem(`colOrder_${stageKey}`);
+      if (savedOrderJSON) {
+          const savedOrder = JSON.parse(savedOrderJSON);
+          const combined = [...savedOrder];
+          defaultOrder.forEach(col => {
+              if (!combined.includes(col)) combined.push(col);
+          });
+          currentColumnOrder = combined;
       } else {
-        currentColumnOrder = ['last_call_status', 'notes', 'serial_no', 'student_code', 'student_name', 'parent_code', 'parent_name', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+          currentColumnOrder = defaultOrder;
       }
 
       document.getElementById("employeeName").innerText = "لوحة تحكم المرحلة - " + stageName;
@@ -2846,8 +2867,8 @@
 
       try {
         // 1. جلب البيانات
-        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance');
-        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent, updated_at, parent_code');
+        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance, parent_code');
+        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent, updated_at, parent_code, notes, last_call_status, next_call_date');
         
         // محاولة جلب بيانات الاستخدام (قد لا يكون الجدول موجوداً)
         let usage = [];
@@ -2878,6 +2899,12 @@
                 startDate = new Date(now);
                 endDate = new Date(now); endDate.setHours(23,59,59,999);
                 labelText = `اليوم: ${now.toLocaleDateString('ar-EG')}`;
+            } else if (period === 'yesterday') {
+                const yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                startDate = new Date(yesterday);
+                endDate = new Date(yesterday); endDate.setHours(23,59,59,999);
+                labelText = `أمس: ${yesterday.toLocaleDateString('ar-EG')}`;
             } else if (period === 'week') {
                 const day = now.getDay();
                 const diff = now.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
@@ -2906,38 +2933,58 @@
                 const d = new Date(i.updated_at);
                 return d >= startDate && d <= endDate;
             });
+            window.currentFilteredInteractions = filteredInteractions; // حفظ التفاعلات المفلترة للاستخدام في التفاصيل
 
             // تجميع البيانات
             const stats = {};
-            const empKeys = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {})];
+            const empKeys = [...Object.keys(appConfig.employeeNames || {}), ...Object.keys(appConfig.stages || {}), 'unassigned'];
+            const uniqueParentsMap = {}; // لتتبع الآباء الفريدين لكل موظف
+
             empKeys.forEach(k => {
                 stats[k] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
+                uniqueParentsMap[k] = new Set();
             });
 
             // بيانات الطلاب والمديونية (إجمالي ثابت لا يتأثر بالتاريخ لأنه رصيد حالي)
             // لكن المستخدم طلب: "تظهر كل اسماء اولياء الامور التي تم الاتصال بها في المده التي اخترتها"
             // لذا سنربط المديونية بمن تم الاتصال بهم فقط في حالة Drill-down، أما الإحصائية العامة للمديونية فهي لكل الطلاب
             (parents || []).forEach(p => {
-                const e = p.employee || 'emp1';
-                if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
-                stats[e].parents++;
+                const e = p.employee || 'unassigned';
+                if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] }; // تهيئة إذا لم يكن موجوداً
+                if (!uniqueParentsMap[e]) uniqueParentsMap[e] = new Set();
+                
+                // نستخدم Set لضمان عدم تكرار ولي الأمر (حساب عدد الآباء وليس الطلاب)
+                const pCode = p.parent_code ? String(p.parent_code).trim() : '';
+                if (pCode && pCode !== '0') { // تجاهل الأكواد الفارغة أو التي قيمتها "0"
+                    uniqueParentsMap[e].add(pCode);
+                }
                 stats[e].debt += (Number(p.final_balance) || 0);
+            });
+            
+            // تعيين عدد الآباء الفريدين
+            Object.keys(stats).forEach(e => {
+                stats[e].parents = uniqueParentsMap[e] ? uniqueParentsMap[e].size : 0;
             });
 
             // بيانات التفاعلات (تتأثر بالتاريخ)
             filteredInteractions.forEach(i => {
-                const e = i.employee || 'emp1';
+                const e = i.employee || 'unassigned';
                 if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
-                stats[e].calls += 1; // تم التعديل: حساب عدد السجلات التي تم تحديثها (عدد الآباء الذين تم التواصل معهم) بدلاً من جمع إجمالي الاتصالات التراكمي
-                // الأدق: عدد السجلات التي تم تحديثها في هذه الفترة
+                // تجميع الأكواد لحساب العدد الفريد لاحقاً
                 if (i.whatsapp_sent) stats[e].whatsapp++;
                 if (i.parent_code) stats[e].contacted_parents_codes.push(i.parent_code);
+            });
+            
+            // حساب عدد الآباء الذين تم الاتصال بهم (بشكل فريد)
+            Object.keys(stats).forEach(e => {
+                const uniqueContacted = new Set(stats[e].contacted_parents_codes);
+                stats[e].calls = uniqueContacted.size;
             });
 
             // بيانات الدخول (تتأثر بالتاريخ إذا كان الجدول يحتوي على timestamp)
             // الجدول الحالي في الكود `employee_usage` يحتوي `ts` أو `start`.
             usage.forEach(u => {
-                const e = u.employee || 'emp1';
+                const e = u.employee || 'unassigned';
                 const timeStr = u.ts || u.start;
                 if (timeStr) {
                     const d = new Date(timeStr);
@@ -2964,6 +3011,7 @@
                     <select id="advPeriodSelect" onchange="toggleCustomDate(); filterAndRenderStats()" style="padding:8px; border-radius:5px;">
                         <option value="all">كل الوقت</option>
                         <option value="today">اليوم</option>
+                        <option value="yesterday">أمس</option>
                         <option value="week">هذا الأسبوع</option>
                         <option value="month">هذا الشهر</option>
                         <option value="year">هذه السنة</option>
@@ -3027,6 +3075,27 @@
             document.getElementById('customDateSpan').style.display = (val === 'custom') ? 'inline-block' : 'none';
         };
 
+        // دالة عرض تفاصيل الاتصال في مودال
+        window.showInteractionDetailsModal = (index) => {
+            const data = window.drillDownData[index];
+            if (!data) return;
+
+            const content = document.getElementById('interactionDetailsContent');
+            const formatDate = (dateStr) => dateStr ? new Date(dateStr).toLocaleString('ar-EG') : '---';
+
+            content.innerHTML = `
+                <table class="excel-preview-table" style="width:100%; text-align:right;">
+                    <tr><td style="width:30%; font-weight:bold;">ولي الأمر</td><td>${data.parent_name || '-'}</td></tr>
+                    <tr><td style="font-weight:bold;">تاريخ الاتصال</td><td>${formatDate(data.updated_at)}</td></tr>
+                    <tr><td style="font-weight:bold;">حالة الاتصال</td><td>${data.last_call_status || '-'}</td></tr>
+                    <tr><td style="font-weight:bold;">الملاحظات</td><td style="white-space:pre-wrap;">${data.notes || '-'}</td></tr>
+                    <tr><td style="font-weight:bold;">موعد الاتصال القادم</td><td>${data.next_call_date || '-'}</td></tr>
+                    <tr><td style="font-weight:bold;">تم إرسال واتساب</td><td>${data.whatsapp_sent ? 'نعم' : 'لا'}</td></tr>
+                </table>
+            `;
+            document.getElementById('interactionDetailsModal').style.display = 'flex';
+        };
+
         // دالة عرض تفاصيل الموظف (Drill-down)
         window.showEmpDrillDown = async (emp) => {
             const codes = window.currentStatsData[emp].contacted_parents_codes || [];
@@ -3035,14 +3104,65 @@
             // جلب تفاصيل الآباء من قاعدة البيانات المحلية (التي تم جلبها سابقاً في parents)
             // لكن parents تحتوي فقط على employee, final_balance في الاستعلام الأصلي.
             // نحتاج لجلب التفاصيل الكاملة لهؤلاء الآباء.
-            
-            const { data: fullParents, error } = await supabase.from('parents').select('*').in('parent_code', codes);
+            // خريطة لآخر تفاعل لكل ولي أمر في الفترة المحددة ومن قبل الموظف المحدد
+            const interactionMap = {};
+            (window.currentFilteredInteractions || []).forEach(i => {
+                if (i.employee === emp && i.parent_code) {
+                    if (!interactionMap[i.parent_code] || new Date(i.updated_at) > new Date(interactionMap[i.parent_code].updated_at)) {
+                        interactionMap[i.parent_code] = i;
+                    }
+                }
+            });
+
+            const uniqueCodes = [...new Set(codes)];
+            const { data: fullParents, error } = await supabase.from('parents').select('*').in('parent_code', uniqueCodes);
             
             if (error || !fullParents) return alert('خطأ في جلب التفاصيل');
 
-            let html = `<table class="excel-preview-table"><thead><tr><th>م</th><th>الاسم</th><th>الجوال</th><th>الرصيد النهائي</th><th>حالة الاتصال</th></tr></thead><tbody>`;
-            fullParents.forEach((p, idx) => {
-                html += `<tr><td>${idx+1}</td><td>${p.parent_name}</td><td>${p.phone}</td><td>${formatCurrency(p.final_balance)}</td><td>تم التحديث</td></tr>`;
+            // تجميع البيانات حسب ولي الأمر (لدمج الطلاب المتعددين لنفس الولي)
+            const aggregatedParents = {};
+            fullParents.forEach(p => {
+                if (!aggregatedParents[p.parent_code]) aggregatedParents[p.parent_code] = { ...p, final_balance: 0 };
+                aggregatedParents[p.parent_code].final_balance += (Number(p.final_balance) || 0);
+            });
+            
+            const uniqueList = Object.values(aggregatedParents).map(p => ({ ...p, ...(interactionMap[p.parent_code] || {}) }));
+            window.drillDownData = uniqueList; // حفظ البيانات للمودال
+
+            let html = `<table class="excel-preview-table" style="width:100%; min-width:1200px;">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">م</th>
+                        <th>الاسم</th>
+                        <th>الجوال</th>
+                        <th>تاريخ الاتصال</th>
+                        <th>حالة الاتصال</th>
+                        <th style="width:300px;">الملاحظات</th>
+                        <th>موعد قادم</th>
+                        <th>واتساب</th>
+                        <th>الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            uniqueList.forEach((p, idx) => {
+                const dateStr = p.updated_at ? new Date(p.updated_at).toLocaleDateString('ar-EG') : '-';
+                const notes = p.notes || '-';
+                const status = p.last_call_status || '-';
+                const nextDate = p.next_call_date || '-';
+                const whatsapp = p.whatsapp_sent ? 'نعم' : 'لا';
+                
+                html += `<tr style="cursor:pointer;" onclick="showInteractionDetailsModal(${idx})">
+                    <td>${idx+1}</td>
+                    <td>${p.parent_name}</td>
+                    <td>${p.phone}</td>
+                    <td>${dateStr}</td>
+                    <td>${status}</td>
+                    <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${notes}">${notes}</td>
+                    <td>${nextDate}</td>
+                    <td>${whatsapp}</td>
+                    <td>${formatCurrency(p.final_balance)}</td>
+                </tr>`;
             });
             html += `</tbody></table>`;
             
