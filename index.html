@@ -372,15 +372,15 @@
 
     /* تنسيق شريط التمرير ليكون واضحاً */
     ::-webkit-scrollbar {
-      height: 16px;
-      width: 16px;
+      height: 24px;
+      width: 24px;
     }
     ::-webkit-scrollbar-track {
       background: #f1f1f1;
     }
     ::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 8px;
+      background: #90a4ae;
+      border-radius: 12px;
       border: 3px solid #f1f1f1;
     }
     ::-webkit-scrollbar-thumb:hover {
@@ -627,10 +627,14 @@
     }
 
     textarea.excel-input {
-      height: 150px;
-      resize: none;
-      font-family: monospace;
-      font-size: 12px;
+      height: 350px;
+      resize: vertical;
+      font-family: 'Cairo', sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 2.5;
+      white-space: pre-wrap;
+      padding: 15px;
     }
 
     /* تنسيق جدول المعاينة في الإعدادات */
@@ -1150,17 +1154,40 @@
         <!-- قسم المظهر وكلمات المرور -->
         <div style="display:flex; gap:20px; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:15px;">
           <div style="flex:1;">
-            <label style="font-size: 20px;">🎨 لون الموقع</label>
-            <input type="color" id="themeColor" style="height:40px; padding:2px;">
-            <label style="font-size: 20px;">اللون</label>
-            <input type="color" id="themeColor" style="height:40px; padding:2px;" oninput="document.documentElement.style.setProperty('--primary-color', this.value)">
-          </div>
-          <div style="flex:2;">
             <label style="font-size: 20px;">🔗 رابط الدفع</label>
-            <label style="font-size: 20px;">الرابط</label>
             <input type="text" id="paymentUrlSetting" style="margin-bottom:0;">
           </div>
         </div>
+
+        <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
+          <label style="font-size: 22px; color: #6a1b9a; font-weight:900;">🔍 بحث شامل في قاعدة البيانات</label>
+          <p style="font-size:12px; color:#666; margin-top:0;">ابحث عن أي طالب أو ولي أمر في النظام بالكامل لمعرفة الموظف المسند إليه.</p>
+          <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <select id="globalSearchCol" style="width:150px; margin-bottom:0;">
+              <option value="parent_name">اسم ولي الأمر</option>
+              <option value="parent_code">رقم ولي الأمر</option>
+              <option value="student_name">اسم الطالب</option>
+              <option value="student_code">رقم الطالب</option>
+              <option value="phone">رقم الجوال</option>
+              <option value="identity_no">رقم الهوية</option>
+            </select>
+            <input type="text" id="globalSearchInput" placeholder="اكتب للبحث..." style="margin-bottom:0; flex:1;">
+            <div style="display:flex; align-items:center; background:#f5f5f5; padding:0 10px; border-radius:12px; border:2px solid #e0e0e0; height:54px;">
+                <input type="checkbox" id="globalSearchExact" style="width:20px; height:20px; margin:0;">
+                <label for="globalSearchExact" style="margin-right:8px; font-size:14px; cursor:pointer; white-space:nowrap;">مطابق تماماً</label>
+            </div>
+            <button class="btn" onclick="searchGlobalDB()" style="width:auto; margin-bottom:0; background:#6a1b9a; color:white;">بحث</button>
+          </div>
+          <div id="globalSearchResults" style="margin-top:15px; overflow:auto; max-height:300px; border:1px solid #eee; border-radius:8px;"></div>
+        </div>
+
+        <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
+          <label style="font-size: 20px;">📝 خيارات حالة الاتصال (ضع كل خيار في سطر جديد)</label>
+          <textarea id="statusOptionsInput" placeholder="مشغول
+لم يرد
+تم الاتفاق" style="height:250px; width:75%; margin:10px auto; display:block; padding:12px; box-sizing:border-box; overflow-y:scroll; border:3px solid #ccc; font-size:18px;"></textarea>
+        </div>
+
         <div style="margin-top:20px;">
             <button class="btn" onclick="saveSettingsAndData(false, this)">💾 حفظ الإعدادات العامة</button>
         </div>
@@ -1192,35 +1219,7 @@
         <div id="settingsData" style="display:none;">
         <button class="btn btn-outline" onclick="backToSettingsMenu()" style="margin-bottom:20px;">🔙 رجوع للقائمة الرئيسية</button>
         <h3 style="border-bottom: 2px solid #ccc; padding-bottom: 10px;">إدارة البيانات والبحث</h3>
-        <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
-          <label style="font-size: 22px; color: #6a1b9a; font-weight:900;">🔍 بحث شامل في قاعدة البيانات</label>
-          <p style="font-size:12px; color:#666; margin-top:0;">ابحث عن أي طالب أو ولي أمر في النظام بالكامل لمعرفة الموظف المسند إليه.</p>
-          <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-            <select id="globalSearchCol" style="width:150px; margin-bottom:0;">
-              <option value="parent_name">اسم ولي الأمر</option>
-              <option value="parent_code">رقم ولي الأمر</option>
-              <option value="student_name">اسم الطالب</option>
-              <option value="student_code">رقم الطالب</option>
-              <option value="phone">رقم الجوال</option>
-              <option value="identity_no">رقم الهوية</option>
-            </select>
-            <input type="text" id="globalSearchInput" placeholder="اكتب للبحث..." style="margin-bottom:0; flex:1;">
-            <div style="display:flex; align-items:center; background:#f5f5f5; padding:0 10px; border-radius:12px; border:2px solid #e0e0e0; height:54px;">
-                <input type="checkbox" id="globalSearchExact" style="width:20px; height:20px; margin:0;">
-                <label for="globalSearchExact" style="margin-right:8px; font-size:14px; cursor:pointer; white-space:nowrap;">مطابق تماماً</label>
-            </div>
-            <button class="btn" onclick="searchGlobalDB()" style="width:auto; margin-bottom:0; background:#6a1b9a; color:white;">بحث</button>
-          </div>
-          <div id="globalSearchResults" style="margin-top:15px; overflow:auto; max-height:300px; border:1px solid #eee; border-radius:8px;"></div>
-        </div>
-
-        <div class="settings-group" style="border-bottom:1px solid #eee; padding-bottom:15px;">
-          <label style="font-size: 20px;">📝 خيارات حالة الاتصال (ضع كل خيار في سطر جديد)</label>
-          <textarea id="statusOptionsInput" placeholder="مشغول
-لم يرد
-تم الاتفاق" style="height:250px; width:75%; margin:10px auto; display:block; padding:12px; box-sizing:border-box; overflow-y:scroll; border:3px solid #ccc; font-size:18px;"></textarea>
-        </div>
-
+        
         <div class="settings-group">
           <label
             style="font-size:22px; color:#2979ff; border-bottom:2px solid #eee; padding-bottom:5px; font-weight:900;">📂
@@ -1238,7 +1237,6 @@
               الحالية</button>
             <button class="btn btn-outline" onclick="togglePasteArea()" style="width:auto; margin:0;">📋 لصق بيانات
               جديدة</button>
-            <button id="clearFinancialsBtn" class="btn btn-outline" onclick="clearAllFinancialData()" style="display:none; width:auto; margin:0; color:#d32f2f; border-color:#d32f2f;">💸 مسح البيانات المالية للكل</button>
             <button class="btn btn-outline" onclick="clearPasteAreaAndGrid()"
               style="width:auto; margin:0; color:#ff5722; border-color:#ff5722;">🧹 مسح</button>
             <button class="btn btn-outline" onclick="deleteEmployeeDataDB()"
@@ -1247,7 +1245,7 @@
           </div>
 
           <textarea id="excelPasteArea" class="excel-input" style="display:none; margin-bottom:10px;"
-            placeholder="يمكنك لصق عمود واحد فقط (للجلب التلقائي):&#10;- لموظفي الاستقبال: الصق عمود (أرقام أولياء الأمور) فقط.&#10;- لموظفي المراحل: الصق عمود (أرقام الطلاب) فقط.&#10;&#10;أو الصق البيانات الكاملة بالترتيب: (الرقم - رقم الطالب - اسم الطالب - رقم الولي - اسم الولي - الهوية - الجوال - المدور - ف1 - ف2 - النهائي)"
+            placeholder="انسخ البيانات من الإكسل والصقها هنا... (الترتيب: الرقم - رقم ولي الامر - أسم ولي الامر - رقم الهوية/الاقامة - رقم الجوال - الرصيد المدور - رصيد ف1 - رصيد ف2 - الرصيد النهائي)"
             oninput="convertPasteToGrid()">
         </textarea>
 
@@ -1256,8 +1254,8 @@
             </p>
           </div>
           <div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
-             <button class="btn" onclick="saveSettingsAndData(false, this)" style="width:auto; background:#43a047; color:white;">💾 حفظ البيانات (بدون إغلاق)</button>
-             <button class="btn" onclick="saveSettingsAndData(true, this)" style="width:auto; background:#1e88e5; color:white;">💾 حفظ وإغلاق</button>
+             <button id="saveDataBtn" class="btn" onclick="saveSettingsAndData(false, this)" style="width:auto; background:#43a047; color:white;">💾 حفظ</button>
+             <button class="btn btn-secondary" onclick="backToSettingsMenu()" style="width:auto;">رجوع</button>
           </div>
         </div>
 
@@ -1438,7 +1436,7 @@
 
     const supabase = createClient(
       'https://emrsfzmaqmfavehrdppw.supabase.co',
-      'sb_publishable_dmZ-1l-BmDzIteU1IaSjnw_3TMkHMhw'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtcnNmem1hcW1mYXZlaHJkcHB3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzgwMTk1OCwiZXhwIjoyMDgzMzc3OTU4fQ.E2UPonZwykB2_NXhictCmzxkC_TyZw5z6K3-cR3BTqU'  // ⚠️ استبدل هذا بـ Service Role Key من Supabase Settings
     );
 
     // ===== Usage tracking =====
@@ -1484,6 +1482,7 @@
     let currentStudentCode = "";
     let currentParentPhone = "";
     let currentParentIdentity = "";
+    window.importedData = []; // متغير لتخزين البيانات المستوردة مؤقتاً لتجنب مشاكل الذاكرة
 
     // دالة تحويل نص رقم عربي/فارسي/لغوي إلى رقم JS صالح - تعريف عام
     window.cleanNumber = (input) => {
@@ -1513,16 +1512,6 @@
       s = s.replace(/[^0-9.\-]/g, '');
       const num = parseFloat(s);
       return isNaN(num) ? 0 : num;
-    };
-
-    // دالة توحيد النصوص العربية للمقارنة (تجاهل الهمزات والتاء المربوطة والمسافات)
-    window.normalizeArabic = (text) => {
-        if (!text) return "";
-        let str = String(text);
-        str = str.replace(/[أإآ]/g, 'ا');
-        str = str.replace(/ة/g, 'ه');
-        str = str.replace(/ى/g, 'ي');
-        return str.replace(/\s+/g, ' ').trim();
     };
 
     // الإعدادات الافتراضية
@@ -1940,40 +1929,36 @@
           const groupedData = {};
           rawDataWithInteractions.forEach(row => {
             const pCode = row.parent_code ? String(row.parent_code).trim() : "UNKNOWN";
-
             if (!groupedData[pCode]) {
-              // تهيئة السجل المجمع لولي الأمر عند العثور عليه لأول مرة
+              // تهيئة السجل المجمع
               groupedData[pCode] = {
-                ...row, // نسخ بيانات أول طالب كأساس (مثل اسم ولي الأمر، الجوال، إلخ)
+                ...row, // نسخ بيانات أول طالب كبيانات أساسية لولي الأمر
                 student_count: 0,
-                carried_balance: 0, // تصفير الأرصدة للبدء بالجمع من جديد
+                carried_balance: 0,
                 term1_balance: 0,
                 term2_balance: 0,
                 final_balance: 0,
-                _processed_students: new Set() // مجموعة لتتبع الطلاب الذين تمت معالجتهم
+                _student_ids: new Set()
               };
             }
 
-            // إنشاء مفتاح فريد (بصمة) لكل طالب لتجنب التكرار.
-            // تحسين استخراج رقم الطالب وتنظيفه
-            let sCode = row.student_code ? String(row.student_code).trim() : "";
-            // تجاهل القيم غير الصالحة الشائعة التي قد تسبب تكراراً خاطئاً
-            if (sCode === "null" || sCode === "undefined" || sCode === "0") sCode = "";
-
-            // إذا لم يوجد كود طالب، نستخدم اسم الطالب المنظف من المسافات الزائدة مع كود الولي
-            const cleanName = (row.student_name || '').trim().replace(/\s+/g, ' ');
-            const studentKey = sCode ? sCode : `_nocode_${pCode}_${cleanName}`;
-
-            if (!groupedData[pCode]._processed_students.has(studentKey)) {
-              // إذا كان الطالب جديداً (لم تتم معالجته من قبل)، قم بجمع بياناته
-              groupedData[pCode]._processed_students.add(studentKey);
-              groupedData[pCode].student_count++;
-              // استخدام cleanNumber لضمان جمع الأرقام بشكل صحيح حتى لو كانت نصوصاً أو تحتوي على فواصل
-              groupedData[pCode].carried_balance += cleanNumber(row.carried_balance);
-              groupedData[pCode].term1_balance += cleanNumber(row.term1_balance);
-              groupedData[pCode].term2_balance += cleanNumber(row.term2_balance);
-              groupedData[pCode].final_balance += cleanNumber(row.final_balance);
+            // حساب عدد الطلاب (بناءً على رقم الطالب الفريد لتجنب تكرار العد لنفس الطالب)
+            const sCode = row.student_code ? String(row.student_code).trim() : null;
+            if (sCode) {
+                if (!groupedData[pCode]._student_ids.has(sCode)) {
+                    groupedData[pCode]._student_ids.add(sCode);
+                    groupedData[pCode].student_count++;
+                }
+            } else {
+                // في حال عدم وجود رقم طالب، نعد الصف كطالب
+                groupedData[pCode].student_count++;
             }
+
+            // جمع الأرصدة
+            groupedData[pCode].carried_balance += Number(row.carried_balance || 0);
+            groupedData[pCode].term1_balance += Number(row.term1_balance || 0);
+            groupedData[pCode].term2_balance += Number(row.term2_balance || 0);
+            groupedData[pCode].final_balance += Number(row.final_balance || 0);
           });
 
           // تحويل الكائن إلى مصفوفة
@@ -2465,7 +2450,6 @@
           <tr><td>عدد مرات الاتصال</td><td>${formatVal(d.call_count)}</td></tr>
           <tr><td>حالة آخر اتصال</td><td>${formatVal(d.last_call_status)}</td></tr>
           <tr><td>تاريخ آخر تحديث</td><td>${d.updated_at ? new Date(d.updated_at).toLocaleString('ar-EG') : '---'}</td></tr>
-          <tr><td>تاريخ إنشاء السجل</td><td>${d.created_at ? new Date(d.created_at).toLocaleDateString('ar-EG') : 'غير متوفر'}</td></tr>
           <tr><td>تاريخ الاتصال القادم</td><td>${formatVal(d.next_call_date)}</td></tr>
           <tr><td>تم إرسال واتساب</td><td>${d.whatsapp_sent ? 'نعم' : 'لا'}</td></tr>
           <tr><td>الملاحظات</td><td style="white-space:pre-wrap;">${formatVal(d.notes)}</td></tr>
@@ -2492,8 +2476,6 @@
       const pass = document.getElementById('admin_login_input').value;
       if (pass === 'admin123') {
         document.getElementById('adminLoginScreen').style.display = 'none';
-        // Populate fields
-        document.getElementById('themeColor').value = appConfig.theme;
         document.getElementById('paymentUrlSetting').value = appConfig.paymentUrl;
         document.getElementById('statusOptionsInput').value = appConfig.statusOptions;
         
@@ -2591,7 +2573,7 @@
     };
 
     window.saveAppSettings = async (silent = false) => {
-      appConfig.theme = document.getElementById('themeColor').value;
+      appConfig.theme = '#000000';
       appConfig.paymentUrl = document.getElementById('paymentUrlSetting').value;
       appConfig.statusOptions = document.getElementById('statusOptionsInput').value;
       
@@ -2689,7 +2671,7 @@
 
     window.openStats = async () => {
       try {
-        const { data, error } = await supabase.from('parents').select('*').range(0, 19999);
+        const { data, error } = await supabase.from('parents').select('*');
         if (error) {
           alert('خطأ في جلب البيانات للإحصائيات: ' + error.message);
           console.error(error);
@@ -2857,8 +2839,8 @@
 
       try {
         // 1. جلب البيانات
-        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance').range(0, 19999);
-        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent, updated_at, parent_code').range(0, 19999);
+        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance');
+        const { data: interactions, error: err2 } = await supabase.from('interactions').select('employee, call_count, whatsapp_sent, updated_at, parent_code');
         
         // محاولة جلب بيانات الاستخدام (قد لا يكون الجدول موجوداً)
         let usage = [];
@@ -2925,42 +2907,24 @@
                 stats[k] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
             });
 
-            // 1. معالجة بيانات أولياء الأمور (العدد والمديونية)
-            // استخدام Set لضمان حساب عدد أولياء الأمور بشكل فريد (وليس عدد الطلاب)
-            const empParentsSet = {}; 
+            // بيانات الطلاب والمديونية (إجمالي ثابت لا يتأثر بالتاريخ لأنه رصيد حالي)
+            // لكن المستخدم طلب: "تظهر كل اسماء اولياء الامور التي تم الاتصال بها في المده التي اخترتها"
+            // لذا سنربط المديونية بمن تم الاتصال بهم فقط في حالة Drill-down، أما الإحصائية العامة للمديونية فهي لكل الطلاب
             (parents || []).forEach(p => {
                 const e = p.employee || 'emp1';
                 if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
-                
-                if (!empParentsSet[e]) empParentsSet[e] = new Set();
-                empParentsSet[e].add(p.parent_code);
-                
+                stats[e].parents++;
                 stats[e].debt += (Number(p.final_balance) || 0);
             });
-            
-            // تحديث عدد الآباء الفريد
-            Object.keys(empParentsSet).forEach(e => {
-                if(stats[e]) stats[e].parents = empParentsSet[e].size;
-            });
 
-            // 2. معالجة التفاعلات (الآباء الذين تم الاتصال بهم)
-            const empContactedSet = {};
+            // بيانات التفاعلات (تتأثر بالتاريخ)
             filteredInteractions.forEach(i => {
                 const e = i.employee || 'emp1';
                 if (!stats[e]) stats[e] = { parents: 0, debt: 0, calls: 0, whatsapp: 0, logins: 0, contacted_parents_codes: [] };
-                
-                if (!empContactedSet[e]) empContactedSet[e] = new Set();
-                empContactedSet[e].add(i.parent_code);
-
+                stats[e].calls += 1; // تم التعديل: حساب عدد السجلات التي تم تحديثها (عدد الآباء الذين تم التواصل معهم) بدلاً من جمع إجمالي الاتصالات التراكمي
+                // الأدق: عدد السجلات التي تم تحديثها في هذه الفترة
                 if (i.whatsapp_sent) stats[e].whatsapp++;
-            });
-
-            // تحديث عدد الآباء الذين تم الاتصال بهم (فريد) وقائمة الأكواد
-            Object.keys(empContactedSet).forEach(e => {
-                if(stats[e]) {
-                    stats[e].calls = empContactedSet[e].size;
-                    stats[e].contacted_parents_codes = Array.from(empContactedSet[e]);
-                }
+                if (i.parent_code) stats[e].contacted_parents_codes.push(i.parent_code);
             });
 
             // بيانات الدخول (تتأثر بالتاريخ إذا كان الجدول يحتوي على timestamp)
@@ -3069,20 +3033,8 @@
             
             if (error || !fullParents) return alert('خطأ في جلب التفاصيل');
 
-            // تجميع الآباء لضمان عدم التكرار (لأن الجدول يحتوي على طلاب)
-            const uniqueParentsMap = {};
-            fullParents.forEach(p => {
-                if (!uniqueParentsMap[p.parent_code]) {
-                    // نسخ البيانات الأساسية وتصفير الرصيد للجمع
-                    uniqueParentsMap[p.parent_code] = { ...p, final_balance: 0 };
-                }
-                // جمع الرصيد لكل أبناء هذا الولي
-                uniqueParentsMap[p.parent_code].final_balance += (Number(p.final_balance) || 0);
-            });
-            const uniqueParents = Object.values(uniqueParentsMap);
-
             let html = `<table class="excel-preview-table"><thead><tr><th>م</th><th>الاسم</th><th>الجوال</th><th>الرصيد النهائي</th><th>حالة الاتصال</th></tr></thead><tbody>`;
-            uniqueParents.forEach((p, idx) => {
+            fullParents.forEach((p, idx) => {
                 html += `<tr><td>${idx+1}</td><td>${p.parent_name}</td><td>${p.phone}</td><td>${formatCurrency(p.final_balance)}</td><td>تم التحديث</td></tr>`;
             });
             html += `</tbody></table>`;
@@ -3189,8 +3141,8 @@
       document.body.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="center-screen" style="z-index:9999"><div class="box"><h3>⏳ جاري التحضير...</h3></div></div>`);
 
       try {
-        const { data: parents, error: err1 } = await supabase.from('parents').select('parent_code, final_balance').range(0, 19999);
-        const { data: interactions, error: err2 } = await supabase.from('interactions').select('parent_code, updated_at').range(0, 19999);
+        const { data: parents, error: err1 } = await supabase.from('parents').select('parent_code, final_balance');
+        const { data: interactions, error: err2 } = await supabase.from('interactions').select('parent_code, updated_at');
 
         if (err1 || err2) throw new Error((err1 || err2).message);
 
@@ -3428,11 +3380,60 @@
 
     window.togglePasteArea = () => {
       const area = document.getElementById('excelPasteArea');
+      const emp = document.getElementById('importEmpSelect').value;
+      const isGlobal = emp === 'global_update';
+      const isStage = !!(appConfig.stages && appConfig.stages[emp]);
+      
+      if (isGlobal || isStage) {
+          if (isGlobal) {
+              area.placeholder = "انسخ البيانات من الإكسل والصقها هنا...\n\n" +
+                                "الترتيب المطلوب للأعمدة:\n" +
+                                "1. م (التسلسل)\n" +
+                                "2. رقم الطالب\n" +
+                                "3. اسم الطالب\n" +
+                                "4. رقم ولي الامر\n" +
+                                "5. اسم ولي الامر\n" +
+                                "6. الهوية\n" +
+                                "7. الجوال\n" +
+                                "8. الرصيد المدور\n" +
+                                "9. رصيد ف1\n" +
+                                "10. رصيد ف2\n" +
+                                "11. الرصيد النهائي\n" +
+                                "12. الموظف (آخر عمود)";
+          } else {
+              area.placeholder = "انسخ البيانات من الإكسل والصقها هنا...\n\n" +
+                                "الترتيب المطلوب للأعمدة:\n" +
+                                "1. م\n" +
+                                "2. رقم الطالب\n" +
+                                "3. اسم الطالب\n" +
+                                "4. رقم ولي الامر\n" +
+                                "5. اسم ولي الامر\n" +
+                                "6. الهوية\n" +
+                                "7. الجوال\n" +
+                                "8. الرصيد المدور\n" +
+                                "9. رصيد ف1\n" +
+                                "10. رصيد ف2\n" +
+                                "11. الرصيد النهائي";
+          }
+      } else {
+          area.placeholder = "انسخ البيانات من الإكسل والصقها هنا...\n\n" +
+                            "الترتيب المطلوب للأعمدة:\n" +
+                            "1. م\n" +
+                            "2. رقم ولي الامر\n" +
+                            "3. اسم ولي الامر\n" +
+                            "4. الهوية\n" +
+                            "5. الجوال\n" +
+                            "6. الرصيد المدور\n" +
+                            "7. رصيد ف1\n" +
+                            "8. رصيد ف2\n" +
+                            "9. الرصيد النهائي";
+      }
       area.style.display = area.style.display === 'none' ? 'block' : 'none';
       if (area.style.display === 'block') area.focus();
     };
 
     window.clearPasteAreaAndGrid = () => {
+        window.importedData = []; // تفريغ الذاكرة
         document.getElementById('excelPasteArea').value = '';
         document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#999;">اختر "تحميل البيانات" أو "لصق بيانات جديدة" للبدء</p>';
         const stats = document.getElementById('globalUpdateStats');
@@ -3464,39 +3465,6 @@
       }
     };
 
-    window.clearAllFinancialData = async () => {
-        if (!confirm("⚠️ تحذير خطير!\n\nهل أنت متأكد من رغبتك في تصفير (حذف) جميع البيانات المالية (المدور، ف1، ف2، النهائي) لكل أولياء الأمور في النظام؟\n\nسيتم ضبط كل هذه الحقول إلى 0.\n\nلا يمكن التراجع عن هذا الإجراء.")) {
-            return;
-        }
-
-        try {
-            // We need to update all rows. Supabase requires a filter for update, 
-            // so we use a filter that matches all rows, e.g., id is not null.
-            const { error } = await supabase
-                .from('parents')
-                .update({
-                    carried_balance: 0,
-                    term1_balance: 0,
-                    term2_balance: 0,
-                    final_balance: 0
-                })
-                .not('id', 'is', null); // A condition to update all rows
-
-            if (error) {
-                throw error;
-            }
-
-            alert('✅ تم تصفير جميع البيانات المالية بنجاح.\n\nيمكنك الآن لصق البيانات الجديدة وحفظها.');
-            // Optionally, refresh the grid if it's showing data
-            if (document.querySelector('#gridContainer table')) {
-                loadDataToGrid();
-            }
-        } catch (e) {
-            console.error('Error clearing financial data:', e);
-            alert('❌ حدث خطأ أثناء مسح البيانات المالية: ' + e.message);
-        }
-    };
-
     window.loadDataToGrid = async () => {
       const emp = document.getElementById('importEmpSelect').value;
       if (!emp) {
@@ -3505,12 +3473,12 @@
       }
       
       if (emp === 'global_update') {
-        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center;">جاري تحميل البيانات الحالية للمقارنة...</p>';
-        const { data, error } = await supabase.from('parents').select('parent_code, student_code, student_name').range(0, 19999);
+        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center;">جاري تحميل قاعدة البيانات للمقارنة...</p>';
+        const { data, error } = await supabase.from('parents').select('*').order('employee').order('serial_no');
         if (error) { alert('خطأ: ' + error.message); return; }
-        window.existingParentsForUpdate = data; // تخزين البيانات للمطابقة
         
-        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#2979ff; font-weight:bold;">✨ وضع التحديث الشامل ✨<br>سيتم تحديث بيانات أولياء الأمور الموجودين وإضافة أي أولياء أمور جدد (غير مسندين).</p>';
+        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#d32f2f; font-weight:bold;">⚠️ وضع التحديث الشامل ⚠️<br>سيتم حذف جميع البيانات القديمة واستبدالها بما ستقوم بلصقه هنا.<br>تأكد من أن البيانات تشمل عمود "الموظف" (في آخر عمود).</p>';
+        // Placeholder is handled by togglePasteArea
         document.getElementById('excelPasteArea').style.display = 'block';
         document.getElementById('excelPasteArea').value = '';
         document.getElementById('excelPasteArea').focus();
@@ -3528,89 +3496,20 @@
         document.getElementById('gridContainer').innerHTML = `<p style="text-align:center; color:red;">خطأ في التحميل: ${error.message}</p>`;
         return;
       }
+      window.importedData = data; // تخزين البيانات في الذاكرة
       renderGrid(data);
       document.getElementById('excelPasteArea').style.display = 'none';
     };
 
-    window.convertPasteToGrid = async () => {
+    window.convertPasteToGrid = () => {
       const text = document.getElementById('excelPasteArea').value;
-      if (!text.trim()) return;
-
       const rows = text.split("\n");
       const data = [];
       
-      // التحقق مما إذا كان اللصق عبارة عن عمود واحد (أكواد فقط)
-      // نفترض أنه عمود واحد إذا لم نجد علامة Tab في السطر الأول وكان هناك نص
-      const isSingleColumn = rows.length > 0 && !rows[0].includes("\t") && text.trim().length > 0;
-
-      if (isSingleColumn) {
-        const emp = document.getElementById('importEmpSelect').value;
-        if (!emp) return alert("الرجاء اختيار الموظف أولاً");
-
-        document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#2979ff; font-weight:bold;">⏳ جاري البحث عن البيانات ومطابقة الأكواد...</p>';
-
-        const codes = rows.map(r => r.trim()).filter(c => c);
-        // تحديد نوع الموظف (مرحلة أم استقبال)
-        const isStage = appConfig.stages && appConfig.stages[emp]; 
-
-        try {
-            let query = supabase.from('parents').select('*');
-            let results = [];
-
-            if (isStage) {
-                // إذا كان موظف مرحلة -> نبحث بأكواد الطلاب
-                const { data, error } = await query.in('student_code', codes);
-                if (error) throw error;
-                results = data;
-            } else {
-                // إذا كان موظف استقبال -> نبحث بأكواد أولياء الأمور
-                const { data, error } = await query.in('parent_code', codes);
-                if (error) throw error;
-                results = data;
-            }
-
-            if (!results || results.length === 0) {
-                document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:red;">لم يتم العثور على بيانات مطابقة للأكواد المدخلة.</p>';
-                return;
-            }
-
-            // تحويل النتائج إلى تنسيق الشبكة
-            results.forEach((row, idx) => {
-                data.push({
-                    serial_no: idx + 1,
-                    student_code: row.student_code,
-                    student_name: row.student_name,
-                    parent_code: row.parent_code,
-                    parent_name: row.parent_name,
-                    identity_no: row.identity_no,
-                    phone: row.phone,
-                    carried_balance: row.carried_balance,
-                    term1_balance: row.term1_balance,
-                    term2_balance: row.term2_balance,
-                    final_balance: row.final_balance,
-                    is_update: true // علامة بأن البيانات موجودة
-                });
-            });
-
-            // عرض النتائج في الشبكة
-            renderGrid(data);
-
-            // عرض إحصائية بسيطة
-            const stats = document.getElementById('globalUpdateStats');
-            if(stats) {
-                stats.style.display = 'block';
-                stats.innerHTML = `<span style="color:#2e7d32; font-weight:bold;">✅ تم جلب بيانات ${data.length} سجل بناءً على الأكواد.</span>`;
-            }
-            return; // الخروج من الدالة لأننا انتهينا من المعالجة الخاصة
-
-        } catch (err) {
-            console.error(err);
-            document.getElementById('gridContainer').innerHTML = `<p style="text-align:center; color:red;">خطأ في جلب البيانات: ${err.message}</p>`;
-            return;
-        }
-      }
-
-      // --- المنطق القديم (لصق متعدد الأعمدة) ---
+      const emp = document.getElementById('importEmpSelect').value;
+      const isGlobal = emp === 'global_update';
+      const isStage = !!(appConfig.stages && appConfig.stages[emp]);
+      const includeStudent = isGlobal || isStage;
 
       rows.forEach(row => {
         // تنظيف الصفوف الفارغة تماماً
@@ -3619,97 +3518,100 @@
         // تقسيم الخلايا وتنظيف المسافات الزائدة من كل خلية
         let c = row.split("\t").map(cell => cell ? cell.trim() : "");
 
-        // تجاهل الصف إذا كانت كل خلاياه فارغة بعد التقسيم. هذا يضمن قبول الصفوف التي تحتوي على بيانات في أي عمود.
-        if (c.every(cell => !cell)) return;
+        if (isGlobal) {
+            // الترتيب في التحديث الشامل: م - رقم الطالب - اسم الطالب - رقم الولي - اسم الولي - الهوية - الجوال - الأرصدة - الموظف
+            // تجاهل الصف إذا كان الرقم التسلسلي (العمود الأول) غير صالح
+            if (!c[0] || isNaN(parseInt(c[0]))) return;
 
-        data.push({
-          serial_no: parseInt(c[0]) || 0,
-          student_code: (c[1] && c[1].trim() !== '0') ? c[1].trim() : null,
-          student_name: c[2] || "",
-          parent_code: c[3] || "",
-          parent_name: c[4] || "",
-          identity_no: c[5] || "",
-          phone: c[6] || "",
-          carried_balance: cleanNumber(c[7]),
-          term1_balance: cleanNumber(c[8]),
-          term2_balance: cleanNumber(c[9]),
-          final_balance: cleanNumber(c[10])
-        });
+            data.push({
+              serial_no: c[0],
+              student_code: c[1] || null,
+              student_name: c[2] || "",
+              parent_code: c[3] || "",
+              parent_name: c[4] || "",
+              identity_no: c[5] || "",
+              phone: c[6] || "",
+              carried_balance: cleanNumber(c[7]),
+              term1_balance: cleanNumber(c[8]),
+              term2_balance: cleanNumber(c[9]),
+              final_balance: cleanNumber(c[10]),
+              employee: c[11] || null // الموظف هنا (آخر عمود)
+            });
+        } else if (includeStudent) {
+            // تجاهل الصف إذا كان الرقم التسلسلي غير صالح
+            if (!c[0] || isNaN(parseInt(c[0]))) return;
+            data.push({
+              serial_no: c[0],
+              student_code: c[1] || null,
+              student_name: c[2] || "",
+              parent_code: c[3] || "",
+              parent_name: c[4] || "",
+              identity_no: c[5] || "",
+              phone: c[6] || "",
+              carried_balance: cleanNumber(c[7]),
+              term1_balance: cleanNumber(c[8]),
+              term2_balance: cleanNumber(c[9]),
+              final_balance: cleanNumber(c[10])
+            });
+        } else {
+            // تجاهل الصف إذا كان الرقم التسلسلي غير صالح
+            if (!c[0] || isNaN(parseInt(c[0]))) return;
+            data.push({
+              serial_no: c[0],
+              student_code: null,
+              student_name: "",
+              parent_code: c[1] || "",
+              parent_name: c[2] || "",
+              identity_no: c[3] || "",
+              phone: c[4] || "",
+              carried_balance: cleanNumber(c[5]),
+              term1_balance: cleanNumber(c[6]),
+              term2_balance: cleanNumber(c[7]),
+              final_balance: cleanNumber(c[8])
+            });
+        }
       });
       
-      const isGlobal = document.getElementById('importEmpSelect').value === 'global_update';
-      let updateCount = 0;
-      let ignoreCount = 0;
-
-      if (isGlobal && window.existingParentsForUpdate) {
-        const studentMap = new Map();
-        const parentNameMap = new Map();
-        window.existingParentsForUpdate.forEach(p => {
-            const sCode = p.student_code ? String(p.student_code).trim() : null;
-            if (sCode && sCode !== '0') studentMap.set(sCode, true);
-            if (p.parent_code && p.student_name) {
-                const key = `${String(p.parent_code).trim()}_${window.normalizeArabic(p.student_name)}`;
-                parentNameMap.set(key, true);
-            }
-        });
-
-        let newCount = 0;
-        data.forEach(r => {
-            const sCode = (r.student_code && r.student_code !== '0') ? String(r.student_code).trim() : null;
-            const pCode = r.parent_code ? String(r.parent_code).trim() : null;
-            const sName = window.normalizeArabic(r.student_name);
-            const key = pCode && sName ? `${pCode}_${sName}` : null;
-
-            if ((sCode && studentMap.has(sCode)) || (key && parentNameMap.has(key))) {
-                r.is_update = true;
-                updateCount++;
-            } else {
-                r.is_update = false;
-                newCount++;
-            }
-        });
-        data.sort((a, b) => (a.is_update === b.is_update) ? 0 : a.is_update ? 1 : -1); // Show new (red) on top
-        
-        const stats = document.getElementById('globalUpdateStats');
-        if(stats) { 
-            stats.style.display = 'block'; 
-            stats.innerHTML = `
-                <span style="color:#2e7d32; margin-left:20px;">✅ سيتم تحديث: <span id="updateCount" style="font-size:1.2em;">${updateCount}</span></span>
-                <span style="color:#c62828;">➕ سيتم إضافة (جديد): <span id="ignoreCount" style="font-size:1.2em;">${newCount}</span></span>
-             `;
-        }
-      } else {
-        const stats = document.getElementById('globalUpdateStats');
-        if(stats) stats.style.display = 'none';
-      }
+      // إخفاء إحصائيات التحديث القديمة لأننا سنقوم باستبدال شامل
+      const stats = document.getElementById('globalUpdateStats');
+      if(stats) stats.style.display = 'none';
+      
+      window.importedData = data; // حفظ البيانات في متغير عام
       renderGrid(data);
     };
 
     function renderGrid(data) {
-      const isGlobal = document.getElementById('importEmpSelect').value === 'global_update';
-
       if (!data || data.length === 0) {
         document.getElementById('gridContainer').innerHTML = '<p style="text-align:center; padding:20px; color:#999;">لا توجد بيانات لعرضها</p>';
         return;
       }
 
+      // تحسين الأداء: عرض عدد محدود فقط لتجنب انهيار المتصفح
+      const MAX_PREVIEW = 500;
+      const isLarge = data.length > MAX_PREVIEW;
+      const displayData = isLarge ? data.slice(0, MAX_PREVIEW) : data;
+
+      const emp = document.getElementById('importEmpSelect').value;
+      const isGlobal = emp === 'global_update';
+      const isStage = !!(appConfig.stages && appConfig.stages[emp]);
+      const showStudentInfo = isGlobal || isStage;
+
       let html = `<table class="excel-preview-table">
-      ${isGlobal ? '<caption style="caption-side:top; text-align:center; color:red; font-size:12px;">* الصفوف الحمراء = طلاب جدد سيتم إضافتهم (غير مسندين)</caption>' : ''}
       <thead>
         <tr>
-          <th>حذف</th><th>م</th><th>رقم الطالب</th><th>اسم الطالب</th><th>رقم الولي</th><th>اسم الولي</th><th>الهوية</th><th>الجوال</th>
+          <th>حذف</th><th>م</th>
+          ${showStudentInfo ? '<th>رقم الطالب</th><th>اسم الطالب</th>' : ''}
+          <th>رقم الولي</th><th>اسم الولي</th><th>الهوية</th><th>الجوال</th>
           <th>المدور</th><th>ف1</th><th>ف2</th><th>النهائي</th>
+          ${isGlobal ? '<th>الموظف</th>' : ''}
         </tr>
       </thead><tbody>`;
 
-      data.forEach((row, index) => {
-        let trStyle = "";
-        if (isGlobal && row.is_update === false) trStyle = "background-color: #ffcdd2; border: 2px solid #e57373;";
-        html += `<tr style="${trStyle}">
+      displayData.forEach((row, index) => {
+        html += `<tr>
         <td><button onclick="this.closest('tr').remove()" style="color:red;border:none;background:none;cursor:pointer;">✖</button></td>
         <td contenteditable="true">${row.serial_no || ''}</td>
-        <td contenteditable="true">${row.student_code || ''}</td>
-        <td contenteditable="true">${row.student_name || ''}</td>
+        ${showStudentInfo ? `<td contenteditable="true">${row.student_code || ''}</td><td contenteditable="true">${row.student_name || ''}</td>` : ''}
         <td contenteditable="true">${row.parent_code || ''}</td>
         <td contenteditable="true">${row.parent_name || ''}</td>
         <td contenteditable="true">${row.identity_no || ''}</td>
@@ -3718,8 +3620,17 @@
         <td contenteditable="true">${(row.term1_balance || 0).toLocaleString('en-US')}</td>
         <td contenteditable="true">${(row.term2_balance || 0).toLocaleString('en-US')}</td>
         <td contenteditable="true" style="font-weight:bold;">${(row.final_balance || 0).toLocaleString('en-US')}</td>
+        ${isGlobal ? `<td contenteditable="true">${row.employee || ''}</td>` : ''}
       </tr>`;
       });
+
+      if (isLarge) {
+        html += `<tr><td colspan="15" style="text-align:center; background:#fff3e0; padding:20px; font-weight:bold; color:#e65100; font-size:18px;">
+        ⚠️ تنبيه: تم عرض أول ${MAX_PREVIEW} سجل فقط من أصل ${data.length} لتجنب بطء المتصفح.<br>
+        لا تقلق، عند الضغط على "حفظ" سيتم حفظ جميع البيانات بالكامل.
+        </td></tr>`;
+      }
+
       html += `</tbody></table>`;
       document.getElementById('gridContainer').innerHTML = html;
       makeTableResizable(document.querySelector('#gridContainer table'));
@@ -3774,16 +3685,14 @@
         // نقوم بإنشاء خريطة تربط كود ولي الأمر بالموظف إذا وجد في أي صف
         const parentEmpMap = {};
         data.forEach(r => {
-            const pCode = r.parent_code ? String(r.parent_code).trim() : "";
-            if (pCode && r.employee) {
-                parentEmpMap[pCode] = r.employee;
+            if (r.parent_code && r.employee) {
+                parentEmpMap[r.parent_code] = r.employee;
             }
         });
 
         data.forEach(row => {
-          const pCode = row.parent_code ? String(row.parent_code).trim() : "";
           // نستخدم الموظف الموجود في الصف، أو نبحث عنه في الخريطة باستخدام كود ولي الأمر
-          const effectiveEmp = row.employee || parentEmpMap[pCode];
+          const effectiveEmp = row.employee || parentEmpMap[row.parent_code];
           html += `<tr>
             <td style="font-weight:bold; color:#4a148c;">${getEmployeeLabel(effectiveEmp) || 'غير مسند'}</td>
             <td>${row.student_code || '-'}</td>
@@ -3838,6 +3747,8 @@
       // حفظ القيمة المحددة حالياً لأن تحديث الإعدادات يعيد بناء القائمة ويفقد التحديد
       const currentSelectedEmp = document.getElementById('importEmpSelect').value;
 
+      if (btnElement) btnElement.innerText = "جاري الحفظ...";
+
       // 1. حفظ الإعدادات العامة (بدون إزعاج)
       await saveAppSettings(true);
       
@@ -3856,117 +3767,165 @@
           alert('⚠️ لا توجد بيانات للحفظ. يرجى لصق البيانات وتحويلها أولاً.');
           return;
         }
+        if (!confirm('⚠️ تحذير هام جداً!\n\nسيتم حذف جميع البيانات الحالية واستبدالها بالبيانات الجديدة.\n\nهل أنت متأكد من المتابعة؟')) return;
         
-        if (!confirm('⚠️ تحذير هام: سيتم حذف جميع البيانات الحالية واستبدالها بالبيانات الجديدة!\n\n- سيتم الحفاظ على إسناد الموظفين (سيتم ربط الطلاب القدامى بموظفيهم السابقين).\n- سيتم الحفاظ على سجل الملاحظات والاتصالات.\n- سيتم حذف الطلاب الذين ليسوا في الملف الجديد.\n\nهل أنت متأكد من رغبتك في "الحذف والإضافة"؟')) return;
+        if (btnElement) btnElement.innerText = "جاري التحديث...";
         
-        if (btnElement) btnElement.innerText = "جاري الحذف والإضافة...";
+        const pastedData = [];
         
-        const rows = table.querySelectorAll('tr');
-
-        try {
-          // 1. جلب الإسناد الحالي (Backup Assignments) لحفظ من هو الموظف المسؤول عن كل ولي أمر
-          const { data: existingAssignments, error: fetchError } = await supabase
-              .from('parents')
-              .select('parent_code, employee');
-          
-          if (fetchError) throw fetchError;
-
-          const assignmentMap = {};
-          if (existingAssignments) {
-              existingAssignments.forEach(p => {
-                  if (p.parent_code && p.employee) {
-                      assignmentMap[String(p.parent_code).trim()] = p.employee;
-                  }
-              });
-          }
-
-          // 2. حذف جميع البيانات (Delete All)
-          // نستخدم neq id -1 لحذف الكل لأن supabase يتطلب شرطاً للحذف
-          const { error: delError } = await supabase.from('parents').delete().not('id', 'is', null);
-          if (delError) throw delError;
-
-          // 3. تجهيز البيانات الجديدة (Prepare New Data)
-          const recordsToInsert = [];
-          
-          rows.forEach(tr => {
+        // استخدام البيانات المخزنة في الذاكرة إذا وجدت لتجنب مشاكل العرض الجزئي
+        if (window.importedData && window.importedData.length > 0) {
+            // نسخ البيانات من الذاكرة
+            window.importedData.forEach(item => pastedData.push(item));
+        } else {
+            // الطريقة القديمة (قراءة من الجدول) - احتياطية
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(tr => {
               const cells = tr.querySelectorAll('td');
               if (cells.length > 1) {
-                  const pCode = cells[4].innerText.trim();
-                  // استعادة الموظف المسند سابقاً، أو تعيين emp1 للجدد
-                  const assignedEmp = assignmentMap[pCode] || 'emp1'; 
-
-                  recordsToInsert.push({
-                      employee: assignedEmp, // الحفاظ على الإسناد
-                      serial_no: parseInt(cells[1].innerText) || 0,
-                      student_code: (cells[2].innerText || '').replace(/\u00a0/g, ' ').trim() || null,
-                      student_name: cells[3].innerText.trim(),
-                      parent_code: pCode,
-                      parent_name: cells[5].innerText.trim(),
-                      identity_no: cells[6].innerText.trim(),
-                      phone: cells[7].innerText.trim(),
-                      carried_balance: cleanNumber(cells[8].innerText),
-                      term1_balance: cleanNumber(cells[9].innerText),
-                      term2_balance: cleanNumber(cells[10].innerText),
-                      final_balance: cleanNumber(cells[11].innerText)
-                  });
+                // في التحديث الشامل: 0=حذف, 1=م, 2=رقم الطالب, 3=اسم الطالب, 4=رقم الولي, 5=اسم الولي, 6=الهوية, 7=الجوال, 8=المدور, 9=ف1, 10=ف2, 11=النهائي, 12=الموظف
+                pastedData.push({
+                  serial_no: parseInt(cells[1].innerText) || 0,
+                  student_code: cells[2].innerText.trim() || null,
+                  student_name: cells[3].innerText.trim(),
+                  parent_code: cells[4].innerText.trim(),
+                  parent_name: cells[5].innerText.trim(),
+                  identity_no: cells[6].innerText.trim(),
+                  phone: cells[7].innerText.trim(),
+                  carried_balance: cleanNumber(cells[8].innerText),
+                  term1_balance: cleanNumber(cells[9].innerText),
+                  term2_balance: cleanNumber(cells[10].innerText),
+                  final_balance: cleanNumber(cells[11].innerText),
+                  employee: cells[12].innerText.trim() || null // الموظف
+                });
               }
-          });
+            });
+        }
 
-          // 4. إدخال البيانات الجديدة (Insert New Data)
-          if (recordsToInsert.length > 0) {
-              // تقسيم الإدخال إلى دفعات لتجنب مشاكل الحجم الكبير (Supabase limit)
-              const batchSize = 100;
-              for (let i = 0; i < recordsToInsert.length; i += batchSize) {
-                  const batch = recordsToInsert.slice(i, i + batchSize);
-                  const { error: insError } = await supabase.from('parents').insert(batch);
-                  if (insError) throw insError;
-              }
+        // تجميع البيانات لضمان عدم تكرار رقم ولي الأمر (حل مشكلة Unique Constraint)
+        const uniqueMap = new Map();
+        pastedData.forEach(item => {
+            if (!item.parent_code) return;
+            if (uniqueMap.has(item.parent_code)) {
+                const exist = uniqueMap.get(item.parent_code);
+                exist.carried_balance += (item.carried_balance || 0);
+                exist.term1_balance += (item.term1_balance || 0);
+                exist.term2_balance += (item.term2_balance || 0);
+                exist.final_balance += (item.final_balance || 0);
+                if (!exist.employee && item.employee) exist.employee = item.employee;
+            } else {
+                uniqueMap.set(item.parent_code, item);
+            }
+        });
+        const finalData = Array.from(uniqueMap.values());
+
+            // --- تعديل للحفاظ على الموظفين المسندين سابقاً ---
+            // جلب التعيينات الحالية من قاعدة البيانات قبل الحذف
+            const { data: currentAssignments } = await supabase
+                .from('parents')
+                .select('parent_code, employee');
+            
+            if (currentAssignments) {
+                const assignmentMap = new Map();
+                currentAssignments.forEach(r => {
+                    if (r.parent_code && r.employee) assignmentMap.set(r.parent_code, r.employee);
+                });
+                // تحديث البيانات الجديدة بالموظفين القدامى إذا لم يتم تحديد موظف جديد في الإكسل
+                finalData.forEach(item => {
+                    if (!item.employee && assignmentMap.has(item.parent_code)) {
+                        item.employee = assignmentMap.get(item.parent_code);
+                    }
+                });
+            }
+            // ------------------------------------------------
+
+        try {
+          // 1. حذف جميع البيانات
+          const { error: deleteError } = await supabase.from('parents').delete().neq('id', -1);
+          if (deleteError) throw deleteError;
+          
+          // 2. إدخال البيانات الجديدة
+          if (finalData.length > 0) {
+              const { error: insertError } = await supabase.from('parents').insert(finalData);
+              if (insertError) throw insertError;
           }
 
-          alert(`✅ تمت العملية بنجاح!\n\n- تم حذف البيانات القديمة.\n- تم إضافة ${recordsToInsert.length} سجل جديد.\n- تم استعادة إسناد الموظفين بنجاح.`);
-          
+          alert(`✅ تم استبدال قاعدة البيانات بنجاح (${finalData.length} سجل).`);
           if (shouldClose) closeSettings();
-          else if (btnElement) { btnElement.innerText = "تم الحفظ ✅"; setTimeout(() => btnElement.innerText = "💾 حفظ (بدون إغلاق)", 2000); }
-          
-          clearPasteAreaAndGrid();
-
-        } catch (e) {
-          console.error(e);
-          alert('❌ حدث خطأ: ' + e.message);
-          if (btnElement) btnElement.innerText = "حفظ (بدون إغلاق)";
+          else if (btnElement) { btnElement.innerText = "تم الحفظ ✅"; }
+        } catch (e) { 
+          alert('❌ حدث خطأ: ' + e.message); 
+          if (btnElement) btnElement.innerText = "💾 حفظ"; 
         }
         return;
       }
 
       // جمع البيانات الجديدة من الجدول
-      const newRecords = [];
+      let newRecords = [];
       if (table && table.querySelectorAll('tr').length > 0) {
+        
+        const duplicates = [];
+
+        // استخدام البيانات من الذاكرة إذا كانت موجودة (للأداء العالي)
+        if (window.importedData && window.importedData.length > 0) {
+            const studentCodesCheck = new Set();
+            window.importedData.forEach(item => {
+                const rec = { ...item, employee: emp };
+                newRecords.push(rec);
+                if (rec.student_code) {
+                    if (studentCodesCheck.has(rec.student_code)) duplicates.push(rec.student_code);
+                    else studentCodesCheck.add(rec.student_code);
+                }
+            });
+        } else {
+        // الطريقة القديمة (قراءة من الجدول)
         // مصفوفة للتأكد من عدم تكرار رقم الطالب داخل الملف نفسه
         const studentCodesCheck = new Set();
-        const duplicates = [];
+
+        const isStage = !!(appConfig.stages && appConfig.stages[emp]);
+        const isGlobal = emp === 'global_update';
+        const showStudentInfo = isGlobal || isStage;
 
         const rows = table.querySelectorAll('tr');
         rows.forEach(tr => {
           const cells = tr.querySelectorAll('td');
           if (cells.length > 1) {
+            let colIdx = 2; // Start after Delete(0) and Serial(1)
+            
+            let student_code = null;
+            let student_name = "";
+            
+            if (showStudentInfo) {
+                student_code = (cells[colIdx++].innerText || '').replace(/\u00a0/g, ' ').trim() || null;
+                student_name = (cells[colIdx++].innerText || '').trim();
+            }
+            
+            const parent_code = (cells[colIdx++].innerText || '').trim();
+            const parent_name = (cells[colIdx++].innerText || '').trim();
+            const identity_no = (cells[colIdx++].innerText || '').trim();
+            const phone = (cells[colIdx++].innerText || '').trim();
+            const carried_balance = cleanNumber(cells[colIdx++].innerText);
+            const term1_balance = cleanNumber(cells[colIdx++].innerText);
+            const term2_balance = cleanNumber(cells[colIdx++].innerText);
+            const final_balance = cleanNumber(cells[colIdx++].innerText);
+
             newRecords.push({
               employee: emp,
               serial_no: parseInt(cells[1].innerText) || 0,
-              // تنظيف رقم الطالب من المسافات والفراغات المخفية وتحويله لـ null إذا كان فارغاً
-              student_code: (cells[2].innerText || '').replace(/\u00a0/g, ' ').trim() || null,
-              student_name: (cells[3].innerText || '').trim(),
-              parent_code: (cells[4].innerText || '').trim(),
-              parent_name: (cells[5].innerText || '').trim(),
-              identity_no: (cells[6].innerText || '').trim(),
-              phone: (cells[7].innerText || '').trim(),
-              carried_balance: cleanNumber(cells[8].innerText),
-              term1_balance: cleanNumber(cells[9].innerText),
-              term2_balance: cleanNumber(cells[10].innerText),
-              final_balance: cleanNumber(cells[11].innerText)
+              student_code,
+              student_name,
+              parent_code,
+              parent_name,
+              identity_no,
+              phone,
+              carried_balance,
+              term1_balance,
+              term2_balance,
+              final_balance
             });
 
             // فحص التكرار
-            const sCode = newRecords[newRecords.length - 1].student_code;
+            const sCode = student_code;
             if (sCode) {
               if (studentCodesCheck.has(sCode)) {
                 duplicates.push(sCode);
@@ -3976,23 +3935,43 @@
             }
           }
         });
+        }
 
         if (duplicates.length > 0) {
           alert(`⚠️ تنبيه: يوجد تكرار في أرقام الطلاب (Student Code) في البيانات التي تحاول حفظها!\n\nالأرقام المكررة: ${duplicates.join(', ')}\n\nيجب أن يكون لكل طالب رقم مميز. للأخوة، اترك رقم الطالب فارغاً أو ضع رقماً مختلفاً لكل أخ.`);
           if (btnElement) {
-            btnElement.innerText = "حفظ (بدون إغلاق)";
+            btnElement.innerText = "💾 حفظ";
             btnElement.style.background = "";
           }
           return; // إيقاف الحفظ
         }
       }
 
-      // تحقق أمان: إذا كان الجدول فارغاً عند حفظ موظف محدد (لتجنب الحذف بالخطأ)
-      if (emp !== 'global_update' && newRecords.length === 0) {
-         if (!confirm("⚠️ تنبيه: الجدول فارغ! هل أنت متأكد من حفظ بيانات فارغة؟\nسيتم حذف جميع البيانات الحالية للموظف المحدد.")) {
-             if (btnElement) btnElement.innerText = "حفظ (بدون إغلاق)";
-             return;
-         }
+      // -- تعديل جوهري: تجميع أولياء الأمور المكررين للموظفين --
+      // هذا يمنع خطأ "unique constraint" ويناسب طبيعة عمل الموظف
+      const isStage = !!(appConfig.stages && appConfig.stages[emp]);
+      if (!isStage && emp !== 'global_update') {
+          const parentMap = new Map();
+          newRecords.forEach(rec => {
+              if (!rec.parent_code) return; // تجاهل السجلات بدون رقم ولي أمر
+              if (parentMap.has(rec.parent_code)) {
+                  // إذا كان ولي الأمر موجوداً، قم بدمج البيانات (جمع الأرصدة)
+                  const existing = parentMap.get(rec.parent_code);
+                  existing.carried_balance += rec.carried_balance;
+                  existing.term1_balance += rec.term1_balance;
+                  existing.term2_balance += rec.term2_balance;
+                  existing.final_balance += rec.final_balance;
+                  // تحديث البيانات الأخرى إذا كانت أحدث
+                  existing.parent_name = rec.parent_name || existing.parent_name;
+                  existing.identity_no = rec.identity_no || existing.identity_no;
+                  existing.phone = rec.phone || existing.phone;
+              } else {
+                  // إضافة ولي الأمر لأول مرة
+                  parentMap.set(rec.parent_code, rec);
+              }
+          });
+          // استبدال القائمة الأصلية بالقائمة المجمعة والفريدة
+          newRecords = Array.from(parentMap.values());
       }
 
       // حذف البيانات القديمة
@@ -4001,15 +3980,17 @@
       if (delError) {
         console.error(delError);
         alert('❌ خطأ في حذف البيانات القديمة: ' + delError.message);
+        if (btnElement) btnElement.innerText = "💾 حفظ";
         return;
       }
 
       // إدخال البيانات الجديدة
       if (newRecords.length > 0) {
-        const { error: insError } = await supabase.from('parents').insert(newRecords);
+        const { error: insError } = await supabase.from('parents').upsert(newRecords, { onConflict: 'parent_code' });
         if (insError) {
           console.error(insError);
           alert('❌ خطأ في حفظ البيانات الجديدة: ' + insError.message);
+          if (btnElement) btnElement.innerText = "💾 حفظ";
           return;
         }
       }
@@ -4018,14 +3999,8 @@
         closeSettings();
       } else {
         if (btnElement) {
-          const originalText = btnElement.innerText;
-          const originalBg = btnElement.style.background;
           btnElement.innerText = "تم الحفظ ✅";
           btnElement.style.background = "#4caf50";
-          setTimeout(() => {
-            btnElement.innerText = originalText;
-            btnElement.style.background = originalBg;
-          }, 1500);
         }
         await loadDataToGrid();
       }
@@ -4054,8 +4029,7 @@
         .from("parents")
         .select("*")
         .order("employee")
-        .order("serial_no")
-        .range(0, 19999);
+        .order("serial_no");
 
       if (error) {
         textarea.value = "خطأ في التحميل: " + error.message;
@@ -4106,7 +4080,7 @@
         });
       }
 
-      const { error: delError } = await supabase.from("parents").delete().neq('serial_no', -1);
+      const { error: delError } = await supabase.from("parents").delete().neq('id', -1);
 
       if (delError) {
         alert("❌ حدث خطأ أثناء حذف البيانات القديمة! العملية ألغيت.");
@@ -4135,9 +4109,9 @@
 
       try {
         // جلب البيانات
-        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance, parent_code, updated_at').range(0, 19999);
+        const { data: parents, error: err1 } = await supabase.from('parents').select('employee, final_balance, parent_code, updated_at');
         // نحتاج التفاعلات لمعرفة تواريخ التحديث الدقيقة إذا لم تكن في جدول الآباء
-        const { data: interactions, error: err2 } = await supabase.from('interactions').select('parent_code, updated_at, employee').range(0, 19999);
+        const { data: interactions, error: err2 } = await supabase.from('interactions').select('parent_code, updated_at, employee');
 
         if (err1 || err2) throw new Error((err1 || err2).message);
 
@@ -4614,60 +4588,18 @@
         Object.keys(appConfig.stages || {}).forEach(k => empSelect.innerHTML += `<option value="${k}">${appConfig.stages[k].name}</option>`);
 
         // جلب البيانات
-        const { data: parents, error } = await supabase.from('parents').select('*').range(0, 19999);
-        const { data: interactions } = await supabase.from('interactions').select('*').range(0, 19999);
+        const { data: parents, error } = await supabase.from('parents').select('*');
+        const { data: interactions } = await supabase.from('interactions').select('*');
         
         if (error) { alert('خطأ: ' + error.message); return; }
         
-
-        // --- START OF FIX ---
-        // 1. Deduplicate parents data to keep only the latest record per student
-        const uniqueStudents = new Map();
-        (parents || []).forEach(studentRow => {
-            // Use student_code as the primary unique key.
-            // If student_code is missing, create a composite key from parent_code and student_name.
-            const studentKey = (studentRow.student_code || '').trim() 
-                             ? (studentRow.student_code || '').trim() 
-                             : `${(studentRow.parent_code || '').trim()}_${(studentRow.student_name || '').trim()}`;
-
-            if (!studentKey || studentKey === '_') return; // Skip rows with no identifiable student
-
-            const existingStudent = uniqueStudents.get(studentKey);
-
-            // If this student is not in our map, or if the current row is newer than the one in the map, update it.
-            // Supabase adds `created_at` automatically. We assume newer rows have a later `created_at`.
-            if (!existingStudent || new Date(studentRow.created_at) > new Date(existingStudent.created_at)) {
-                uniqueStudents.set(studentKey, studentRow);
-            }
-        });
-
-        const deduplicatedParents = Array.from(uniqueStudents.values());
-        // --- END OF FIX ---
-
         // دمج البيانات
         const intMap = {};
         (interactions || []).forEach(i => intMap[i.parent_code] = i);
-        (interactions || []).forEach(i => {
-            // Get the latest interaction for each parent
-            if (!intMap[i.parent_code] || (i.updated_at && new Date(i.updated_at) > new Date(intMap[i.parent_code].updated_at))) {
-                intMap[i.parent_code] = i;
-            }
-        });
         
-        // توحيد الموظف لنفس ولي الأمر (إصلاح مشكلة ظهور طالب مسند وآخر غير مسند)
-        const parentEmpMap = {};
-        deduplicatedParents.forEach(p => {
-             const pCode = p.parent_code ? String(p.parent_code).trim() : "";
-             if (pCode && p.employee) {
-                 parentEmpMap[pCode] = p.employee;
-             }
-        });
-
-        window.allParentsData = deduplicatedParents.map(p => {
-            const pCode = p.parent_code ? String(p.parent_code).trim() : "";
+        window.allParentsData = parents.map(p => {
             const i = intMap[p.parent_code] || {};
-            const effectiveEmp = p.employee || parentEmpMap[pCode];
-            return { ...p, ...i, employee: effectiveEmp }; // Spread operator correctly overwrites p's data with i's data
+            return { ...p, ...i };
         });
         
         filterAllParentsTable();
@@ -4938,17 +4870,8 @@
 
     // تحديث الجدول عند تغيير الموظف
     document.getElementById('importEmpSelect').addEventListener('change', () => {
-      const emp = document.getElementById('importEmpSelect').value;
-      const clearBtn = document.getElementById('clearFinancialsBtn');
-      const deleteBtn = document.querySelector('button[onclick="deleteEmployeeDataDB()"]'); // The delete employee data button
-
-      if (clearBtn) {
-          clearBtn.style.display = (emp === 'global_update') ? 'inline-block' : 'none';
-      }
-      if (deleteBtn) {
-          // Hide the "delete employee data" button in global update mode as it's dangerous and confusing
-          deleteBtn.style.display = (emp === 'global_update') ? 'none' : 'inline-block';
-      }
+      const btn = document.getElementById('saveDataBtn');
+      if (btn) btn.innerText = "💾 حفظ";
       loadDataToGrid();
     });
 
