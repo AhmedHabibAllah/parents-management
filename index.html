@@ -364,34 +364,41 @@
       background: #ffffff;
       border-radius: 12px;
       box-shadow: var(--glass-shadow);
-      overflow: auto; /* تفعيل التمرير في الاتجاهين */
+      overflow: scroll; /* إجبار ظهور أشرطة التمرير دائماً */
       width: 100%;
       max-height: calc(100vh - 180px); /* تعديل الارتفاع لضمان ظهور شريط التمرير في الشاشة */
       padding-bottom: 15px; /* مساحة إضافية لشريط التمرير الأفقي */
     }
 
-    /* تنسيق شريط التمرير ليكون واضحاً */
+    /* تنسيق شريط التمرير ليكون واضحاً وسميكاً */
     ::-webkit-scrollbar {
-      height: 24px;
-      width: 24px;
+      height: 20px; /* سماكة واضحة */
+      width: 20px;
     }
     ::-webkit-scrollbar-track {
-      background: #f1f1f1;
+      background: #cfd8dc; 
+      border: 1px solid #b0bec5;
     }
     ::-webkit-scrollbar-thumb {
-      background: #90a4ae;
-      border-radius: 12px;
-      border: 3px solid #f1f1f1;
+      background-color: #546e7a; /* لون غامق جداً ليكون واضحاً */
+      border-radius: 6px;
+      border: 3px solid #cfd8dc;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
+      background-color: #263238;
+    }
+    /* For Firefox */
+    * {
+      scrollbar-width: auto;
+      scrollbar-color: #37474f #cfd8dc;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       table-layout: auto; /* السماح للأعمدة بأخذ العرض المناسب للمحتوى */
-      min-width: max-content; /* ضمان ظهور شريط التمرير عند كثرة الأعمدة */
+      min-width: 100%; /* ضمان الامتلاء */
+      width: max-content; /* إجبار الجدول على التمدد أفقياً لظهور الشريط */
     }
 
     /* تنسيق الهيدر */
@@ -416,6 +423,7 @@
       background: #ffffff;
       font-size: 18px;
       min-width: 100px; /* حد أدنى للعرض */
+      max-width: 300px; /* حد أقصى للعرض لمنع تمدد الأعمدة بشكل مبالغ فيه */
     }
 
     .num-cell {
@@ -520,13 +528,13 @@
     /* القائمة الجانبية (Sidebar) */
     .sidebar {
       position: fixed;
-      left: 0;
+      right: 0; /* نقل القائمة لليمين */
       top: 0;
       height: 100%;
       width: var(--sidebar-width);
       background: #ffffff;
-      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-      transform: translateX(-100%);
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+      transform: translateX(100%); /* إخفاء القائمة خارج الشاشة لليمين */
       transition: transform 0.3s ease;
       z-index: 100;
       display: flex;
@@ -534,7 +542,7 @@
     }
 
     .sidebar.active {
-      transform: translateX(0);
+      transform: translateX(0) !important; /* التأكد من الظهور */
     }
 
     .sidebar-header {
@@ -544,26 +552,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    /* القائمة الجانبية اليمنى (History) */
-    .sidebar-right {
-      position: fixed;
-      right: 0;
-      top: 0;
-      height: 100%;
-      width: var(--sidebar-width);
-      background: #ffffff;
-      box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .sidebar-right.active {
-      transform: translateX(0);
+      padding: 10px 15px; /* تقليل الحواف */
+      font-size: 18px;
     }
 
     .sidebar-content {
@@ -573,29 +563,24 @@
     }
 
     .info-group {
-      margin-bottom: 15px;
+      margin-bottom: 8px; /* تقليل المسافة بين العناصر */
       background: #f1f5f9;
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    .sidebar-right .sidebar-header {
-      padding: 20px;
-      background: var(--primary-color);
-      color: #ffffff;
+      padding: 6px 10px; /* تقليل الحشو الداخلي */
+      border-radius: 6px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .info-label {
-      font-size: 14px;
+      font-size: 13px;
       color: #666;
-      margin-bottom: 4px;
+      margin-bottom: 0;
     }
 
     .info-value {
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 14px;
       color: #333;
     }
 
@@ -922,6 +907,66 @@
       border-radius: 20px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
+
+    /* نافذة الدفع المنبثقة على اليسار */
+    .payment-window {
+      position: fixed;
+      top: 80px;
+      left: 20px;
+      top: 0;
+      left: 0;
+      width: 25vw; /* ربع عرض الشاشة تقريباً */
+      height: 80vh; /* زيادة الارتفاع لرؤية المزيد من المحتوى */
+      height: 100vh; /* ارتفاع كامل الشاشة */
+      background: #fff;
+      border: 2px solid var(--primary-color);
+      border-radius: 12px;
+      border-left: none; /* إزالة الحدود من جهة الشاشة */
+      border-radius: 0 12px 12px 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 900;
+      display: none; /* مخفي افتراضياً */
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .payment-iframe-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    .payment-iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* قائمة الحقول (Dropdown) */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 250px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 200;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .dropdown-content label {
+      display: block;
+      padding: 8px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      font-size: 16px;
+    }
+    .dropdown-content label:hover {
+      background-color: #e3f2fd;
+    }
+    .show { display: block; }
   </style>
 </head>
 
@@ -1003,6 +1048,24 @@
 
             <!-- الأزرار -->
             <div style="display:flex; align-items:center; gap:8px;">
+              <!-- خيارات العرض الجديدة -->
+              <div style="display:flex; align-items:center; gap:10px; background:#e3f2fd; padding:5px 10px; border-radius:8px; border:1px solid #bbdefb; margin-left:5px;">
+                  <label style="font-size:14px; cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:0; color:#1565C0; font-weight:bold;">
+                      <input type="checkbox" id="cbShowSidebar" checked onchange="toggleSidebarVisibility()" style="width:18px; height:18px; margin:0;"> شاشة المتابعة
+                  </label>
+                  <label style="font-size:14px; cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:0; color:#1565C0; font-weight:bold;">
+                      <input type="checkbox" id="cbShowPayment" checked onchange="togglePaymentVisibility()" style="width:18px; height:18px; margin:0;"> الدفع الإلكتروني
+                  </label>
+              </div>
+
+              <!-- زر قائمة الحقول -->
+              <div style="position: relative; display: inline-block;">
+                <button class="btn btn-outline" onclick="toggleFieldsMenu()" style="width:auto; display:inline-flex; background:#fff;">👁️ الحقول</button>
+                <div id="fieldsDropdown" class="dropdown-content">
+                  <!-- سيتم تعبئة الخيارات بالجافاسكريبت -->
+                </div>
+              </div>
+
               <button class="stat-btn" onclick="openStats()" style="width:auto; display:inline-flex;">📊 إحصائيات</button>
               <button class="btn btn-outline" onclick="openDebtStats()" title="إحصائيات المديونية" style="width:auto; display:inline-flex;">💰 المديونية</button>
               <button class="btn btn-outline" onclick="exportToExcel()" title="تصدير إلى Excel" style="width:auto; display:inline-flex; background:#fff; color:#000; border-color:#000;">📥 Excel</button>
@@ -1029,7 +1092,7 @@
     <!-- القائمة الجانبية (Sidebar) -->
     <div class="sidebar" id="detailsSidebar">
       <div class="sidebar-header">
-        <span id="sidebarTitle">تفاصيل ولي الأمر</span>
+        <span id="sidebarTitle">بيانات المتابعة</span>
         <div style="display:flex; gap:8px; align-items:center;">
           <button class="close-sidebar" onclick="openEmployeeSettings()" title="إعدادات الموظف وتغيير كلمة المرور">⚙️</button>
           <button class="close-sidebar" onclick="closeSidebar()">✕</button>
@@ -1037,6 +1100,12 @@
       </div>
 
       <div class="sidebar-content">
+        <!-- قسم سجل آخر اتصال (تم نقله للأعلى) -->
+        <div id="historySection" style="margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+            <!-- سيتم تعبئته بالجافاسكريبت -->
+        </div>
+
+        <!-- قسم بيانات ولي الأمر -->
         <div id="sidebarInfo"></div>
 
         <!-- QR Code -->
@@ -1044,19 +1113,19 @@
 
         <hr style="border:0; border-top:1px solid #eee; margin:20px 0 10px;">
         <h3
-          style="color: #2979ff; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+          style="color: #2979ff; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 16px;">
           الاتصال الحالي</h3>
 
-        <label class="info-label">عدد مرات الاتصال</label>
+        <label class="info-label" style="display:block; margin-bottom:5px;">عدد مرات الاتصال</label>
         <input type="number" id="callCountInput" placeholder="0">
 
-        <label class="info-label">ملاحظات</label>
+        <label class="info-label" style="display:block; margin-bottom:5px;">ملاحظات</label>
         <textarea id="notesInput" rows="4" placeholder="اكتب ملاحظات هنا..."></textarea>
 
-        <label class="info-label">حالة الاتصال</label>
+        <label class="info-label" style="display:block; margin-bottom:5px;">حالة الاتصال</label>
         <select id="callStatusSelect"></select>
 
-        <label class="info-label">تاريخ الاتصال القادم</label>
+        <label class="info-label" style="display:block; margin-bottom:5px;">تاريخ الاتصال القادم</label>
         <input type="date" id="nextCallDateInput">
 
         <!-- تم تعديل ترتيب الأزرار حسب الطلب -->
@@ -1083,13 +1152,18 @@
       </div>
     </div>
 
-    <!-- القائمة الجانبية اليمنى (سجل آخر اتصال) -->
-    <div class="sidebar-right" id="historySidebar">
-      <div class="sidebar-header">
-        <span>سجل آخر اتصال</span>
-        <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+    <!-- نافذة الدفع المنبثقة (على اليسار) -->
+    <div class="payment-window" id="paymentFloatingWindow">
+      <div style="background: var(--primary-color); color: white; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 14px; font-weight: bold;">💳 بوابة الدفع الإلكتروني</span>
+        <button onclick="document.getElementById('paymentFloatingWindow').style.display='none'" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;">✕</button>
       </div>
-      <div class="sidebar-content" id="historyInfo"></div>
+      <div class="payment-iframe-container">
+        <iframe id="paymentFrame" src=""></iframe>
+      </div>
+      <div style="padding: 5px; text-align: center; background: #f5f5f5; border-top: 1px solid #ddd;">
+         <button class="btn btn-sm" onclick="openPayment()" style="height: 30px; font-size: 12px; width: auto;">فتح في نافذة جديدة ↗️</button>
+      </div>
     </div>
 
   </div>
@@ -1366,7 +1440,7 @@
   <div class="center-screen" id="statsDrillDownModal" style="display:none; z-index:650;">
     <div class="box box-large">
       <h2 id="drillDownTitle" style="color:#2979ff;">تفاصيل الاتصالات</h2>
-      <div id="drillDownContent" style="max-height: 70vh; overflow: auto;"></div>
+      <div id="drillDownContent" style="max-height: 70vh; overflow: auto; border: 1px solid #ccc; border-radius: 8px;"></div>
       <button class="btn btn-secondary" onclick="document.getElementById('statsDrillDownModal').style.display='none'" style="margin-top:15px;">إغلاق</button>
     </div>
   </div>
@@ -1769,6 +1843,7 @@
       final_balance: { label: 'الرصيد النهائي', type: 'money' }
     };
     let currentColumnOrder = [];
+    let currentVisibleColumns = []; // لتخزين الأعمدة الظاهرة
 
     window.applySort = () => {
       currentSort.field = document.getElementById('sortCriteria').value;
@@ -1848,6 +1923,15 @@
       } else {
         // الترتيب الافتراضي المطلوب: الملاحظات والحالة أولاً
         currentColumnOrder = ['last_call_status', 'notes', 'serial_no', 'parent_code', 'parent_name', 'identity_no', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
+      }
+
+      // تحميل حالة ظهور الأعمدة
+      const savedVisibility = localStorage.getItem(`colVisibility_${employee}`);
+      if (savedVisibility) {
+        currentVisibleColumns = JSON.parse(savedVisibility);
+      } else {
+        // الافتراضي: كل الأعمدة في الترتيب ظاهرة
+        currentVisibleColumns = [...currentColumnOrder];
       }
 
       document.getElementById("employeeName").innerText = "لوحة تحكم - " + getEmployeeLabel(employee);
@@ -2000,6 +2084,14 @@
         currentColumnOrder = ['last_call_status', 'notes', 'serial_no', 'student_code', 'student_name', 'parent_code', 'parent_name', 'phone', 'updated_at', 'next_call_date', 'carried_balance', 'term1_balance', 'term2_balance', 'final_balance'];
       }
 
+      // تحميل حالة ظهور الأعمدة للمرحلة
+      const savedVisibility = localStorage.getItem(`colVisibility_${stageKey}`);
+      if (savedVisibility) {
+        currentVisibleColumns = JSON.parse(savedVisibility);
+      } else {
+        currentVisibleColumns = [...currentColumnOrder];
+      }
+
       document.getElementById("employeeName").innerText = "لوحة تحكم المرحلة - " + stageName;
 
       try {
@@ -2077,6 +2169,9 @@
             // تخطي الأعمدة غير الموجودة في التعريف (مثل student_code في وضع الاستقبال)
             if (window.currentViewMode !== 'stage' && (colKey === 'student_code' || colKey === 'student_name')) return;
             
+            // تخطي الأعمدة المخفية
+            if (!currentVisibleColumns.includes(colKey)) return;
+
             // تعريف الأعمدة الخاصة بالمراحل إذا لم تكن معرفة عامة
             let label = columnDefinitions[colKey] ? columnDefinitions[colKey].label : colKey;
             if (colKey === 'student_code') label = 'رقم الطالب';
@@ -2152,6 +2247,9 @@
             
             currentColumnOrder.forEach(colKey => {
                 if (window.currentViewMode !== 'stage' && (colKey === 'student_code' || colKey === 'student_name')) return;
+                
+                // تخطي الأعمدة المخفية
+                if (!currentVisibleColumns.includes(colKey)) return;
 
                 const td = document.createElement('td');
                 let val = p[colKey];
@@ -2187,6 +2285,60 @@
         // إعادة تفعيل تغيير الحجم
         makeTableResizable(document.querySelector('#parentsTable'));
     };
+
+    // --- إدارة قائمة الحقول (إظهار/إخفاء) ---
+    window.toggleFieldsMenu = () => {
+      const dropdown = document.getElementById("fieldsDropdown");
+      
+      // إذا كانت القائمة مخفية، قم ببنائها ثم إظهارها
+      if (dropdown.style.display !== 'block') {
+        dropdown.innerHTML = '';
+        
+        // استخدام الترتيب الحالي لإنشاء القائمة
+        currentColumnOrder.forEach(colKey => {
+           // تخطي الأعمدة غير المناسبة للوضع الحالي
+           if (window.currentViewMode !== 'stage' && (colKey === 'student_code' || colKey === 'student_name')) return;
+
+           let label = columnDefinitions[colKey] ? columnDefinitions[colKey].label : colKey;
+           if (colKey === 'student_code') label = 'رقم الطالب';
+           if (colKey === 'student_name') label = 'اسم الطالب';
+
+           const isChecked = currentVisibleColumns.includes(colKey) ? 'checked' : '';
+           
+           const labelEl = document.createElement('label');
+           labelEl.innerHTML = `<input type="checkbox" value="${colKey}" ${isChecked} onchange="toggleColumnVisibility('${colKey}')"> ${label}`;
+           dropdown.appendChild(labelEl);
+        });
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
+    };
+
+    window.toggleColumnVisibility = (colKey) => {
+      if (currentVisibleColumns.includes(colKey)) {
+        currentVisibleColumns = currentVisibleColumns.filter(c => c !== colKey);
+      } else {
+        currentVisibleColumns.push(colKey);
+      }
+      // حفظ التفضيلات
+      localStorage.setItem(`colVisibility_${currentEmployee}`, JSON.stringify(currentVisibleColumns));
+      // إعادة رسم الجدول
+      renderParentsTable(window.currentFilteredData || window.currentEmployeeData);
+    };
+
+    // إغلاق القائمة عند النقر خارجها
+    window.onclick = function(event) {
+      if (!event.target.matches('.btn-outline') && !event.target.closest('.dropdown-content')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+          const openDropdown = dropdowns[i];
+          if (openDropdown.style.display === 'block') {
+            openDropdown.style.display = 'none';
+          }
+        }
+      }
+    }
 
     // دوال السحب والإفلات للأعمدة
     let dragSrcEl = null;
@@ -2285,6 +2437,27 @@
       currentParentIdentity = data.identity_no;
       window.currentParentData = data; // حفظ البيانات الكاملة لاستخدامها في زر التفاصيل
 
+      // --- 1. فتح نافذة الدفع على اليسار (إذا كان الخيار مفعلاً) ---
+      const paymentWin = document.getElementById('paymentFloatingWindow');
+      const paymentFrame = document.getElementById('paymentFrame');
+      const showPayment = document.getElementById('cbShowPayment').checked;
+
+      if (showPayment && currentParentIdentity) {
+          // إضافة #lblFinal للرابط للقفز مباشرة لمكان الرصيد في الصفحة
+          paymentFrame.src = `https://ncle-sms.com/Payment/?id=${currentParentIdentity}#lblFinal`;
+          paymentWin.style.display = 'flex';
+          
+          // محاولة إضافية للتمرير لأسفل الصفحة عند اكتمال التحميل
+          paymentFrame.onload = function() {
+            try {
+                this.contentWindow.scrollTo(0, 10000); // التمرير لأسفل الصفحة
+                this.contentWindow.scrollTo(0, 999999); // التمرير لأسفل الصفحة تماماً
+            } catch(e) { /* قد يمنع المتصفح ذلك لأسباب أمنية، لذا نعتمد على الرابط أعلاه */ }
+          };
+      } else {
+          paymentWin.style.display = 'none';
+      }
+
       // Generate QR Code
       const qrContainer = document.getElementById('qrCodeContainer');
       if (currentParentPhone) {
@@ -2313,22 +2486,21 @@
       const isOtherEmployee = hasHistory && data.employee && data.employee !== currentEmployee;
       const otherEmployeeStyle = isOtherEmployee ? 'style="background-color: #fffde7; border-left: 3px solid #fbc02d;"' : '';
 
-      // تعبئة القائمة اليمنى (سجل آخر اتصال)
-      const historyDiv = document.getElementById('historyInfo');
+      // --- 2. تعبئة قسم السجل (في أعلى القائمة اليمين) ---
+      const historyDiv = document.getElementById('historySection');
       historyDiv.innerHTML = `
-      <h3 style="color: #2979ff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات آخر اتصال</h3>
+      <h3 style="color: #d32f2f; margin-top: 0; margin-bottom: 10px; font-size: 16px;">📜 سجل آخر اتصال</h3>
       <div class="info-group" ${otherEmployeeStyle}><div class="info-label">الموظف الذي أجرى الاتصال</div><div class="info-value">${(hasHistory && data.employee) ? getEmployeeLabel(data.employee) : 'لا يوجد'}</div></div>
       <div class="info-group" ${otherEmployeeStyle}><div class="info-label">تاريخ آخر اتصال</div><div class="info-value">${hasHistory ? formatDate(data.updated_at) : 'لا يوجد'}</div></div>
-      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">ملاحظات آخر اتصال</div><div class="info-value" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto; background:#f9f9f9; padding:8px; border-radius:4px;">${(hasHistory && data.notes) ? data.notes : 'لا يوجد'}</div></div>
+      <div class="info-group" ${otherEmployeeStyle} style="display:block;"><div class="info-label">ملاحظات آخر اتصال</div><div class="info-value" style="white-space: pre-wrap; max-height: 80px; overflow-y: auto; background:#fff; padding:5px; border:1px solid #eee; margin-top:3px; font-size:13px;">${(hasHistory && data.notes) ? data.notes : 'لا يوجد'}</div></div>
       <div class="info-group" ${otherEmployeeStyle}><div class="info-label">حالة الاتصال السابق</div><div class="info-value" style="color: #2979ff;">${(hasHistory && data.last_call_status) ? data.last_call_status : 'لا يوجد'}</div></div>
       <div class="info-group" ${otherEmployeeStyle}><div class="info-label">موعد الاتصال القادم المتفق عليه</div><div class="info-value">${(hasHistory && data.next_call_date) ? data.next_call_date : 'لا يوجد'}</div></div>
-      <div class="info-group" ${otherEmployeeStyle}><div class="info-label">تم إرسال واتساب سابقاً</div><div class="info-value">${(hasHistory && data.whatsapp_sent) ? 'نعم ✅' : 'لا ❌'}</div></div>
     `;
 
-      // تعبئة القائمة اليسرى (بيانات ولي الأمر أو الطالب حسب الوضع)
+      // --- 3. تعبئة قسم البيانات (أسفل السجل) ---
       if (window.currentViewMode === 'stage') {
         infoDiv.innerHTML = `
-        <h3 style="color: #2979ff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات الطالب</h3>
+        <h3 style="color: #2979ff; margin-top: 10px; margin-bottom: 10px; font-size: 16px;">👤 بيانات الطالب</h3>
         <div class="info-group"><div class="info-label">اسم الطالب</div><div class="info-value">${data.student_name || '-'}</div></div>
         <div class="info-group"><div class="info-label">رقم الطالب</div><div class="info-value">${data.student_code || '-'}</div></div>
         <div class="info-group"><div class="info-label">ولي الأمر</div><div class="info-value">${data.parent_name || '-'}</div></div>
@@ -2341,7 +2513,7 @@
         `;
       } else {
         infoDiv.innerHTML = `
-        <h3 style="color: #2979ff; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;">بيانات ولي الأمر</h3>
+        <h3 style="color: #2979ff; margin-top: 10px; margin-bottom: 10px; font-size: 16px;">👤 بيانات ولي الأمر</h3>
         <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name || '-'}</div></div>
         <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
         <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
@@ -2369,14 +2541,29 @@
       document.getElementById('whatsappSentCheckbox').checked = data.whatsapp_sent || false;
 
       // Show Sidebar
-      document.getElementById('detailsSidebar').classList.add('active');
-      document.getElementById('historySidebar').classList.add('active');
+      // التحقق من خيار إظهار شاشة المتابعة
+      const showSidebar = document.getElementById('cbShowSidebar').checked;
+      if (showSidebar) {
+          document.getElementById('detailsSidebar').classList.add('active');
+      }
     };
 
     window.closeSidebar = () => {
       document.getElementById('detailsSidebar').classList.remove('active');
-      document.getElementById('historySidebar').classList.remove('active');
+      document.getElementById('paymentFloatingWindow').style.display = 'none';
+      document.getElementById('paymentFrame').src = ''; // إيقاف تحميل الموقع
       document.querySelectorAll('tr').forEach(row => row.classList.remove('selected'));
+    };
+
+    // دوال التحكم في ظهور النوافذ عند تغيير الـ Checkbox
+    window.toggleSidebarVisibility = () => {
+        const isChecked = document.getElementById('cbShowSidebar').checked;
+        if (!isChecked) document.getElementById('detailsSidebar').classList.remove('active');
+    };
+
+    window.togglePaymentVisibility = () => {
+        const isChecked = document.getElementById('cbShowPayment').checked;
+        if (!isChecked) document.getElementById('paymentFloatingWindow').style.display = 'none';
     };
 
     window.saveParentInteraction = async () => {
@@ -2392,9 +2579,10 @@
 
         const sCode = (window.currentViewMode === 'stage' && currentStudentCode) ? currentStudentCode : '';
 
-        const { error } = await supabase
+        // 1. إضافة سجل جديد في جدول التفاعلات (للحفاظ على التاريخ)
+        const { error: intError } = await supabase
           .from('interactions')
-          .upsert({
+          .insert({
             parent_code: currentParentCode,
             student_code: sCode,
             employee: currentEmployee,
@@ -2404,13 +2592,23 @@
             next_call_date: nextDate || null,
             whatsapp_sent: whatsappSent,
             updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'employee,parent_code,student_code'
           });
 
-        if (error) {
-          console.error('Error saving interaction:', error);
-          alert('حدث خطأ أثناء الحفظ: ' + error.message);
+        if (intError) {
+          console.error('Error saving interaction:', intError);
+          alert('حدث خطأ أثناء الحفظ: ' + intError.message);
+          return;
+        }
+
+        // 2. تحديث حالة ولي الأمر في الجدول الرئيسي (لضمان ظهور آخر حالة في البحث والقوائم)
+        const { error: parentError } = await supabase
+          .from('parents')
+          .update({ last_call_status: status, next_call_date: nextDate || null, updated_at: new Date().toISOString(), notes: notes })
+          .eq('parent_code', currentParentCode);
+
+        if (parentError) {
+             console.error('Error updating parent status:', parentError);
+             // لا نوقف العملية لأن السجل التاريخي تم حفظه
         } else {
           alert('تم حفظ الملاحظات بنجاح ✅');
           closeSidebar();
@@ -2871,6 +3069,10 @@
                 startDate = new Date(now);
                 endDate = new Date(now); endDate.setHours(23,59,59,999);
                 labelText = `اليوم: ${now.toLocaleDateString('ar-EG')}`;
+            } else if (period === 'yesterday') {
+                startDate = new Date(now); startDate.setDate(now.getDate() - 1); startDate.setHours(0,0,0,0);
+                endDate = new Date(now); endDate.setDate(now.getDate() - 1); endDate.setHours(23,59,59,999);
+                labelText = `أمس: ${startDate.toLocaleDateString('ar-EG')}`;
             } else if (period === 'week') {
                 const day = now.getDay();
                 const diff = now.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
@@ -2957,6 +3159,7 @@
                     <select id="advPeriodSelect" onchange="toggleCustomDate(); filterAndRenderStats()" style="padding:8px; border-radius:5px;">
                         <option value="all">كل الوقت</option>
                         <option value="today">اليوم</option>
+                        <option value="yesterday">أمس</option>
                         <option value="week">هذا الأسبوع</option>
                         <option value="month">هذا الشهر</option>
                         <option value="year">هذه السنة</option>
@@ -3031,11 +3234,40 @@
             
             const { data: fullParents, error } = await supabase.from('parents').select('*').in('parent_code', codes);
             
+            // جلب آخر تفاعل لكل ولي أمر لتحديث البيانات المعروضة (لإصلاح البيانات القديمة)
+            const { data: latestInteractions } = await supabase.from('interactions')
+                .select('*')
+                .in('parent_code', codes)
+                .order('updated_at', { ascending: false });
+
+            const intMap = {};
+            if (latestInteractions) {
+                latestInteractions.forEach(i => {
+                    if (!intMap[i.parent_code]) intMap[i.parent_code] = i;
+                });
+            }
+
             if (error || !fullParents) return alert('خطأ في جلب التفاصيل');
 
-            let html = `<table class="excel-preview-table"><thead><tr><th>م</th><th>الاسم</th><th>الجوال</th><th>الرصيد النهائي</th><th>حالة الاتصال</th></tr></thead><tbody>`;
+            let html = `<table class="excel-preview-table" style="min-width: 1000px;">
+              <thead>
+                <tr>
+                  <th>م</th><th>الاسم</th><th>الجوال</th><th>الرصيد النهائي</th>
+                  <th>حالة آخر اتصال</th><th>تاريخ آخر اتصال</th><th>تاريخ الاتصال القادم</th><th>ملاحظات</th>
+                </tr>
+              </thead><tbody>`;
+            
             fullParents.forEach((p, idx) => {
-                html += `<tr><td>${idx+1}</td><td>${p.parent_name}</td><td>${p.phone}</td><td>${formatCurrency(p.final_balance)}</td><td>تم التحديث</td></tr>`;
+                // دمج البيانات مع أحدث تفاعل لضمان الدقة
+                const i = intMap[p.parent_code] || {};
+                const displayP = { ...p, ...i }; 
+                
+                const updated = displayP.updated_at ? new Date(displayP.updated_at).toLocaleDateString('ar-EG') : '-';
+                html += `<tr>
+                  <td>${idx+1}</td><td>${displayP.parent_name}</td><td>${displayP.phone}</td>
+                  <td style="font-weight:bold; color:${displayP.final_balance > 0 ? 'red' : 'green'}">${formatCurrency(displayP.final_balance)}</td>
+                  <td>${displayP.last_call_status || '-'}</td><td>${updated}</td><td>${displayP.next_call_date || '-'}</td>
+                  <td style="max-width:300px; white-space:normal;">${displayP.notes || '-'}</td></tr>`;
             });
             html += `</tbody></table>`;
             
@@ -3059,7 +3291,7 @@
             
             const labelMap = {
                 'parents': 'عدد أولياء الأمور',
-                'calls': 'عدد الآباء الذين تم الاتصال بهم',
+                'calls': 'عدد عمليات الاتصال (النشاط)',
                 'whatsapp': 'رسائل الواتساب',
                 'logins': 'عدد مرات الدخول',
                 'debt': 'إجمالي المديونية'
@@ -3099,7 +3331,7 @@
                     <thead>
                         <tr>
                             <th>الموظف</th>
-                            <th>الآباء الذين تم الاتصال بهم</th>
+                            <th>عدد عمليات الاتصال</th>
                             <th>الدخول</th>
                             <th>الواتساب</th>
                             <th>عدد أولياء الأمور</th>
