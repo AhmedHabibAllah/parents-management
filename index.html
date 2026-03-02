@@ -348,9 +348,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 5px;
       background: #ffffff;
-      padding: 15px 20px;
+      padding: 5px 10px;
       border-radius: 12px;
       box-shadow: var(--glass-shadow);
       border: 1px solid #e5e7eb;
@@ -429,6 +429,8 @@
     .num-cell {
       direction: ltr;
       font-family: 'Segoe UI', sans-serif;
+      display: inline-block;
+      text-align: left;
     }
 
     tr:hover {
@@ -436,6 +438,22 @@
       background-color: #f1f5f9 !important;
       cursor: pointer;
     }
+    .debt-amount { color: red; font-weight: bold; }
+    .credit-amount { color: green; }
+    body.dark-mode .debt-amount { color: #ff8a80; } /* Lighter red */
+    body.dark-mode .credit-amount { color: #b9f6ca; } /* Lighter green */
+    .final-balance-sidebar {
+        color: red; font-size: 2.8em; font-weight: bold;
+    }
+    body.dark-mode .final-balance-sidebar { color: #ff8a80; }
+
+    .parent-name-sidebar {
+        font-size: 1.6em;
+        font-weight: 900;
+        color: #0d47a1;
+        white-space: normal; /* للسماح بالالتفاف إذا كان الاسم طويلاً */
+    }
+    body.dark-mode .parent-name-sidebar { color: #90caf9; }
 
     tr.selected {
       background-color: #e2e8f0;
@@ -517,6 +535,10 @@
       background-color: #ffcdd2 !important; /* خلفية حمراء فاتحة */
       color: #b71c1c !important; /* نص أحمر غامق */
     }
+    body.dark-mode tr.has-debt,
+    body.dark-mode tr.has-debt td {
+        background-color: #4a1c1e !important; color: #ffcdd2 !important;
+    }
 
     /* تمييز الصفوف التي تم الاتصال بها اليوم */
     tr.contacted-today,
@@ -540,6 +562,23 @@
       display: flex;
       flex-direction: column;
     }
+    /* Sidebar Position options */
+    .sidebar-pos-top .sidebar, .sidebar-pos-top .payment-window {
+        top: 0;
+        bottom: auto;
+        height: 50vh;
+        border-radius: 0;
+    }
+    .sidebar-pos-bottom .sidebar, .sidebar-pos-bottom .payment-window {
+        top: auto;
+        bottom: 0;
+        height: 50vh;
+        border-radius: 0;
+    }
+    .sidebar-pos-top .sidebar { border-radius: 0 0 0 12px; }
+    .sidebar-pos-bottom .sidebar { border-radius: 12px 0 0 0; }
+    .sidebar-pos-top .payment-window { border-radius: 0 0 12px 0; }
+    .sidebar-pos-bottom .payment-window { border-radius: 12px 12px 0 0; }
 
     .sidebar.active {
       transform: translateX(0) !important; /* التأكد من الظهور */
@@ -573,16 +612,20 @@
     }
 
     .info-label {
-      font-size: 13px;
+      font-size: 16px;
       color: #666;
       margin-bottom: 0;
     }
 
     .info-value {
       font-weight: 700;
-      font-size: 14px;
+      font-size: 18px;
       color: #333;
     }
+    body.dark-mode .info-label { color: #aaa !important; }
+    body.dark-mode .info-value { color: #fff !important; }
+    /* Ensure specific colored values are also visible */
+    body.dark-mode .info-value[style*="color:red"] { color: #ff8a80 !important; }
 
     .action-buttons {
       display: flex;
@@ -856,6 +899,12 @@
     body.dark-mode .emp-card .title { color: #fff; }
 
     /* تنسيقات القوائم الديناميكية في الإعدادات */
+    .dev-credit { color: #000; }
+    .dev-credit a { color: #000; text-decoration: none; font-weight: bold; }
+    body.dark-mode .dev-credit { color: #ccc; }
+    body.dark-mode .dev-credit a { color: #ccc; }
+
+
     .settings-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
     .settings-row input { margin-bottom: 0; flex: 1; }
     .btn-sm { height: 50px; padding: 0 15px; font-size: 16px; width: auto; }
@@ -967,6 +1016,26 @@
       background-color: #e3f2fd;
     }
     .show { display: block; }
+
+    /* Compact Header Elements Overrides */
+    .header-bar .btn, .header-bar .btn-outline, .header-bar .stat-btn {
+        min-height: 32px !important;
+        height: 32px !important;
+        padding: 0 10px !important;
+        font-size: 13px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+    }
+    .header-bar input, .header-bar select {
+        height: 32px !important;
+        font-size: 13px !important;
+        padding: 0 5px !important;
+        margin: 0 !important;
+    }
+    .header-bar h1 {
+        font-size: 22px !important;
+        padding: 2px 15px !important;
+    }
   </style>
 </head>
 
@@ -988,9 +1057,9 @@
         <!-- سيتم التحكم في هذا المحتوى عبر الجافاسكريبت -->
         <!-- سيتم توليد الأزرار هنا -->
       </div>
-      <div style="margin-top: 20px; font-size: 14px; color: #000;">
+      <div class="dev-credit" style="margin-top: 20px; font-size: 14px;">
         <div style="font-weight: 900;">تصميم وتطوير استاذ احمد حبيب الله</div>
-        <a href="mailto:designissue@gmail.com" style="color: #000; text-decoration: none; font-weight: bold;">designissue@gmail.com</a>
+        <a href="mailto:designissue@gmail.com">designissue@gmail.com</a>
       </div>
     </div>
   </div>
@@ -1000,28 +1069,28 @@
 
     <!-- المحتوى الرئيسي -->
     <div class="main-content" id="mainContent">
-      <div class="header-bar" style="flex-direction: column; gap: 15px; align-items: stretch;">
+      <div class="header-bar" style="flex-direction: column; gap: 5px; align-items: stretch;">
         
         <!-- الصف العلوي: اسم الموظف - عنوان المدرسة - المطور -->
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <h3 id="employeeName" style="margin:0; font-size: 18px;"></h3>
             
-            <h1 style="margin:0; font-family:'Traditional Arabic', serif; font-size:42px; color:#000; background-color:rgba(255,255,255,0.8); padding:5px 30px; border-radius:15px; font-weight:900; text-align:center; border:1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h1 style="margin:0; font-family:'Traditional Arabic', serif; font-size:24px; color:#000; background-color:rgba(255,255,255,0.8); padding:2px 15px; border-radius:15px; font-weight:900; text-align:center; border:1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                 مدارس التربية النموذجية الروابي</h1>
     
-            <div style="text-align: left; margin-left: 5px;">
-                <div style="font-weight: 900; color: #000; font-size: 14px;">تصميم وتطوير استاذ احمد حبيب الله</div>
-                <a href="mailto:designissue@gmail.com" style="color: #000; text-decoration: none; font-weight: bold; font-size: 14px;">designissue@gmail.com</a>
+            <div class="dev-credit" style="text-align: left; margin-left: 5px; font-size: 14px;">
+                <div style="font-weight: 900;">تصميم وتطوير استاذ احمد حبيب الله</div>
+                <a href="mailto:designissue@gmail.com">designissue@gmail.com</a>
             </div>
         </div>
 
         <!-- الصف السفلي: أدوات البحث والترتيب والأزرار -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
             
             <!-- قسم البحث -->
-            <div style="display:flex; gap:10px; align-items:center; background: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+            <div style="display:flex; gap:5px; align-items:center; background: rgba(255,255,255,0.5); padding: 2px 5px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
                 <span style="font-weight:bold;">🔍 بحث:</span>
-                <select id="searchColumn" onchange="filterTable()" style="margin:0; width:auto; height:40px; padding: 5px 10px;">
+                <select id="searchColumn" onchange="filterTable()" style="margin:0; width:auto; height:30px; padding: 2px 5px;">
                     <option value="all">شامل</option>
                     <option value="parent_name">الاسم</option>
                     <option value="parent_code">رقم الولي</option>
@@ -1029,25 +1098,30 @@
                     <option value="identity_no">الهوية</option>
                     <option value="next_call_date">تاريخ الاتصال القادم</option>
                 </select>
-                <input type="text" id="searchInput" oninput="filterTable()" placeholder="اكتب للبحث..." style="margin:0; height:40px; width:200px; padding: 5px 10px;">
+                <input type="text" id="searchInput" oninput="filterTable()" placeholder="اكتب للبحث..." style="margin:0; height:30px; width:200px; padding: 2px 5px;">
             </div>
 
             <!-- قسم الترتيب -->
             <div style="display:flex; gap:5px; align-items:center;">
                 <span style="font-size:14px; font-weight:bold;">ترتيب حسب:</span>
-                <select id="sortCriteria" onchange="applySort()" style="padding:5px; font-size:14px; margin:0; height:40px; width:auto; border-radius:8px;">
-                    <option value="serial_no">🔢 التسلسل</option>
-                    <option value="updated_at">📅 آخر اتصال</option>
-                    <option value="next_call_date">📅 تاريخ الاتصال القادم</option>
-                    <option value="parent_name">abc الاسم</option>
-                    <option value="final_balance">💰 الرصيد</option>
-                    <option value="call_count">📞 عدد الاتصالات</option>
+                <select id="sortCriteria" onchange="applySort()" style="padding:2px; font-size:14px; margin:0; height:30px; width:auto; border-radius:8px;">
+                    <!-- سيتم تعبئة الخيارات بالجافاسكريبت -->
                 </select>
-                <button id="sortDirectionBtn" class="btn btn-outline" onclick="toggleSortDirection()" style="width:40px; height:40px; margin:0; padding:0; display:flex; align-items:center; justify-content:center;" title="تغيير الترتيب">⬇️</button>
+                <button id="sortDirectionBtn" class="btn btn-outline" onclick="toggleSortDirection()" style="width:30px; height:30px; margin:0; padding:0; display:flex; align-items:center; justify-content:center;" title="تغيير الترتيب">⬇️</button>
+            </div>
+
+            <!-- قسم موضع الشاشات -->
+            <div style="display:flex; gap:5px; align-items:center;">
+                <span style="font-size:14px; font-weight:bold;">موضع الشاشات:</span>
+                <select id="sidebarPosition" onchange="changeSidebarPosition()" style="padding:2px; font-size:14px; margin:0; height:30px; width:auto; border-radius:8px;">
+                    <option value="full">ارتفاع كامل</option>
+                    <option value="top">أعلى</option>
+                    <option value="bottom">أسفل</option>
+                </select>
             </div>
 
             <!-- الأزرار -->
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:5px;">
               <!-- خيارات العرض الجديدة -->
               <div style="display:flex; align-items:center; gap:10px; background:#e3f2fd; padding:5px 10px; border-radius:8px; border:1px solid #bbdefb; margin-left:5px;">
                   <label style="font-size:14px; cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:0; color:#1565C0; font-weight:bold;">
@@ -1702,6 +1776,15 @@
       }
 
       applyTheme();
+      // تطبيق إعدادات الواجهة المحفوظة
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+      }
+      const savedPosition = localStorage.getItem('sidebarPosition');
+      if (savedPosition) {
+          document.getElementById('sidebarPosition').value = savedPosition;
+          changeSidebarPosition();
+      }
       renderEntryScreen('main');
       updateImportSelect();
       
@@ -1710,16 +1793,25 @@
       }
     }
 
-    function applyTheme() {
-      const empTheme = (currentEmployee && appConfig.employeeThemes && appConfig.employeeThemes[currentEmployee]);
-      document.documentElement.style.setProperty('--primary-color', empTheme || appConfig.theme);
-    }
-
     function getEmployeeLabel(emp) {
       if (appConfig.employeeNames && appConfig.employeeNames[emp]) return appConfig.employeeNames[emp];
       if (appConfig.stages && appConfig.stages[emp]) return appConfig.stages[emp].name;
       return emp;
     }
+
+    function applyTheme() {
+      const empTheme = (currentEmployee && appConfig.employeeThemes && appConfig.employeeThemes[currentEmployee]);
+      document.documentElement.style.setProperty('--primary-color', empTheme || appConfig.theme);
+    }
+
+    window.changeSidebarPosition = () => {
+        const position = document.getElementById('sidebarPosition').value;
+        const body = document.body;
+        body.classList.remove('sidebar-pos-top', 'sidebar-pos-bottom');
+        if (position === 'top') body.classList.add('sidebar-pos-top');
+        else if (position === 'bottom') body.classList.add('sidebar-pos-bottom');
+        localStorage.setItem('sidebarPosition', position);
+    };
 
     // دالة عرض شاشة الدخول (الرئيسية / موظفين / مراحل)
     window.renderEntryScreen = (view = 'main') => {
@@ -1851,19 +1943,22 @@
     
     // تعريف الأعمدة المتاحة
     const columnDefinitions = {
-      last_call_status: { label: 'حالة الاتصال', type: 'text' },
-      notes: { label: 'ملاحظات', type: 'text', style: 'max-width:200px; overflow:hidden; text-overflow:ellipsis;' },
-      serial_no: { label: 'م', type: 'number' },
-      parent_code: { label: 'رقم الولي', type: 'text' },
-      parent_name: { label: 'الاسم', type: 'text' },
-      identity_no: { label: 'رقم الهوية', type: 'text' },
-      phone: { label: 'الجوال', type: 'text' },
-      updated_at: { label: 'تاريخ آخر اتصال', type: 'date' },
-      next_call_date: { label: 'تاريخ الاتصال القادم', type: 'date' },
-      carried_balance: { label: 'الرصيد المدور', type: 'money' },
-      term1_balance: { label: 'رصيد ف1', type: 'money' },
-      term2_balance: { label: 'رصيد ف2', type: 'money' },
-      final_balance: { label: 'الرصيد النهائي', type: 'money' }
+        last_call_status: { label: 'حالة الاتصال', type: 'text' },
+        notes: { label: 'ملاحظات', type: 'text' },
+        serial_no: { label: '🔢 التسلسل', type: 'number' },
+        parent_code: { label: 'رقم الولي', type: 'text' },
+        parent_name: { label: '👤 الاسم', type: 'text' },
+        student_code: { label: 'رقم الطالب', type: 'text' },
+        student_name: { label: '🎓 اسم الطالب', type: 'text' },
+        identity_no: { label: 'رقم الهوية', type: 'text' },
+        phone: { label: '📞 الجوال', type: 'text' },
+        updated_at: { label: '📅 آخر اتصال', type: 'date' },
+        next_call_date: { label: '📅 الاتصال القادم', type: 'date' },
+        carried_balance: { label: '💰 الرصيد المدور', type: 'money' },
+        term1_balance: { label: '💰 رصيد ف1', type: 'money' },
+        term2_balance: { label: '💰 رصيد ف2', type: 'money' },
+        final_balance: { label: '💰 الرصيد النهائي', type: 'money' },
+        call_count: { label: '📞 عدد الاتصالات', type: 'number' }
     };
     let currentColumnOrder = [];
     let currentVisibleColumns = []; // لتخزين الأعمدة الظاهرة
@@ -1878,6 +1973,28 @@
       currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
       document.getElementById('sortDirectionBtn').innerText = currentSort.dir === 'asc' ? '⬇️' : '⬆️';
       sortAndRender();
+    };
+
+    const populateSortOptions = () => {
+        const sortSelect = document.getElementById('sortCriteria');
+        sortSelect.innerHTML = '';
+
+        currentColumnOrder.forEach(colKey => {
+            if (!columnDefinitions[colKey] || colKey === 'notes') return;
+
+            if (window.currentViewMode !== 'stage' && (colKey === 'student_code' || colKey === 'student_name')) return;
+
+            const option = document.createElement('option');
+            option.value = colKey;
+            option.textContent = columnDefinitions[colKey].label;
+            sortSelect.appendChild(option);
+        });
+
+        if (Array.from(sortSelect.options).some(opt => opt.value === currentSort.field)) {
+            sortSelect.value = currentSort.field;
+        } else {
+            sortSelect.value = 'serial_no';
+        }
     };
 
     // دالة البحث والتصفية
@@ -1956,6 +2073,8 @@
         // الافتراضي: كل الأعمدة في الترتيب ظاهرة
         currentVisibleColumns = [...currentColumnOrder];
       }
+
+      populateSortOptions();
 
       document.getElementById("employeeName").innerText = "لوحة تحكم - " + getEmployeeLabel(employee);
 
@@ -2114,6 +2233,8 @@
       } else {
         currentVisibleColumns = [...currentColumnOrder];
       }
+
+      populateSortOptions();
 
       document.getElementById("employeeName").innerText = "لوحة تحكم المرحلة - " + stageName;
 
@@ -2284,12 +2405,22 @@
                     if (nextCallStyle) td.style.cssText = nextCallStyle;
                 }
                 else if (['carried_balance', 'term1_balance', 'term2_balance', 'final_balance'].includes(colKey)) {
-                    val = Number(val || 0).toLocaleString('en-US');
-                    if (colKey === 'final_balance') td.style.color = (p.final_balance || 0) > 0 ? 'red' : 'green';
+                    const amount = Number(val || 0);
+                    val = amount.toLocaleString('en-US');
+                    if (colKey === 'final_balance') {
+                        if (amount > 0) td.classList.add('debt-amount');
+                        else if (amount < 0) td.classList.add('credit-amount');
+                    }
                 }
                 else if (colKey === 'parent_name' || colKey === 'student_name') {
                     td.innerHTML = `<strong>${val || '-'}${statusBadge}</strong>`;
                     val = null; // Prevent overwriting innerHTML
+                }
+                else if (colKey === 'phone') {
+                    const str = (val || '').toString().replace(/\s/g, '');
+                    const formatted = str.replace(/(\d{3})/g, '$1 ').trim();
+                    td.innerHTML = `<span class="num-cell" style="font-size:1.2em; font-weight:900;">${formatted}</span>`;
+                    val = null;
                 }
                 else if (colKey === 'notes') {
                     td.style.maxWidth = '200px';
@@ -2493,6 +2624,12 @@
       // Populate Sidebar
       const infoDiv = document.getElementById('sidebarInfo');
       const formatLtr = (val) => `<span class="num-cell">${val}</span>`;
+      const formatPhone = (val) => {
+        if (!val) return '-';
+        const str = val.toString().replace(/\s/g, '');
+        const formatted = str.replace(/(\d{3})/g, '$1 ').trim();
+        return `<span class="num-cell" style="font-size:1.4em; font-weight:900; color:#000;">${formatted}</span>`;
+      };
       const formatDate = (dateStr) => {
         if (!dateStr) return 'غير محدد';
         try {
@@ -2526,10 +2663,10 @@
         <h3 style="color: #2979ff; margin-top: 10px; margin-bottom: 10px; font-size: 16px;">👤 بيانات الطالب</h3>
         <div class="info-group"><div class="info-label">اسم الطالب</div><div class="info-value">${data.student_name || '-'}</div></div>
         <div class="info-group"><div class="info-label">رقم الطالب</div><div class="info-value">${data.student_code || '-'}</div></div>
-        <div class="info-group"><div class="info-label">ولي الأمر</div><div class="info-value">${data.parent_name || '-'}</div></div>
+        <div class="info-group"><div class="info-label">ولي الأمر</div><div class="info-value parent-name-sidebar">${data.parent_name || '-'}</div></div>
         <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
-        <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
-        <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatPhone(data.phone || '-')}</div></div>
+        <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value final-balance-sidebar">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
         <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
         <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
         <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${formatLtr((data.carried_balance || 0).toLocaleString('en-US'))}</div></div>
@@ -2537,11 +2674,11 @@
       } else {
         infoDiv.innerHTML = `
         <h3 style="color: #2979ff; margin-top: 10px; margin-bottom: 10px; font-size: 16px;">👤 بيانات ولي الأمر</h3>
-        <div class="info-group"><div class="info-label">الاسم</div><div class="info-value">${data.parent_name || '-'}</div></div>
+        <div class="info-group"><div class="info-label">الاسم</div><div class="info-value parent-name-sidebar">${data.parent_name || '-'}</div></div>
         <div class="info-group"><div class="info-label">رقم الهوية</div><div class="info-value">${formatLtr(data.identity_no || '-')}</div></div>
-        <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatLtr(data.phone || '-')}</div></div>
+        <div class="info-group"><div class="info-label">رقم الجوال</div><div class="info-value">${formatPhone(data.phone || '-')}</div></div>
         <div class="info-group"><div class="info-label">عدد الأبناء</div><div class="info-value">${formatLtr(data.student_count || 1)}</div></div>
-        <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value" style="color:red; font-size: 1.2em;">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
+        <div class="info-group"><div class="info-label">الرصيد النهائي</div><div class="info-value final-balance-sidebar">${formatLtr((data.final_balance || 0).toLocaleString('en-US'))}</div></div>
         <div class="info-group"><div class="info-label">رصيد ف1</div><div class="info-value">${formatLtr((data.term1_balance || 0).toLocaleString('en-US'))}</div></div>
         <div class="info-group"><div class="info-label">رصيد ف2</div><div class="info-value">${formatLtr((data.term2_balance || 0).toLocaleString('en-US'))}</div></div>
         <div class="info-group"><div class="info-label">الرصيد المدور</div><div class="info-value">${formatLtr((data.carried_balance || 0).toLocaleString('en-US'))}</div></div>
