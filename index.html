@@ -443,22 +443,17 @@
     body.dark-mode .debt-amount { color: #ff8a80; } /* Lighter red */
     body.dark-mode .credit-amount { color: #b9f6ca; } /* Lighter green */
     .final-balance-sidebar {
-        color: red; font-size: 2.8em; font-weight: bold;
+        color: red; font-size: 3.2em; font-weight: 900;
     }
     body.dark-mode .final-balance-sidebar { color: #ff8a80; }
 
     .parent-name-sidebar {
-        font-size: 1.6em;
+        font-size: 1.8em;
         font-weight: 900;
         color: #0d47a1;
         white-space: normal; /* للسماح بالالتفاف إذا كان الاسم طويلاً */
     }
     body.dark-mode .parent-name-sidebar { color: #90caf9; }
-
-    tr.selected {
-      background-color: #e2e8f0;
-      border-right: 5px solid var(--primary-color);
-    }
 
     /* تثبيت أول 3 أعمدة (Sticky Columns) */
     th:nth-child(1), td:nth-child(1) {
@@ -545,6 +540,17 @@
     tr.contacted-today td {
       background-color: #b9f6ca !important; /* لون أخضر فسفوري فاتح */
       color: #000 !important;
+    }
+
+    /* تمييز الصف المحدد (أولوية أعلى بسبب الترتيب) */
+    tr.selected {
+      border-right: 5px solid var(--primary-color);
+    }
+    tr.selected td {
+      background-color: #e0e0e0 !important; /* لون رمادي واضح للتحديد */
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
     }
 
     /* القائمة الجانبية (Sidebar) */
@@ -1077,6 +1083,7 @@
             
             <h1 style="margin:0; font-family:'Traditional Arabic', serif; font-size:24px; color:#000; background-color:rgba(255,255,255,0.8); padding:2px 15px; border-radius:15px; font-weight:900; text-align:center; border:1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                 مدارس التربية النموذجية الروابي</h1>
+            <div id="lastUpdateContainer" style="font-size:16px; color:#d32f2f; font-weight:bold; margin-top:2px;"></div>
     
             <div class="dev-credit" style="text-align: left; margin-left: 5px; font-size: 14px;">
                 <div style="font-weight: 900;">تصميم وتطوير استاذ احمد حبيب الله</div>
@@ -2030,6 +2037,7 @@
             valA = valA ? new Date(valA).getTime() : 0;
             valB = valB ? new Date(valB).getTime() : 0;
         } else if (field === 'serial_no' || field === 'final_balance' || field === 'call_count') {
+        } else if (['serial_no', 'final_balance', 'call_count', 'term1_balance', 'term2_balance', 'carried_balance'].includes(field)) {
             // التعامل مع الأرقام
             valA = Number(valA) || 0;
             valB = Number(valB) || 0;
@@ -2337,6 +2345,24 @@
             trHead.appendChild(th);
         });
         thead.appendChild(trHead);
+
+        // حساب آخر تحديث للبرنامج وعرضه في العنوان
+        let maxDate = 0;
+        dataList.forEach(r => {
+            if (r.updated_at) {
+                const t = new Date(r.updated_at).getTime();
+                if (t > maxDate) maxDate = t;
+            }
+        });
+        const updateLabel = document.getElementById('lastUpdateContainer');
+        if (updateLabel && maxDate > 0) {
+            const diff = new Date().getTime() - maxDate;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            updateLabel.innerText = `آخر تحديث منذ: ${days} يوم و ${hours} ساعة`;
+        } else if (updateLabel) {
+            updateLabel.innerText = '';
+        }
 
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0); // تصفير الوقت لحساب فرق الأيام بدقة
@@ -2793,6 +2819,7 @@
         <table class="excel-preview-table" style="width:100%; text-align:right;">
           <tr><th colspan="2" style="background:#eee; color:#333;">البيانات الشخصية</th></tr>
           <tr><td>الاسم</td><td>${formatVal(d.parent_name)}</td></tr>
+          <tr><td>الاسم</td><td style="font-size:1.5em; font-weight:900; color:#1565C0;">${formatVal(d.parent_name)}</td></tr>
           <tr><td>رقم الولي (Code)</td><td>${formatVal(d.parent_code)}</td></tr>
           <tr><td>رقم الهوية</td><td>${formatVal(d.identity_no)}</td></tr>
           <tr><td>رقم الجوال</td><td>${formatVal(d.phone)}</td></tr>
@@ -2802,7 +2829,7 @@
           <tr><td>الرصيد المدور</td><td>${formatMoney(d.carried_balance)}</td></tr>
           <tr><td>رصيد الفصل 1</td><td>${formatMoney(d.term1_balance)}</td></tr>
           <tr><td>رصيد الفصل 2</td><td>${formatMoney(d.term2_balance)}</td></tr>
-          <tr><td>الرصيد النهائي</td><td style="font-weight:bold; color:${d.final_balance > 0 ? 'red' : 'green'}">${formatMoney(d.final_balance)}</td></tr>
+          <tr><td>الرصيد النهائي</td><td style="font-weight:bold; color:red; font-size:2.2em;">${formatMoney(d.final_balance)}</td></tr>
 
           <tr><th colspan="2" style="background:#eee; color:#333;">سجل التفاعل الحالي</th></tr>
           <tr><td>عدد مرات الاتصال</td><td>${formatVal(d.call_count)}</td></tr>
